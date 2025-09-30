@@ -1,0 +1,20 @@
+:root{
+    --primary-color: #E02128;
+    --header-color: #8B2C31;
+    --font-family: 'Arial', sans-serif;
+    --font-size: 16px;
+    --background-color: #f5f5f5;
+    --text-color: #333;
+    --header-height: 60px;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family:Arial, Helvetica, sans-serif ;
+}
+
+body{
+    overflow-x: hidden;
+}

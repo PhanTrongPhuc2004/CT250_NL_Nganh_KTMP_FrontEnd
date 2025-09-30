@@ -1,0 +1,33 @@
+.match-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 350px;
+  background: var(--primary-color);
+  transition: 0.3s;
+  cursor: pointer;
+    color: white;
+  &:hover {
+    border-color: #e50914; /* màu đỏ MU 😁 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+}
+
+.match-title {
+  margin: 0 0 8px 0;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: white;
+}
+
+.match-time {
+  margin: 0;
+  color: white;
+  font-size: 0.95em;
+}
+
+.match-place{
+    margin: 0;
+  color: white;
+  font-size: 0.95em;
+}
