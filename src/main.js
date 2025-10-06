@@ -10,11 +10,12 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-
+import { createPinia } from "pinia";
 const app = createApp(App);
 library.add(faAngleRight);
 
 app.component("font-awesome-icon", FontAwesomeIcon);
 app.use(BootstrapVue3);
 app.use(router);
+app.use(createPinia());
 app.mount("#app");
