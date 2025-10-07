@@ -32,7 +32,6 @@ export const useUserStore = defineStore("user", {
             withCredentials: true,
           }
         );
-        console.log(res.data);
         await this.checkAuth();
         return true;
       } catch (error) {
@@ -50,6 +49,20 @@ export const useUserStore = defineStore("user", {
         );
       } catch {}
       this.user = null;
+    },
+    setUser(userData) {
+      this.user = userData;
+      localStorage.setItem("vaiTro", JSON.stringify(userData));
+    },
+    async fetchUser() {
+      try {
+        const res = await axios.get("http://localhost:5000/nguoidung/me", {
+          withCredentials: true,
+        });
+        this.user = res.data;
+      } catch (err) {
+        this.user = null;
+      }
     },
   },
 });

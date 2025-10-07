@@ -3,6 +3,7 @@ import { reactive } from "vue";
 import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./form.module.scss";
+import { useUserStore } from "@/stores/userStore";
 
 const cx = classNames.bind(styles);
 

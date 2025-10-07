@@ -2,8 +2,6 @@
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
 const cx = classNames.bind(styles);
-import Header from "../../components/layout/header/Header.vue";
-import DefaultLayout from "@/components/layout/defaultLayout/DefaultLayout.vue";
 import Match from "@/components/match/Match.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import New from "@/components/new/New.vue";
@@ -172,7 +170,7 @@ const quaLuuNiemList = [
 <template>
   <div>
     <img
-      src="../../assets/images/old-traford.jpg"
+      src="../../../assets/images/old-traford.jpg"
       alt=""
       :class="cx('thumbnail')"
     />

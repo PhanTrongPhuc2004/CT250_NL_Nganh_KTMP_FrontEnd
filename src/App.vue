@@ -1,20 +1,24 @@
 <script setup>
-import Home from "./pages/home/Home.vue";
 import GlobalStyles from "./components/globalStyle/GlobalStyles.vue";
 import DefaultLayout from "./components/layout/defaultLayout/DefaultLayout.vue";
-import axios from "axios";
 import { useUserStore } from "./stores/userStore";
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
+import Header from "./components/layout/header/Header.vue";
+const userStore = useUserStore();
+const user = ref(null);
 
-//Kiểm tra trạng thái đăng nhập
-onMounted(() => {
-  useUserStore().checkAuth();
+onMounted(async () => {
+  await userStore.checkAuth();
+  user.value = userStore.user; // reactive
+  console.log("goi app ");
+  console.log(user.value);
 });
 </script>
 
 <template>
   <GlobalStyles>
-    <DefaultLayout>
+    <!-- Chỉ render DefaultLayout khi user đã có giá trị -->
+    <DefaultLayout :user="user">
       <router-view />
     </DefaultLayout>
   </GlobalStyles>

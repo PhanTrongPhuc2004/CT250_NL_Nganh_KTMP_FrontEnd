@@ -24,6 +24,9 @@ const loginFields = [
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
 ];
+
+const userRoutes = router.getRoutes().filter((r) => !r.meta?.admin);
+console.log(userRoutes);
 </script>
 
 <template>
@@ -31,7 +34,7 @@ const loginFields = [
     <nav :class="cx('nav-wrapper')">
       <div :class="cx('nav-list')">
         <router-link
-          v-for="item in routes"
+          v-for="item in userRoutes"
           :key="item.path"
           :to="item.path"
           :class="cx('nav-item')"
@@ -64,7 +67,7 @@ const loginFields = [
     <nav :class="cx('nav-wrapper')">
       <div :class="cx('nav-list')">
         <router-link
-          v-for="item in routes"
+          v-for="item in userRoutes"
           :key="item.path"
           :to="item.path"
           :class="cx('nav-item')"
@@ -93,7 +96,7 @@ const loginFields = [
         <Form
           :inputFields="registerFields"
           method="POST"
-          api="http://localhost:5000/nguoihammo/register"
+          api="http://localhost:5000/nguoidung/register"
           :form-name="'Đăng ký'"
         />
       </div>

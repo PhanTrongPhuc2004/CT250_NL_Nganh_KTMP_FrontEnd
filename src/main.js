@@ -5,17 +5,28 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 
-//import icon
+// import icon
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
-import { createPinia } from "pinia";
-const app = createApp(App);
-library.add(faAngleRight);
 
+// Pinia
+import { createPinia } from "pinia";
+
+const app = createApp(App);
+
+// FontAwesome
+library.add(faAngleRight);
 app.component("font-awesome-icon", FontAwesomeIcon);
+
+// BootstrapVue3
 app.use(BootstrapVue3);
+
+// Pinia
+const pinia = createPinia();
+app.use(pinia);
+
+// Router
 app.use(router);
-app.use(createPinia());
+
 app.mount("#app");
