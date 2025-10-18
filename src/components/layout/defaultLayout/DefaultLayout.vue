@@ -27,7 +27,7 @@ watch(
   <div v-if="props.user">
     <!-- Fan -->
     <div
-      v-if="toRaw(props.user).vaiTro?.toLowerCase() === 'fan'"
+      v-if="toRaw(props.user).vaiTro?.toLowerCase() === 'nguoihammo'"
       class="default-layout"
     >
       <Header />
