@@ -25,6 +25,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  vaiTro: {
+    type: String,
+    default: "nguoihammo",
+  },
 });
 
 // Reactive form data
@@ -35,11 +39,13 @@ props.inputFields.forEach((field) => {
 
 // Submit
 const handleSubmit = async () => {
+  console.log(formData);
+
   try {
     const response = await axios({
       url: props.api,
       method: props.method.toLowerCase(),
-      data: formData,
+      data: { ...formData, vaiTro: props.vaiTro },
       withCredentials: true,
     });
     if (props.formName == "Đăng nhập") {

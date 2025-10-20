@@ -96,7 +96,7 @@ console.log(userRoutes);
         <Form
           :inputFields="registerFields"
           method="POST"
-          api="http://localhost:5000/nguoidung/register"
+          api="http://localhost:5000/nguoidung"
           :form-name="'Đăng ký'"
         />
       </div>

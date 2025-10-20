@@ -35,13 +35,9 @@ async function fetchUsers() {
 // Thêm user
 async function addUser() {
   try {
-    await axios.post(
-      "http://localhost:5000/nguoidung/register",
-      formData.value,
-      {
-        withCredentials: true,
-      }
-    );
+    await axios.post("http://localhost:5000/nguoidung", formData.value, {
+      withCredentials: true,
+    });
     fetchUsers();
     closeForm();
   } catch (error) {
