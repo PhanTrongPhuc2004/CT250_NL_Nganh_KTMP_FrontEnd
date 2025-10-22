@@ -76,9 +76,13 @@ console.log(userRoutes);
         </router-link>
       </div>
       <div :class="cx('nav-action')">
-        <p style="margin: 0; color: white; font-weight: 500">
-          {{ userStore.user.hoVaTen }}
-        </p>
+        <router-link 
+          to="/profile"
+          class="profile-link"
+        >
+          <i class="bi bi-person-circle"></i>
+          <span> 👤{{ userStore.user.hoVaTen }}</span>
+        </router-link>
         <button
           :class="cx('register-btn', 'btn', 'btn-primary')"
           @click="userStore.logout()"
@@ -117,3 +121,39 @@ console.log(userRoutes);
     </div>
   </div>
 </template>
+
+<style scoped>
+.profile-link {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* khoảng cách giữa icon và tên */
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 8px 14px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Khi hover: sáng lên nhẹ */
+.profile-link:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: #fff;
+}
+
+/* Icon 👤 */
+.profile-link i {
+  font-size: 1.4rem;
+}
+
+/* Ẩn tên người dùng trên thiết bị nhỏ */
+@media (max-width: 768px) {
+  .profile-link span {
+    display: none;
+  }
+}
+</style>
