@@ -7,6 +7,13 @@ import Sticket from "@/pages/user/sticket/Sticket.vue";
 import UserManagement from "@/pages/admin/userManagement/UserManagement.vue";
 import { useUserStore } from "@/stores/userStore";
 import ProfilePage from '@/pages/user/player/ProfilePage.vue';
+
+import Shop from "@/pages/user/player/Shop.vue";
+import ProductDetail from "@/pages/user/player/ProductDetail.vue";
+import Cart from "@/pages/user/player/Cart.vue";
+import checkout from "@/pages/user/player/checkout.vue";
+import orders from "@/pages/user/player/orders.vue";
+
 import axios from "axios";
 const userRouter = [
   {
@@ -24,6 +31,12 @@ const userRouter = [
     name: "Vé",
     component: Sticket,
   },
+  { path: "/shop", component: Shop, name: "Shop" },
+  { path: "/shop/:id", component: ProductDetail },
+  { path: "/cart", component: Cart,},
+  { path: '/checkout', component: checkout },
+  { path: '/orders', component: orders },
+
   {
     path: '/profile',
     // name: 'Thông tin cá nhân',
