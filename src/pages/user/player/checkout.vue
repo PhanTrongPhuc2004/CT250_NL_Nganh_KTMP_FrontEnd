@@ -14,12 +14,16 @@
 
       <h3>Tổng thanh toán: {{ totalAmount.toLocaleString() }}₫</h3>
 
-      <button type="submit" class="confirm-btn">✅ Xác nhận thanh toán</button>
+      <button type="submit" class="confirm-btn" :disabled="loading">
+        {{ loading ? "⏳ Đang xử lý..." : "✅ Xác nhận thanh toán" }}
+      </button>
     </form>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "CheckoutPage",
   data() {
@@ -29,6 +33,7 @@ export default {
       username,
       order: { name: "", phone: "", address: "" },
       cart: JSON.parse(localStorage.getItem(`cart_${username}`)) || [],
+      loading: false,
     };
   },
   computed: {
@@ -43,25 +48,34 @@ export default {
     }
   },
   methods: {
-    confirmOrder() {
+    async confirmOrder() {
       if (!this.cart.length) return;
 
-      const orders = JSON.parse(localStorage.getItem(`orders_${this.username}`)) || [];
+      this.loading = true;
 
       const newOrder = {
-        id: Date.now(),
+        username: this.username,
         ...this.order,
         cart: this.cart,
         total: this.totalAmount,
-        date: new Date().toLocaleString(),
+        date: new Date(),
       };
 
-      orders.push(newOrder);
-      localStorage.setItem(`orders_${this.username}`, JSON.stringify(orders));
-      localStorage.removeItem(`cart_${this.username}`);
+      try {
+        // 🧩 Gửi dữ liệu lên backend (API Node/Express)
+        await axios.post("http://localhost:5000/donhang", newOrder);
 
-      alert("🎉 Đơn hàng của bạn đã được thanh toán thành công!");
-      this.$router.push("/orders");
+        // 🧹 Xóa giỏ hàng localStorage sau khi lưu thành công
+        localStorage.removeItem(`cart_${this.username}`);
+
+        alert("🎉 Đơn hàng của bạn đã được thanh toán và lưu thành công!");
+        this.$router.push("/orders");
+      } catch (err) {
+        console.error("❌ Lỗi khi gửi đơn hàng:", err);
+        alert("Có lỗi xảy ra khi gửi đơn hàng. Vui lòng thử lại!");
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };
@@ -96,5 +110,13 @@ export default {
   border-radius: 10px;
   border: none;
   cursor: pointer;
+  transition: 0.2s;
+}
+.confirm-btn:hover {
+  opacity: 0.9;
+}
+.confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>

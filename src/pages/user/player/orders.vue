@@ -2,19 +2,25 @@
   <div class="orders-page">
     <h1>📦 Đơn hàng của bạn</h1>
 
-    <div v-if="orders.length">
-      <div v-for="order in orders" :key="order.id" class="order-card">
-        <h3>🧾 Đơn hàng #{{ order.id }}</h3>
+    <div v-if="loading" class="loading">⏳ Đang tải dữ liệu...</div>
+
+    <div v-else-if="orders.length">
+      <div v-for="order in orders" :key="order._id" class="order-card">
+        <h3>🧾 Đơn hàng #{{ order._id.slice(-6).toUpperCase() }}</h3>
         <p><b>Người nhận:</b> {{ order.name }}</p>
         <p><b>SĐT:</b> {{ order.phone }}</p>
         <p><b>Địa chỉ:</b> {{ order.address }}</p>
-        <p><b>Ngày đặt:</b> {{ order.date }}</p>
+        <p><b>Ngày đặt:</b> {{ formatDate(order.date) }}</p>
         <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }}₫</p>
 
         <details>
           <summary>📋 Chi tiết sản phẩm</summary>
           <ul>
-            <li v-for="item in order.cart" :key="item._id" style="margin-bottom: 10px;">
+            <li
+              v-for="item in order.cart"
+              :key="item.tenQuaLuuNiem"
+              style="margin-bottom: 10px;"
+            >
               <img
                 v-if="item.anhMinhHoa"
                 :src="getImageUrl(item.anhMinhHoa)"
@@ -34,6 +40,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "OrdersPage",
   data() {
@@ -41,15 +49,34 @@ export default {
     const username = user?.tenDangNhap || "guest";
     return {
       username,
-      orders: JSON.parse(localStorage.getItem(`orders_${username}`)) || [],
+      orders: [],
+      loading: true,
     };
   },
   methods: {
+    async fetchOrders() {
+      try {
+        const res = await axios.get(`http://localhost:5000/donhang/${this.username}`);
+        this.orders = res.data;
+      } catch (err) {
+        console.error("❌ Lỗi khi tải đơn hàng:", err);
+        alert("Không thể tải dữ liệu đơn hàng!");
+      } finally {
+        this.loading = false;
+      }
+    },
     getImageUrl(path) {
       if (!path) return "";
       if (path.startsWith("http")) return path;
       return `http://localhost:5000/${path.replace(/^src\//, "")}`;
     },
+    formatDate(date) {
+      const d = new Date(date);
+      return d.toLocaleString("vi-VN");
+    },
+  },
+  mounted() {
+    this.fetchOrders();
   },
 };
 </script>
@@ -67,5 +94,10 @@ export default {
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 20px;
+}
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 30px;
 }
 </style>
