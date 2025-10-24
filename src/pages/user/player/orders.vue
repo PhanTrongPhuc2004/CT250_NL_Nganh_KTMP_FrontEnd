@@ -65,12 +65,16 @@ export default {
         this.loading = false;
       }
     },
+
+    // ✅ Hàm xử lý ảnh linh hoạt
     getImageUrl(path) {
-      if (!path) return "";
-      if (path.startsWith("http")) return path;
-      return `http://localhost:5000/${path.replace(/^src\//, "")}`;
+      if (!path) return "https://via.placeholder.com/100x100?text=No+Image"; // ảnh mặc định
+      if (path.startsWith("http") || path.startsWith("data:image")) return path;
+      return `/${path}`; // ảnh từ public/data
     },
+
     formatDate(date) {
+      if (!date) return "Không rõ";
       const d = new Date(date);
       return d.toLocaleString("vi-VN");
     },
@@ -80,6 +84,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .orders-page {

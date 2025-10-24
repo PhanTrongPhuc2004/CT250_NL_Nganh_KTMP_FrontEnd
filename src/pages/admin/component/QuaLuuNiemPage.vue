@@ -128,15 +128,21 @@ export default {
       this.form = { tenQuaLuuNiem: "", gia: "", moTa: "", anhMinhHoa: "" };
     },
 
-    // Ảnh hiển thị fallback
+    // ✅ Hàm xử lý ảnh linh hoạt
     getImage(url) {
-      return url && url.trim() !== ""
-        ? url
-        : "https://via.placeholder.com/200x150?text=No+Image";
+      if (!url || url.trim() === "") {
+        return "https://via.placeholder.com/200x150?text=No+Image"; // ảnh fallback
+      }
+      if (url.startsWith("http") || url.startsWith("data:image")) {
+        return url; // URL hoặc Base64
+      }
+      // ảnh từ public/data
+      return `/${url}`;
     },
   },
 };
 </script>
+
 
 <style scoped>
 .qua-luu-niem-page {

@@ -32,6 +32,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   name: "Shop",
   data() {
@@ -44,20 +45,24 @@ export default {
   methods: {
     async fetchProducts() {
       try {
-        // ✅ Luôn lấy dữ liệu từ backend
         const res = await axios.get("http://localhost:5000/qualuuniem");
         this.products = res.data;
       } catch (err) {
         this.error = "Không thể tải danh sách quà lưu niệm.";
+        console.error(err);
       } finally {
         this.loading = false;
       }
     },
+
+    // ✅ Hàm xử lý ảnh linh hoạt
     getImageUrl(path) {
       if (!path) return "https://via.placeholder.com/200x180?text=No+Image";
-      if (path.startsWith("http")) return path;
-      return `http://localhost:5000/${path}`;
+      if (path.startsWith("http") || path.startsWith("data:image")) return path;
+      // Nếu ảnh nằm trong public/data
+      return `/${path}`;
     },
+
     goToDetail(id) {
       this.$router.push(`/shop/${id}`);
     },
@@ -67,6 +72,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .shop-header {

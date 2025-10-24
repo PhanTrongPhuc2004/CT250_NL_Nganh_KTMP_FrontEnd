@@ -57,18 +57,21 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
+// --- Khai báo ---
 const route = useRoute();
 const player = ref(null);
 const loading = ref(true);
 
-// ✅ Hàm xử lý hiển thị ảnh linh hoạt
+// ✅ Hàm xử lý ảnh linh hoạt
 const resolveImage = (anh) => {
-  if (!anh) return '/default-player.jpg';
-  if (anh.startsWith('http') || anh.startsWith('data:image')) return anh;
-  return anh; // vì /data/... sẽ tự lấy từ public
+  if (!anh) return '/default-player.jpg';                  // ảnh mặc định nếu không có
+  if (anh.startsWith('http') || anh.startsWith('data:image')) return anh; // ảnh URL hoặc Base64
+  return `/${anh}`;                                   // ảnh từ public/data
 };
 
+// --- Hàm fetch chi tiết cầu thủ ---
 const fetchPlayer = async () => {
+  loading.value = true;
   try {
     const id = route.params.id;
     const res = await axios.get(`http://localhost:5000/nguoidung/${id}`);
@@ -80,14 +83,17 @@ const fetchPlayer = async () => {
   }
 };
 
+// --- Hàm format ngày ---
 const formatDate = (dateString) => {
   if (!dateString) return 'Không rõ';
   const date = new Date(dateString);
   return date.toLocaleDateString('vi-VN');
 };
 
+// --- Lifecycle ---
 onMounted(fetchPlayer);
 </script>
+
 
 <style scoped>
 /* Toàn trang */

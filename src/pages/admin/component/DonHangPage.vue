@@ -116,16 +116,24 @@ export default {
         console.error("Lỗi tải đơn hàng:", err);
       }
     },
+
     xacNhan(id) {
       const order = this.orders.find((o) => o._id === id);
       if (order) order.status = "Đã xác nhận";
     },
+
     huyXacNhan(id) {
       const order = this.orders.find((o) => o._id === id);
       if (order) order.status = "Chờ xác nhận";
     },
+
+    // ✅ Hàm xử lý ảnh linh hoạt
     getImageUrl(path) {
-      return `http://localhost:3000/uploads/${path}`;
+      if (!path || path.trim() === "") {
+        return "https://via.placeholder.com/100x100?text=No+Image"; // fallback
+      }
+      if (path.startsWith("http") || path.startsWith("data:image")) return path; // URL/Base64
+      return `/${path}`; // ảnh từ public/data
     },
   },
   mounted() {
@@ -133,6 +141,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .orders-admin-page {
