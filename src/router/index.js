@@ -14,6 +14,9 @@ import Cart from "@/pages/user/player/Cart.vue";
 import checkout from "@/pages/user/player/checkout.vue";
 import orders from "@/pages/user/player/orders.vue";
 
+import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue"
+import donhang from "@/pages/admin/component/DonHangPage.vue"
+
 import axios from "axios";
 const userRouter = [
   {
@@ -75,6 +78,14 @@ const adminRouter = [
     name: "Thống kê",
     component: UserManagement,
     meta: { admin: true },
+  },
+  {
+    path: "/admin/qualuuniem",
+    component: qualuuniem,
+  },
+  {
+    path : "/admin/donhang",
+    component : donhang,
   },
 ];
 const routes = [...userRouter, ...adminRouter];

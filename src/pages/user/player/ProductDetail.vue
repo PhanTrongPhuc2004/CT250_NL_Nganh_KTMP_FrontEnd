@@ -81,7 +81,7 @@ export default {
 <style scoped>
 .product-detail {
   min-height: 100vh;
-  background: linear-gradient(135deg, #42275a, #734b6d);
+  background: linear-gradient(135deg, #236792, #734b6d);
   display: flex;
   justify-content: center;
   align-items: center;
