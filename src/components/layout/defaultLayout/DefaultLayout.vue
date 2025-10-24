@@ -37,6 +37,19 @@ watch(
       <Footer />
     </div>
 
+    <!-- cauthu -->
+    <div
+      v-if="toRaw(props.user).vaiTro?.toLowerCase() === 'cauthu'"
+      class="default-layout"
+    >
+      <Header />
+      <main class="content" style="margin-top: var(--header-height)">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+
+
     <!-- Admin -->
     <div
       v-else-if="toRaw(props.user).vaiTro?.toLowerCase() === 'admin'"

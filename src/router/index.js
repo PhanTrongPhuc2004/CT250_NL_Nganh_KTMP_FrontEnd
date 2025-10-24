@@ -1,10 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router";
 // Import các component bạn muốn điều hướng
 import Home from "@/pages/user/home/Home.vue";
-import Player from "@/pages/user/player/Player.vue";
+import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
+import CauthuList from "@/pages/user/player/CauthuList.vue";
 import Sticket from "@/pages/user/sticket/Sticket.vue";
 import UserManagement from "@/pages/admin/userManagement/UserManagement.vue";
 import { useUserStore } from "@/stores/userStore";
+import ProfilePage from '@/pages/user/player/ProfilePage.vue';
+
+import Shop from "@/pages/user/player/Shop.vue";
+import ProductDetail from "@/pages/user/player/ProductDetail.vue";
+import Cart from "@/pages/user/player/Cart.vue";
+import checkout from "@/pages/user/player/checkout.vue";
+import orders from "@/pages/user/player/orders.vue";
+
 import axios from "axios";
 const userRouter = [
   {
@@ -12,15 +21,27 @@ const userRouter = [
     name: "Trang chủ",
     component: Home,
   },
-  {
-    path: "/cau-thu",
-    name: "Cầu thủ",
-    component: Player,
-  },
+  { path: "/cauthu",
+    name: "Cầu Thủ",
+    component: CauthuList },
+  { path: "/cauthu/:id", 
+    component: CauthuDetail },
   {
     path: "/ve",
     name: "Vé",
     component: Sticket,
+  },
+  { path: "/shop", component: Shop, name: "Shop" },
+  { path: "/shop/:id", component: ProductDetail },
+  { path: "/cart", component: Cart,},
+  { path: '/checkout', component: checkout },
+  { path: '/orders', component: orders },
+
+  {
+    path: '/profile',
+    // name: 'Thông tin cá nhân',
+    component: ProfilePage,
+    meta: { requiresAuth: true }, // nếu bạn muốn bảo vệ route này
   },
 ];
 const adminRouter = [
