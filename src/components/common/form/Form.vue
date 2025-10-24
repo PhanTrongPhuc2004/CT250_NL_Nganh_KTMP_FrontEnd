@@ -13,6 +13,7 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+
   method: {
     type: String,
     default: "POST",
@@ -28,6 +29,10 @@ const props = defineProps({
   vaiTro: {
     type: String,
     default: "nguoihammo",
+  },
+  modalId: {
+    type: String,
+    default: "",
   },
 });
 
@@ -51,6 +56,12 @@ const handleSubmit = async () => {
     if (props.formName == "Đăng nhập") {
       window.location.reload();
     }
+    const modalElement = document.getElementById(props.modalId);
+    console.log(modalElement);
+    if (modalElement) {
+      const modal = bootstrap.Modal.getInstance(modalElement);
+      if (modal) modal.hide();
+    }
   } catch (error) {
     alert("Có lỗi xảy ra");
     console.error(error);
@@ -58,23 +69,27 @@ const handleSubmit = async () => {
 };
 </script>
 <template>
-  <form @submit.prevent="handleSubmit" :class="cx('form-container')">
-    <h2 :class="cx('form-name')">{{ formName }}</h2>
-    <div
-      v-for="(field, index) in inputFields"
-      :key="index"
-      :class="cx('form-group')"
-    >
-      <label :for="field.name">{{ field.label }}</label>
-      <input
-        v-model="formData[field.name]"
-        :id="field.name"
-        :name="field.name"
-        :type="field.type || 'text'"
-        :class="cx('form-control')"
-        required
-      />
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <form @submit.prevent="handleSubmit" :class="cx('form-container')">
+        <h2 :class="cx('form-name')">{{ formName }}</h2>
+        <div
+          v-for="(field, index) in inputFields"
+          :key="index"
+          :class="cx('form-group')"
+        >
+          <label :for="field.name">{{ field.label }}</label>
+          <input
+            v-model="formData[field.name]"
+            :id="field.name"
+            :name="field.name"
+            :type="field.type || 'text'"
+            :class="cx('form-control')"
+            required
+          />
+        </div>
+        <button type="submit" :class="cx('btn-submit')">Gửi</button>
+      </form>
     </div>
-    <button type="submit" :class="cx('btn-submit')">Gửi</button>
-  </form>
+  </div>
 </template>

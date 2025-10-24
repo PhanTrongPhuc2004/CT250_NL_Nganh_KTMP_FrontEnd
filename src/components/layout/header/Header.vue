@@ -2,7 +2,7 @@
 import classNames from "classnames/bind";
 import styles from "./header.module.scss";
 import { useRouter } from "vue-router";
-import Form from "@/components/form/Form.vue";
+import Form from "@/components/common/form/Form.vue";
 import { useUserStore } from "@/stores/userStore";
 import { watchEffect } from "vue";
 const userStore = useUserStore();
@@ -91,29 +91,21 @@ console.log(userRoutes);
 
   <!-- Modal Đăng ký -->
   <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-3">
-        <Form
-          :inputFields="registerFields"
-          method="POST"
-          api="http://localhost:5000/nguoidung"
-          :form-name="'Đăng ký'"
-        />
-      </div>
-    </div>
+    <Form
+      :inputFields="registerFields"
+      method="POST"
+      api="http://localhost:5000/nguoidung"
+      :form-name="'Đăng ký'"
+    />
   </div>
 
   <!-- Modal Đăng nhập -->
   <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-3">
-        <Form
-          :inputFields="loginFields"
-          method="POST"
-          api="http://localhost:5000/nguoidung/login"
-          :form-name="'Đăng nhập'"
-        />
-      </div>
-    </div>
+    <Form
+      :inputFields="loginFields"
+      method="POST"
+      api="http://localhost:5000/nguoidung/login"
+      :form-name="'Đăng nhập'"
+    />
   </div>
 </template>

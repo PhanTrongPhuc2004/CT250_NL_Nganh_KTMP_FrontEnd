@@ -2,16 +2,16 @@
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
 const cx = classNames.bind(styles);
-import Match from "@/components/match/Match.vue";
+import Match from "@/components/common/match/Match.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import New from "@/components/new/New.vue";
-import PlayerCard from "@/components/plauerCard/PlayerCard.vue";
+import New from "@/components/common/new/New.vue";
+import PlayerCard from "@/components/common/plauerCard/PlayerCard.vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/autoplay";
 import { Autoplay } from "swiper/modules";
-import SouvenirCard from "@/components/souvenirCard/SouvenirCard.vue";
-import Form from "@/components/form/Form.vue";
+import SouvenirCard from "@/components/common/souvenirCard/SouvenirCard.vue";
+import Form from "@/components/common/form/Form.vue";
 const handleBookSticket = () => {
   alert("Chức năng đặt vé sẽ sớm được cập nhật!");
 };

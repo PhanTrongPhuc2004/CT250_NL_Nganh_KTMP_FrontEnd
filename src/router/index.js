@@ -31,15 +31,38 @@ const adminRouter = [
     meta: { admin: true },
   },
   {
+    path: "/admin/clubs",
+    name: "Quản lý thông tin câu lạc bộ",
+    component: UserManagement,
+    meta: { admin: true },
+  },
+  {
     path: "/admin/users",
     name: "Quản lý người dùng",
     component: UserManagement,
     meta: { admin: true },
   },
-
+  {
+    path: "/admin/tournaments",
+    name: "Quản lý giải đấu",
+    component: UserManagement,
+    meta: { admin: true },
+  },
   {
     path: "/admin/matches",
     name: "Quản lý trận đấu",
+    component: UserManagement,
+    meta: { admin: true },
+  },
+  {
+    path: "/admin/posts",
+    name: "Quản lý bài viết",
+    component: UserManagement,
+    meta: { admin: true },
+  },
+  {
+    path: "/admin/merchandise",
+    name: "Quản lý hàng lưu niệm",
     component: UserManagement,
     meta: { admin: true },
   },
@@ -71,10 +94,10 @@ router.beforeEach(async (to, from) => {
     const user = res.data;
     const vaiTro = user.vaiTro;
     console.log(vaiTro);
-    if (to.meta?.admin && vaiTro !== "Admin") {
+    if (to.meta?.admin && vaiTro !== "admin") {
       return "/";
     }
-    if (!to.meta?.admin && vaiTro == "Admin") {
+    if (!to.meta?.admin && vaiTro == "admin") {
       return "/admin";
     }
   } catch (err) {

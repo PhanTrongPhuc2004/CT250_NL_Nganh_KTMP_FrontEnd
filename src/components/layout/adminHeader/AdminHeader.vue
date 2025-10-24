@@ -2,7 +2,7 @@
 import classNames from "classnames/bind";
 import styles from "./adminHeader.module.scss";
 import { useRouter } from "vue-router";
-import Form from "@/components/form/Form.vue";
+import Form from "@/components/common/form/Form.vue";
 import { useUserStore } from "@/stores/userStore";
 import { watchEffect } from "vue";
 const userStore = useUserStore();

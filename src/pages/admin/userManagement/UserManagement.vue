@@ -3,18 +3,78 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./userManagement.module.scss";
+import Form from "@/components/common/form/Form.vue";
+import { useFormStore } from "@/stores/formStore";
+import { nextTick } from "vue";
+const formStore = useFormStore();
+const { openForm, closeForm } = formStore;
+
 const cx = classNames.bind(styles);
 const users = ref([]);
+const activeForm = ref("");
+const adminFields = [
+  { name: "hoVaTen", type: "text", label: "Họ và tên" },
+  { name: "email", type: "email", label: "Email" },
+  { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
+  { name: "matKhau", type: "password", label: "Mật khẩu" },
+  { name: "diaChi", type: "text", label: "Địa chỉ" },
+];
+const nguoiHamMoFields = [
+  { name: "hoVaTen", type: "text", label: "Họ và tên" },
+  { name: "email", type: "email", label: "Email" },
+  { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
+  { name: "matKhau", type: "password", label: "Mật khẩu" },
+];
+const cauThuFields = [
+  { name: "hoVaTen", type: "text", label: "Họ và tên" },
+  { name: "email", type: "email", label: "Email" },
+  { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
+  { name: "matKhau", type: "password", label: "Mật khẩu" },
+  { name: "diaChi", type: "text", label: "Địa chỉ" },
+  { name: "namHanhNghe", type: "text", label: "Năm hành nghề" },
+  { name: "cauLacBoCu", type: "text", label: "Câu lạc bộ cũ" },
+  { name: "chieuCao", type: "number", step: "0.01", label: "Chiều cao (m)" },
+  { name: "viTri", type: "text", label: "Vị trí" },
+  { name: "chanThuan", type: "text", maxlength: 1, label: "Chân thuận" },
+  { name: "quocTich", type: "text", label: "Quốc tịch" },
+  { name: "soAo", type: "number", label: "Số áo" },
+  { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
+  { name: "anhMinhHoa", type: "text", label: "Ảnh minh họa (URL)" },
+  { name: "namSinh", type: "number", label: "Năm sinh" },
+];
+const huanLuyenVienFields = [
+  { name: "diaChi", type: "text", label: "Địa chỉ" },
+  { name: "namHanhNghe", type: "text", label: "Năm hành nghề" },
+  { name: "cauLacBoCu", type: "text", label: "Câu lạc bộ cũ" },
+  { name: "quocTich", type: "text", label: "Quốc tịch" },
+  { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
+  { name: "anhMinhHoa", type: "text", label: "Ảnh minh họa" },
+  { name: "vaiTro", type: "text", label: "Vai trò" },
+  { name: "namSinh", type: "number", label: "Năm sinh" },
+];
 
+const dataObj = {
+  admin: {
+    fields: adminFields,
+    api: "http://localhost:5000/nguoidung",
+  },
+  nguoihammo: {
+    fields: nguoiHamMoFields,
+    api: "http://localhost:5000/nguoidung",
+  },
+  cauthu: {
+    fields: cauThuFields,
+    api: "http://localhost:5000/nguoidung",
+  },
+  huanluyenvien: {
+    fields: huanLuyenVienFields,
+    api: "http://localhost:5000/nguoidung",
+  },
+};
 // Form state
 const formMode = ref("add"); // "add" | "edit"
 const formData = ref({
   _id: null,
-  hoVaTen: "",
-  email: "",
-  tenDangNhap: "",
-  matKhau: "",
-  vaiTro: "fan",
 });
 
 // Modal state
@@ -23,10 +83,11 @@ const showForm = ref(false);
 // Fetch danh sách người dùng
 async function fetchUsers() {
   try {
-    const response = await axios.get("http://localhost:5000/nguoidung/all", {
+    const response = await axios.get("http://localhost:5000/nguoidung/", {
       withCredentials: true,
     });
     users.value = response.data;
+    console.log(users.value);
   } catch (error) {
     console.error("Lỗi khi lấy danh sách người dùng:", error);
   }
@@ -74,18 +135,29 @@ async function deleteUser(id) {
 }
 
 // Mở form thêm hoặc sửa
-function openForm(mode, user = null) {
+async function handleOpenForm(mode, vaiTro) {
   formMode.value = mode;
-  if (mode === "edit" && user) {
-    formData.value = { ...user };
-  } else {
-    resetForm();
+  formData.value.vaiTro = vaiTro;
+
+  console.log("Vai trò:", formData.value.vaiTro);
+  console.log("Trường:", dataObj[formData.value.vaiTro].fields);
+
+  // Chờ Vue render xong Form và Modal
+  await nextTick();
+
+  const modalEl = document.getElementById("addAdminModal");
+  if (!modalEl) {
+    console.error("Không tìm thấy modal element!");
+    return;
   }
-  showForm.value = true;
+
+  // Khởi tạo modal
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
 }
 
 // Đóng form
-function closeForm() {
+function handleCloseForm() {
   showForm.value = false;
 }
 
@@ -110,9 +182,16 @@ onMounted(() => {
   <div class="container mt-4">
     <h2>Danh sách người dùng</h2>
 
-    <button class="btn btn-primary mb-3" @click="openForm('add')">
-      Thêm người dùng
-    </button>
+    <select
+      class="form-select mb-3 w-auto"
+      @change="handleOpenForm('add', $event.target.value)"
+    >
+      <option value="">-- Thêm người dùng --</option>
+      <option value="nguoihammo">Người hâm mộ</option>
+      <option value="admin">Quản trị viên</option>
+      <option value="cauthu">Cầu thủ</option>
+      <option value="huanluyenvien">Huấn luyện viên</option>
+    </select>
 
     <table class="table table-striped table-bordered">
       <thead class="table-dark">
@@ -151,82 +230,24 @@ onMounted(() => {
       Không có người dùng nào.
     </p>
 
-    <!-- Modal & Backdrop -->
-    <div v-if="showForm">
-      <!-- Backdrop mờ -->
-      <div :class="cx('modal-backdrop')" @click="closeForm"></div>
-
-      <!-- Form modal -->
-      <div :class="cx('modal-dialog')">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              {{ formMode === "add" ? "Thêm người dùng" : "Sửa người dùng" }}
-            </h5>
-            <button type="button" class="btn-close" @click="closeForm"></button>
-          </div>
-          <div class="modal-body">
-            <form
-              @submit.prevent="formMode === 'add' ? addUser() : updateUser()"
-            >
-              <div class="mb-3">
-                <label class="form-label">Họ và tên</label>
-                <input
-                  type="text"
-                  v-model="formData.hoVaTen"
-                  class="form-control"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input
-                  type="email"
-                  v-model="formData.email"
-                  class="form-control"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Tên đăng nhập</label>
-                <input
-                  type="text"
-                  v-model="formData.tenDangNhap"
-                  class="form-control"
-                  required
-                />
-              </div>
-              <div class="mb-3" v-if="formMode === 'add'">
-                <label class="form-label">Mật khẩu</label>
-                <input
-                  type="password"
-                  v-model="formData.matKhau"
-                  class="form-control"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Vai trò</label>
-                <select v-model="formData.vaiTro" class="form-select">
-                  <option value="fan">Fan</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-success me-2">
-                  {{ formMode === "add" ? "Thêm" : "Cập nhật" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  @click="closeForm"
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+    <!-- Modal Form -->
+    <div :class="cx('user-management-form-wrapper')">
+      <div
+        class="modal fade"
+        id="addAdminModal"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <Form
+          v-if="formData.vaiTro && dataObj[formData.vaiTro]"
+          :input-fields="dataObj[formData.vaiTro].fields"
+          form-name="Thêm Quản Trị Viên"
+          :mode="formMode"
+          :formData="formData"
+          api="http://localhost:5000/nguoidung"
+          method="post"
+          modal-id="addAdminModal"
+        />
       </div>
     </div>
   </div>

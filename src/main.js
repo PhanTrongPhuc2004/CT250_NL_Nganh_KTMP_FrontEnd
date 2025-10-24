@@ -1,11 +1,15 @@
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-vue-3/dist/bootstrap-vue-3.css";
-import BootstrapVue3 from "bootstrap-vue-3";
 import { createApp } from "vue";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-vue-3/dist/bootstrap-vue-3.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js"; // 👈 thêm dòng này
+import * as bootstrap from "bootstrap"; // 👈 thêm dòng này
+window.bootstrap = bootstrap; // 👈 và dòng này
+import BootstrapVue3 from "bootstrap-vue-3";
+
 import App from "./App.vue";
 import router from "./router";
 
-// import icon
+// FontAwesome
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
@@ -13,20 +17,16 @@ import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 // Pinia
 import { createPinia } from "pinia";
 
+// --- App setup ---
 const app = createApp(App);
 
 // FontAwesome
 library.add(faAngleRight);
 app.component("font-awesome-icon", FontAwesomeIcon);
 
-// BootstrapVue3
+// Plugins
 app.use(BootstrapVue3);
-
-// Pinia
-const pinia = createPinia();
-app.use(pinia);
-
-// Router
+app.use(createPinia());
 app.use(router);
 
 app.mount("#app");
