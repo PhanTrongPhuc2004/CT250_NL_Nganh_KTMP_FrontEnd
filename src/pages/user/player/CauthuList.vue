@@ -1,6 +1,6 @@
 <template>
   <div class="player-list-page">
-    <h1>⚽ Danh sách Cầu thủ</h1>
+    <h1>Danh sách Cầu thủ</h1>
 
     <div v-if="loading" class="loading">Đang tải dữ liệu...</div>
 
@@ -62,10 +62,9 @@ onMounted(fetchPlayers);
 <style scoped>
 .player-list-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #912e82, #6c1818, #931616);
+  background: linear-gradient(135deg, #c5b5b9);
   padding: 40px 20px;
-  text-align: center;
-  color: #fff;
+  color: #333;
 }
 
 /* Tiêu đề */
@@ -73,7 +72,7 @@ onMounted(fetchPlayers);
   font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 30px;
-  color: #ffffff;
+  color: #333;
   text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 

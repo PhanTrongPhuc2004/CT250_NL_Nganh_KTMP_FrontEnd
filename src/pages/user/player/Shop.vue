@@ -2,8 +2,8 @@
   <div class="shop-page">
     <div class="shop-container">
       <div class="shop-header">
-        <h1>🛒 Cửa hàng Quà Lưu Niệm</h1>
-        <button class="order-btn" @click="$router.push('/orders')">
+        <h1>Cửa hàng Quà Lưu Niệm</h1>
+        <button class="cart-btn" @click="$router.push('/orders')">
           📋 Đơn hàng
         </button>
         <button class="cart-btn" @click="$router.push('/cart')">
@@ -82,9 +82,10 @@ export default {
   margin-bottom: 20px;
 }
 
+/* Nút giỏ hàng: nghiêm túc, hiện đại */
 .cart-btn {
-  background: linear-gradient(90deg, #ff6a00, #ee0979);
-  color: white;
+  background: linear-gradient(90deg, #2c3e50, #4ca1af); /* Xanh than -> xanh xám */
+  color: #fff;
   border: none;
   padding: 10px 20px;
   border-radius: 10px;
@@ -94,56 +95,64 @@ export default {
 }
 .cart-btn:hover {
   transform: scale(1.05);
+  opacity: 0.9;
 }
+
+/* Nền trang tổng thể */
 .shop-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #360808, #6d1b30);
+  background: linear-gradient(135deg, #dfe9f3, #ffffff); /* Xanh nhạt -> trắng */
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 40px;
 }
 
+/* Container chính */
 .shop-container {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   border-radius: 20px;
   padding: 40px;
   width: 95%;
   max-width: 1200px;
-  color: white;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  color: #333;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* Tiêu đề trang */
 h1 {
   font-size: 2.5rem;
   margin-bottom: 20px;
-  background: linear-gradient(90deg, #ffeb3b, #ff4081);
-  background-clip: text;
-  color: transparent;
+  color: #2c3e50; /* xanh than nghiêm túc */
+  font-weight: bold;
   text-align: center;
 }
 
+/* Lưới sản phẩm */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 25px;
 }
 
+/* Thẻ sản phẩm */
 .product-card {
-  background: rgba(255, 255, 255, 0.2);
+  background: #f8f9fa;
   border-radius: 15px;
   padding: 20px;
   text-align: center;
   transition: 0.3s;
   cursor: pointer;
+  border: 1px solid #e0e0e0;
 }
-
 .product-card:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.3);
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Ảnh sản phẩm */
 .product-image {
   width: 100%;
   height: 180px;
@@ -152,38 +161,18 @@ h1 {
   margin-bottom: 15px;
 }
 
+/* Tên sản phẩm */
 .product-name {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #fff;
+  color: #2c3e50;
 }
 
+/* Giá sản phẩm */
 .product-price {
   font-size: 1.1rem;
-  color: #ffe57f;
+  color: #16a085; /* xanh ngọc đậm, nổi bật nhưng vẫn nghiêm túc */
 }
-.order-btn {
-  background: linear-gradient(90deg, #3d76b7, #63679f);
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 400;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.order-btn:hover {
-  transform: scale(1.05);
-  background: linear-gradient(90deg, #e91e63, #7b1fa2);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-}
-
-.order-btn:active {
-  transform: scale(0.97);
-}
-
 </style>
+

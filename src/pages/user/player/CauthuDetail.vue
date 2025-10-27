@@ -103,7 +103,7 @@ onMounted(fetchPlayer);
   align-items: center;
   padding: 40px 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #872c8d, #5a1741, #a11c1c);
+  /* background: linear-gradient(135deg, #872c8d, #5a1741, #a11c1c); */
   background-size: 200% 200%;
   animation: gradientMove 8s ease infinite;
   color: #333;

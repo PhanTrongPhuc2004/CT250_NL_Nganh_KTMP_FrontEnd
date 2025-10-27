@@ -88,21 +88,27 @@ export default {
 
 <style scoped>
 .orders-page {
-  background: linear-gradient(135deg, #42275a, #734b6d);
-  color: white;
+  background: linear-gradient(135deg, #e0eafc, #cfdef3); /* xanh nhạt nhẹ nhàng */
+  color: #2c3e50; /* chữ xanh xám nghiêm túc */
   padding: 40px;
   min-height: 100vh;
 }
+
 .order-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dcdde1;
 }
+
 .loading {
   text-align: center;
   font-size: 1.2rem;
   margin-top: 30px;
+  color: #34495e;
 }
 </style>
+
