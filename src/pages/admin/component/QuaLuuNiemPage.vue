@@ -1,6 +1,6 @@
 <template>
   <div class="qua-luu-niem-page">
-    <h1>🎁 Quản lý Quà Lưu Niệm</h1>
+    <h1>Quản lý Quà Lưu Niệm</h1>
         <button class="order-btn" @click="$router.push('/admin/donhang')">
           📋 Đơn hàng
         </button>

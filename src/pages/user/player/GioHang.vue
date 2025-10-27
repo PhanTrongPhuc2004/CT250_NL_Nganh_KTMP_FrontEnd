@@ -29,8 +29,8 @@
       <h3 class="total">Tổng cộng: {{ totalAmount.toLocaleString() }}₫</h3>
 
       <div class="action-buttons">
-        <button class="clear-btn" @click="clearCart">🧹 Xóa giỏ hàng</button>
-        <button class="checkout-btn" @click="goToCheckout">💳 Thanh toán</button>
+        <button class="clear-btn" @click="clearCart">Xóa giỏ hàng</button>
+        <button class="checkout-btn" @click="goToCheckout">Thanh toán</button>
       </div>
     </div>
 
