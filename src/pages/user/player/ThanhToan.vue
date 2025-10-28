@@ -28,11 +28,11 @@ export default {
   name: "CheckoutPage",
   data() {
     const user = JSON.parse(localStorage.getItem("user"));
-    const username = user?.tenDangNhap || "guest";
+    const tenDangNhap = user?.tenDangNhap || "guest";
     return {
-      username,
+      tenDangNhap,
       order: { name: "", phone: "", address: "" },
-      cart: JSON.parse(localStorage.getItem(`cart_${username}`)) || [],
+      cart: JSON.parse(localStorage.getItem(`cart_${tenDangNhap}`)) || [],
       loading: false,
     };
   },
@@ -54,7 +54,7 @@ export default {
       this.loading = true;
 
       const newOrder = {
-        username: this.username,
+        tenDangNhap: this.tenDangNhap,
         ...this.order,
         cart: this.cart,
         total: this.totalAmount,
@@ -66,7 +66,7 @@ export default {
         await axios.post("http://localhost:5000/donhang", newOrder);
 
         // 🧹 Xóa giỏ hàng localStorage sau khi lưu thành công
-        localStorage.removeItem(`cart_${this.username}`);
+        localStorage.removeItem(`cart_${this.tenDangNhap}`);
 
         alert("🎉 Đơn hàng của bạn đã được thanh toán và lưu thành công!");
         this.$router.push("/orders");

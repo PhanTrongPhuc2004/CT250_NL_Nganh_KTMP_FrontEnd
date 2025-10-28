@@ -3,8 +3,10 @@ import { reactive } from "vue";
 import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./form.module.scss";
+
 import { useUserStore } from "@/stores/userStore";
 
+const userStore = useUserStore();
 const cx = classNames.bind(styles);
 
 // Props
@@ -48,9 +50,20 @@ const handleSubmit = async () => {
       data: { ...formData, vaiTro: props.vaiTro },
       withCredentials: true,
     });
-    if (props.formName == "Đăng nhập") {
+    // if (props.formName == "Đăng nhập") {
+    //   window.location.reload();
+    // }
+
+
+    if (props.formName === "Đăng nhập") {
+      // 🧠 Lưu người dùng vào store và localStorage
+      userStore.setUser(response.data.user || response.data);
+      localStorage.setItem("user", JSON.stringify(response.data.user || response.data));
+
+      // 🔄 Reload lại trang để cập nhật giao diện
       window.location.reload();
     }
+
   } catch (error) {
     alert("Có lỗi xảy ra");
     console.error(error);

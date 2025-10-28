@@ -23,7 +23,7 @@
             >
               <img
                 v-if="item.anhMinhHoa"
-                :src="getImageUrl(item.anhMinhHoa)"
+                :src="resolveImage(item.anhMinhHoa)"
                 alt="Ảnh quà"
                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 8px;"
               />
@@ -41,22 +41,57 @@
 
 <script>
 import axios from "axios";
+import { useUserStore } from "@/stores/userStore";
 
 export default {
   name: "OrdersPage",
   data() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const username = user?.tenDangNhap || "guest";
+    const userStore = useUserStore();
+    let user = userStore.user;
+
+    // Nếu Pinia chưa có user (reload trang)
+    if (!user) {
+      user = JSON.parse(localStorage.getItem("user"));
+    }
+
     return {
-      username,
+      user,
       orders: [],
       loading: true,
     };
   },
+
+  async mounted() {
+    const userStore = useUserStore();
+
+    // Nếu chưa có user trong Pinia → kiểm tra lại session
+    if (!userStore.user) {
+      if (userStore.checkAuth) {
+        await userStore.checkAuth();
+      }
+      this.user = userStore.user || JSON.parse(localStorage.getItem("user"));
+    }
+
+    await this.fetchOrders();
+  },
+
   methods: {
     async fetchOrders() {
+      console.log("📦 USER object:", this.user);
+
+      const username = this.user?.tenDangNhap || this.user?.username;
+      console.log("🔑 Username dùng để fetch:", username);
+
+      if (!username) {
+        this.loading = false;
+        alert("⚠️ Vui lòng đăng nhập để xem đơn hàng của bạn!");
+        return;
+      }
+
       try {
-        const res = await axios.get(`http://localhost:5000/donhang/${this.username}`);
+        const res = await axios.get(`http://localhost:5000/donhang/${username}`);
+        console.log("📦 Dữ liệu đơn hàng nhận được:", res.data);
+
         this.orders = res.data;
       } catch (err) {
         console.error("❌ Lỗi khi tải đơn hàng:", err);
@@ -66,30 +101,29 @@ export default {
       }
     },
 
-    // ✅ Hàm xử lý ảnh linh hoạt
-    getImageUrl(path) {
-      if (!path) return "https://via.placeholder.com/100x100?text=No+Image"; // ảnh mặc định
-      if (path.startsWith("http") || path.startsWith("data:image")) return path;
-      return `/${path}`; // ảnh từ public/data
+    formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
     },
 
-    formatDate(date) {
-      if (!date) return "Không rõ";
-      const d = new Date(date);
-      return d.toLocaleString("vi-VN");
+    // ✅ Hàm xử lý hiển thị ảnh linh hoạt
+    resolveImage(anh) {
+      if (!anh) return "/default-player.jpg"; // ảnh mặc định
+      if (anh.startsWith("http") || anh.startsWith("data:image")) return anh;
+      return anh; // nếu là đường dẫn /data/... thì Vue sẽ tự lấy từ public/
     },
-  },
-  mounted() {
-    this.fetchOrders();
   },
 };
 </script>
 
-
 <style scoped>
 .orders-page {
-  background: linear-gradient(135deg, #e0eafc, #cfdef3); /* xanh nhạt nhẹ nhàng */
-  color: #2c3e50; /* chữ xanh xám nghiêm túc */
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  color: #2c3e50;
   padding: 40px;
   min-height: 100vh;
 }
@@ -111,4 +145,3 @@ export default {
   color: #34495e;
 }
 </style>
-
