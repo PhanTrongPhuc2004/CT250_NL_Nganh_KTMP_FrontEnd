@@ -108,9 +108,15 @@ const adminRouter = [
     meta: { admin: true },
   },
   {
-    path: "/admin/merchandise",
+    path: "/admin/qualuuniem",
     name: "Quản lý hàng lưu niệm",
-    component: UserManagement,
+    component: qualuuniem,
+    meta: { admin: true },
+  },
+  {
+    path: "/admin/qualuuniem/donhang",
+    component: donhang,
+    name: "Quản lý đơn hàng",
     meta: { admin: true },
   },
   {
