@@ -134,16 +134,12 @@ onMounted(async () => {
     <div :class="cx('container', 'home-body')">
       <div>
         <h1>Tran dau gan day</h1>
-        <div
-          class="d-flex flex-wrap gap-3 align-items-center justify-content-center flex-direction-row w-100"
-        >
-          <div
+        <div class="d-flex flex-wrap gap-3">
+          <PlayerCard
             v-for="(match, index) in matchList"
-            :key="match._id || index"
-            :class="cx('recent-matches ')"
-          >
-            <PlayerCard :item="match" type="match" />
-          </div>
+            :item="match"
+            type="match"
+          />
         </div>
       </div>
 

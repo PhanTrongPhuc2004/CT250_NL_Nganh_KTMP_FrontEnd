@@ -125,6 +125,12 @@ const adminRouter = [
     component: UserManagement,
     meta: { admin: true },
   },
+  {
+    path: "/admin/compete/seasons/:id/tournaments/:tournamentId",
+    name: "Quản lý giải đấu",
+    component: TournamentDetail,
+    meta: { admin: true, hidden: true },
+  },
 ];
 const routes = [...userRouter, ...adminRouter, ...commonRouter];
 const router = createRouter({
