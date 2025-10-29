@@ -15,9 +15,7 @@ const props = defineProps({
 // log khi props.user thay đổi
 watch(
   () => props.user,
-  (newUser) => {
-    console.log("user vừa nhận:", toRaw(newUser));
-  },
+  (newUser) => {},
   { immediate: true } // log luôn giá trị hiện tại nếu có
 );
 </script>
@@ -31,7 +29,7 @@ watch(
       class="default-layout"
     >
       <Header />
-      <main class="content" style="margin-top: var(--header-height)">
+      <main class="content">
         <slot />
       </main>
       <Footer />
@@ -43,12 +41,11 @@ watch(
       class="default-layout"
     >
       <Header />
-      <main class="content" style="margin-top: var(--header-height)">
+      <main class="content">
         <slot />
       </main>
       <Footer />
     </div>
-
 
     <!-- Admin -->
     <div
@@ -63,7 +60,7 @@ watch(
   <!-- Nếu chưa có user thì hiển thị layout mặc định -->
   <div v-else class="default-layout">
     <Header />
-    <main class="content" style="margin-top: var(--header-height)"></main>
+    <main class="content"></main>
     <Footer />
   </div>
 </template>

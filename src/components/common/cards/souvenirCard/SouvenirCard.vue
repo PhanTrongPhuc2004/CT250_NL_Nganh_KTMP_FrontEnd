@@ -8,20 +8,12 @@ const props = defineProps({
   quaLuuNiem: {
     type: Object,
     required: true,
-    validator(value) {
-      return (
-        "maQuaLuuNiem" in value &&
-        "tenQuaLuuNiem" in value &&
-        "gia" in value &&
-        "anhMinhHoa" in value
-      );
-    },
   },
 });
 </script>
 
 <template>
-  <div :class="cx('souvenir-card col-md-3 col-sm-6')">
+  <div :class="cx('souvenir-card ')">
     <!-- Ảnh minh họa -->
     <img
       :src="props.quaLuuNiem.anhMinhHoa"

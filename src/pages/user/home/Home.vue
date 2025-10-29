@@ -2,169 +2,96 @@
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
 const cx = classNames.bind(styles);
-import Match from "@/components/common/match/Match.vue";
+import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import New from "@/components/common/new/New.vue";
-import PlayerCard from "@/components/common/plauerCard/PlayerCard.vue";
+import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/autoplay";
 import { Autoplay } from "swiper/modules";
-import SouvenirCard from "@/components/common/souvenirCard/SouvenirCard.vue";
+import SouvenirCard from "@/components/common/cards/souvenirCard/SouvenirCard.vue";
 import Form from "@/components/common/form/Form.vue";
+import { onMounted, ref } from "vue";
+import axios from "axios";
 const handleBookSticket = () => {
   alert("Chức năng đặt vé sẽ sớm được cập nhật!");
 };
-
-/*get api here */
+const souvenirList = ref([]);
+const matchList = ref([]);
+const postList = ref([]);
+const playerList = ref([]);
+const clubInfo = ref({});
 const tranDau = {
-  capDau: ["MU", "Real Madrid"],
-  thoiGianDienRa: "20:00, 05/10/2025",
+  capDau: ["Manchester United", "Chelsea"],
   diaDiem: "Sân Old Trafford",
+  thoiGianDienRa: "20:00, 15/08/2024",
 };
-/*get api tran dau gan day */
-const tranDauGanDay = [
-  {
-    capDau: ["MU", "Arsenal"],
-    thoiGianDienRa: "20:00, 28/09/2025",
-    diaDiem: "Sân Old Trafford",
-    ketQua: [2, 1],
-  },
-  {
-    capDau: ["MU", "Chelsea"],
-    thoiGianDienRa: "22:00, 20/09/2025",
-    diaDiem: "Sân Stamford Bridge",
-    ketQua: [2, 1],
-  },
-  {
-    capDau: ["MU", "Liverpool"],
-    thoiGianDienRa: "19:30, 15/09/2025",
-    diaDiem: "Sân Old Trafford",
-    ketQua: [2, 1],
-  },
-];
+onMounted(async () => {
+  //fetch infor club
+  const clubResponse = await axios.get("http://localhost:5000/caulacbo/");
+  clubInfo.value = clubResponse.data;
+  console.log("Club Info:", clubInfo.value);
+  // await fetchSouvenirList();
+  const souvenirListResponse = await axios.get(
+    "http://localhost:5000/qualuuniem"
+  );
+  souvenirList.value = souvenirListResponse.data;
+  // await fetchMatchList();
+  const matchListResponse = await axios.get("http://localhost:5000/trandau");
+  matchList.value = matchListResponse.data;
+  console.log("Match List:", matchList.value);
+  //PHUC
+  // await fetchPostList();
+  // const postListResponse = await axios.get("http://localhost:5000/baidang");
+  // postList.value = postListResponse.data;
+  // await fetchPlayerList();
+  const response = await axios.get("http://localhost:5000/cauthu/", {
+    withCredentials: true,
+  });
+  playerList.value = response.data;
+});
 
-/*get api bai dang  */
-const baiDangs = [
-  {
-    MaBaiDang: "BD001",
-    tieuDe: "Trận đấu kịch tính giữa MU và Chelsea",
-    noiDung:
-      "MU và Chelsea đã có một trận đấu hấp dẫn với nhiều pha bóng nguy hiểm. MU giành chiến thắng sát nút với tỉ số 2-1.",
-    ngayDang: "2025-10-01",
-    anhMinhHoa:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoRq-Ky0lsqls9nok2QYJ01yhH7YnN-rolfg&s",
-  },
-  {
-    MaBaiDang: "BD002",
-    tieuDe: "Real Madrid trở lại ngôi đầu bảng",
-    noiDung:
-      "Real Madrid đã đánh bại Barcelona trong trận siêu kinh điển, qua đó trở lại ngôi đầu bảng La Liga mùa giải 2025.",
-    ngayDang: "2025-09-28",
-    anhMinhHoa:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoRq-Ky0lsqls9nok2QYJ01yhH7YnN-rolfg&s",
-  },
-  {
-    MaBaiDang: "BD003",
-    tieuDe: "Liverpool chuẩn bị cho Champions League",
-    noiDung:
-      "HLV Jurgen Klopp khẳng định Liverpool đã sẵn sàng cho trận đấu quan trọng tại Champions League tuần tới.",
-    ngayDang: "2025-09-25",
-    anhMinhHoa:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoRq-Ky0lsqls9nok2QYJ01yhH7YnN-rolfg&s",
-  },
-  {
-    MaBaiDang: "BD004",
-    tieuDe: "Arsenal thắng đậm tại Premier League",
-    noiDung:
-      "Arsenal tiếp tục phong độ ấn tượng khi đánh bại đối thủ với tỉ số 4-0 trên sân nhà, khẳng định vị trí trong top 4.",
-    ngayDang: "2025-09-20",
-    anhMinhHoa:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoRq-Ky0lsqls9nok2QYJ01yhH7YnN-rolfg&s",
-  },
-];
-
-/*get api cầu thủ */
-const players = [
-  {
-    ten: "Cristiano Ronaldo",
-    viTri: "ST",
-    quocTich: "https://flagcdn.com/w40/pt.png", // Bồ Đào Nha
-    anhMinhHoa:
-      "//assets.manutd.com/AssetPicker/images/0/0/22/86/1464035/7_Mason_Mount1751376357453.webp",
-  },
-  {
-    ten: "Lionel Messi",
-    viTri: "RW",
-    quocTich: "https://flagcdn.com/w40/ar.png", // Argentina
-    anhMinhHoa:
-      "//assets.manutd.com/AssetPicker/images/0/0/22/86/1464035/7_Mason_Mount1751376357453.webp",
-  },
-  {
-    ten: "Kevin De Bruyne",
-    viTri: "CM",
-    quocTich: "https://flagcdn.com/w40/be.png", // Bỉ
-    anhMinhHoa:
-      "//assets.manutd.com/AssetPicker/images/0/0/22/86/1464035/7_Mason_Mount1751376357453.webp",
-  },
-  {
-    ten: "Virgil van Dijk",
-    viTri: "CB",
-    quocTich: "https://flagcdn.com/w40/nl.png", // Hà Lan
-    anhMinhHoa:
-      "//assets.manutd.com/AssetPicker/images/0/0/22/86/1464035/7_Mason_Mount1751376357453.webp",
-  },
-  {
-    ten: "David de Gea",
-    viTri: "GK",
-    quocTich: "https://flagcdn.com/w40/es.png", // Tây Ban Nha
-    anhMinhHoa:
-      "//assets.manutd.com/AssetPicker/images/0/0/22/86/1464035/7_Mason_Mount1751376357453.webp",
-  },
-];
-/*get api qua luu niem */
-const quaLuuNiemList = [
-  {
-    maQuaLuuNiem: "QLN001",
-    tenQuaLuuNiem: "Áo đấu Manchester United 2025",
-    gia: 1200000,
-    moTa: "Áo thi đấu chính thức mùa giải 2025, chất liệu thoáng mát, in logo MU.",
-    anhMinhHoa:
-      "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-  },
-  {
-    maQuaLuuNiem: "QLN002",
-    tenQuaLuuNiem: "Khăn choàng cổ MU",
-    gia: 250000,
-    moTa: "Khăn choàng cổ màu đỏ đen với logo Manchester United, thích hợp cổ vũ.",
-    anhMinhHoa:
-      "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-  },
-  {
-    maQuaLuuNiem: "QLN003",
-    tenQuaLuuNiem: "Bóng đá Manchester United",
-    gia: 550000,
-    moTa: "Quả bóng chính hãng in logo MU, chất liệu da PU, dùng để thi đấu và trưng bày.",
-    anhMinhHoa:
-      "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-  },
-  {
-    maQuaLuuNiem: "QLN004",
-    tenQuaLuuNiem: "Móc khóa logo MU",
-    gia: 80000,
-    moTa: "Móc khóa kim loại in nổi logo Manchester United, nhỏ gọn, tiện dụng.",
-    anhMinhHoa:
-      "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-  },
-  {
-    maQuaLuuNiem: "QLN005",
-    tenQuaLuuNiem: "Ly sứ MU",
-    gia: 150000,
-    moTa: "Ly sứ cao cấp in logo Manchester United, thích hợp dùng uống cà phê, trưng bày.",
-    anhMinhHoa:
-      "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-  },
-];
+//     maQuaLuuNiem: "QLN001",
+//     tenQuaLuuNiem: "Áo đấu Manchester United 2025",
+//     gia: 1200000,
+//     moTa: "Áo thi đấu chính thức mùa giải 2025, chất liệu thoáng mát, in logo MU.",
+//     anhMinhHoa:
+//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
+//   },
+//   {
+//     maQuaLuuNiem: "QLN002",
+//     tenQuaLuuNiem: "Khăn choàng cổ MU",
+//     gia: 250000,
+//     moTa: "Khăn choàng cổ màu đỏ đen với logo Manchester United, thích hợp cổ vũ.",
+//     anhMinhHoa:
+//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
+//   },
+//   {
+//     maQuaLuuNiem: "QLN003",
+//     tenQuaLuuNiem: "Bóng đá Manchester United",
+//     gia: 550000,
+//     moTa: "Quả bóng chính hãng in logo MU, chất liệu da PU, dùng để thi đấu và trưng bày.",
+//     anhMinhHoa:
+//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
+//   },
+//   {
+//     maQuaLuuNiem: "QLN004",
+//     tenQuaLuuNiem: "Móc khóa logo MU",
+//     gia: 80000,
+//     moTa: "Móc khóa kim loại in nổi logo Manchester United, nhỏ gọn, tiện dụng.",
+//     anhMinhHoa:
+//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
+//   },
+//   {
+//     maQuaLuuNiem: "QLN005",
+//     tenQuaLuuNiem: "Ly sứ MU",
+//     gia: 150000,
+//     moTa: "Ly sứ cao cấp in logo Manchester United, thích hợp dùng uống cà phê, trưng bày.",
+//     anhMinhHoa:
+//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
+//   },
+// ];
 </script>
 
 <template>
@@ -174,11 +101,17 @@ const quaLuuNiemList = [
       alt=""
       :class="cx('thumbnail')"
     />
-    <div :class="cx('slogan')">
-      <p>Manchester United</p>
-      <p>theater of the dreams</p>
+    <div :class="cx('slogan', 'col-md-5')">
+      {{ clubInfo[0]?.slogan }}
     </div>
   </div>
+  <p class="mt-2 text-muted">
+    {{
+      clubInfo.moTa ||
+      "The world's most successful football club, home to legends and dreams."
+    }}
+  </p>
+
   <div :class="cx('next-match')">
     <div>
       <div>
@@ -195,28 +128,29 @@ const quaLuuNiemList = [
       </div>
     </div>
     <div>
-      <font-awesome-icon :icon="['fas', 'angle-right']" :class="'display-3'" />
+      <FontAwesomeIcon :icon="['fas', 'angle-right']" :class="'display-3'" />
     </div>
   </div>
   <div :class="cx('home-wrapper')">
     <div :class="cx('container', 'home-body')">
       <div>
-        <div :class="cx('recent-matches')">
-          <Match
-            v-for="(match, index) in tranDauGanDay"
-            :key="index"
-            :match="match"
-          />
+        <h1>Tran dau gan day</h1>
+        <div
+          v-for="(match, index) in matchList"
+          :key="match._id || index"
+          :class="cx('recent-matches')"
+        >
+          <PlayerCard :item="match" type="match" />
         </div>
       </div>
 
-      <div :class="cx('recent-news')">
+      <!-- <div :class="cx('recent-news')">
         <New
-          v-for="(baiDang, index) in baiDangs"
+          v-for="(baiDang, index) in postList"
           :bai-dang="baiDang"
           :key="index"
         />
-      </div>
+      </div> -->
 
       <swiper
         :modules="[Autoplay]"
@@ -224,28 +158,62 @@ const quaLuuNiemList = [
         :space-between="20"
         :autoplay="{ delay: 2000, disableOnInteraction: false }"
         :loop="true"
-        class="mySwiper"
+        class="playerSlice"
       >
-        <swiper-slide v-for="(player, index) in players" :key="index">
-          <PlayerCard
-            :ten="player.ten"
-            :vi-tri="player.viTri"
-            :quoc-tich="player.quocTich"
-            :anh-minh-hoa="player.anhMinhHoa"
-            :so-ao="player.soAo"
-          />
+        <swiper-slide v-for="(player, index) in playerList" :key="index">
+          <PlayerCard :item="player" type="player" />
         </swiper-slide>
       </swiper>
-      <div>
-        <h2>Cửa hàng của chúng tôi</h2>
-        <div :class="cx('store-info d-flex flex-wrap gap-3')">
-          <SouvenirCard
-            v-for="(item, index) in quaLuuNiemList"
-            :key="index"
-            :qua-luu-niem="item"
-          />
-        </div>
-      </div>
+
+      <swiper
+        :modules="[Autoplay]"
+        :slides-per-view="4"
+        :space-between="20"
+        :autoplay="{ delay: 2000, disableOnInteraction: false }"
+        :loop="true"
+        class="souvenirSlice"
+      >
+        <swiper-slide v-for="(item, index) in souvenirList" :key="index">
+          <PlayerCard :item="item" type="souvenir" />
+        </swiper-slide>
+      </swiper>
     </div>
   </div>
+  <div class="sponsors mt-3">
+    <h6>Nhà tài trợ</h6>
+    <ul
+      class="sponsor-list list-unstyled d-flex flex-wrap gap-3 align-items-center justify-content-center"
+    >
+      <li v-for="(sponsor, index) in clubInfo[0]?.nhaTaiTro || []" :key="index">
+        <i class="fas fa-star text-warning me-1"></i>{{ sponsor.ten }}
+      </li>
+    </ul>
+  </div>
 </template>
+<style scoped>
+.sponsors h6 {
+  font-weight: 600;
+  color: #dc3545; /* đỏ nổi bật giống Bootstrap btn-danger */
+  margin-bottom: 0.75rem;
+}
+
+.sponsor-list li {
+  background-color: #343a40; /* xám đậm nền */
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+.sponsor-list li:hover {
+  background-color: #495057; /* sáng hơn khi hover */
+  transform: translateY(-2px);
+}
+
+.sponsor-list i {
+  font-size: 0.75rem;
+}
+</style>

@@ -1,6 +1,6 @@
 <script setup>
 import classNames from "classnames/bind";
-import styles from "./match.module.scss";
+import styles from "./matchCard.module.scss";
 const cx = classNames.bind(styles);
 
 defineProps({

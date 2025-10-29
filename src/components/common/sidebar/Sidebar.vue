@@ -15,13 +15,13 @@
     <!-- Danh sách menu -->
     <ul :class="cx('menu', 'nav flex-column')">
       <li
-        v-for="(item, index) in items"
+        v-for="(item, index) in visibleItems"
         :key="index"
         class="nav-item"
         :class="cx('menuItem')"
       >
         <RouterLink
-          :to="item.to"
+          :to="item.path"
           class="nav-link"
           :class="cx('link')"
           active-class="active"
@@ -30,7 +30,7 @@
           <span v-if="item.icon" :class="cx('icon')">
             <font-awesome-icon :icon="item.icon" />
           </span>
-          <span>{{ item.label }}</span>
+          <span>{{ item.name }}</span>
         </RouterLink>
       </li>
     </ul>
@@ -42,7 +42,7 @@ import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import classNames from "classnames/bind";
 import styles from "./sidebar.module.scss";
-
+import { computed } from "vue";
 const cx = classNames.bind(styles);
 
 const props = defineProps({
@@ -53,6 +53,10 @@ const props = defineProps({
 });
 
 const isOpen = ref(false);
+
+const visibleItems = computed(() =>
+  props.items.filter((item) => !item.meta || !item.meta.hidden)
+);
 
 const toggleSidebar = () => {
   isOpen.value = !isOpen.value;

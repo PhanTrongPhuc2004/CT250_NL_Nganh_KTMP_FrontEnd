@@ -1,61 +1,82 @@
+<script setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
+
+const clubInfo = ref({});
+
+onMounted(async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/caulacbo/");
+    // API trả về mảng, lấy phần tử đầu tiên
+    clubInfo.value = response.data[0] || {};
+  } catch (error) {
+    console.error("Fetch club info error:", error);
+  }
+});
+</script>
+
 <template>
   <footer class="footer bg-dark text-light pt-5 pb-3 mt-5">
     <div class="container">
       <div class="row">
-        <!-- Giới thiệu -->
+        <!-- Giới thiệu CLB -->
         <div class="col-md-3 mb-4">
           <div class="d-flex align-items-center mb-3">
             <img
-              src="https://media.api-sports.io/football/teams/33.png"
+              :src="
+                clubInfo.logo ||
+                'https://media.api-sports.io/football/teams/33.png'
+              "
               alt="logo"
               width="50"
-              class="me-2"
+              class="me-2 rounded-circle border border-light"
             />
-            <h5 class="mb-0 fw-bold">Manchester United</h5>
+            <h5 class="mb-0 fw-bold">
+              {{ clubInfo.ten || "Manchester United" }}
+            </h5>
           </div>
           <p class="small text-muted">
-            The world's most successful football club, home to legends and
-            dreams.
+            {{
+              clubInfo.moTa ||
+              "The world's most successful football club, home to legends and dreams."
+            }}
           </p>
-          <div class="d-flex gap-3 mt-3 fs-5">
-            <a href="#" class="text-light"><i class="fab fa-facebook"></i></a>
-            <a href="#" class="text-light"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="text-light"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="text-light"><i class="fab fa-youtube"></i></a>
-            <a href="#" class="text-light"><i class="fab fa-tiktok"></i></a>
-            <a href="#" class="text-light"><i class="fab fa-linkedin"></i></a>
-          </div>
         </div>
 
         <!-- Liên hệ -->
         <div class="col-md-3 mb-4">
           <h6 class="fw-bold text-danger">Contact Us</h6>
           <ul class="list-unstyled small">
-            <li><i class="fas fa-envelope me-2"></i> info@manutd.com</li>
-            <li><i class="fas fa-phone me-2"></i> +44 161 868 8000</li>
             <li>
-              <i class="fas fa-map-marker-alt me-2"></i> Old Trafford Stadium,
-              Sir Matt Busby Way, Manchester, UK
+              <i class="fas fa-envelope me-2"></i>
+              {{ clubInfo.lienHe?.email || "info@manutd.com" }}
+            </li>
+            <li>
+              <i class="fas fa-phone me-2"></i>
+              {{ clubInfo.lienHe?.soDienThoai || "+44 161 868 8000" }}
+            </li>
+            <li>
+              <i class="fas fa-map-marker-alt me-2"></i>
+              {{ clubInfo.sanNha?.ten || "Old Trafford Stadium" }},
+              {{ clubInfo.sanNha?.diaChi || "Manchester, UK" }}
             </li>
           </ul>
         </div>
 
-        <!-- Hỗ trợ -->
+        <!-- Nhà tài trợ -->
         <div class="col-md-3 mb-4">
-          <h6 class="fw-bold text-danger">Quick Links</h6>
-          <ul class="list-unstyled">
-            <li><a href="#" class="footer-link">Team</a></li>
-            <li><a href="#" class="footer-link">Fixtures</a></li>
-            <li><a href="#" class="footer-link">Results</a></li>
-            <li><a href="#" class="footer-link">Tickets</a></li>
-            <li><a href="#" class="footer-link">Membership</a></li>
-            <li><a href="#" class="footer-link">Hospitality</a></li>
-            <li><a href="#" class="footer-link">Academy</a></li>
-            <li><a href="#" class="footer-link">Contact</a></li>
-          </ul>
+          <h6 class="fw-bold text-danger">Our Sponsors</h6>
+          <div class="d-flex flex-column gap-2 small">
+            <span
+              v-for="(sponsor, index) in clubInfo.nhaTaiTro || []"
+              :key="index"
+            >
+              • {{ sponsor.ten }}
+            </span>
+          </div>
         </div>
 
-        <!-- Newsletter / Form phản hồi -->
+        <!-- Feedback / Newsletter -->
         <div class="col-md-3 mb-4">
           <h6 class="fw-bold text-danger">Feedback / Newsletter</h6>
           <p class="small text-muted">
@@ -92,20 +113,9 @@
 
       <hr class="border-secondary my-3" />
 
-      <!-- Sponsors -->
-      <div class="text-center mb-3">
-        <h6 class="fw-bold mb-3">Our Sponsors</h6>
-        <div class="d-flex justify-content-center gap-4 flex-wrap">
-          <!--<img src="/sponsor-adidas.png" alt="Adidas" height="40" />
-          <img src="/sponsor-teamviewer.png" alt="TeamViewer" height="40" />
-          <img src="/sponsor-dxc.png" alt="DXC" height="40" />
-          <img src="/sponsor-apollo.png" alt="Apollo" height="40" />-->
-        </div>
-      </div>
-
       <!-- Bottom -->
       <div class="text-center small text-muted">
-        © 2024 Manchester United Football Club. All rights reserved.
+        © 2024 {{ clubInfo.ten || "Manchester United" }}. All rights reserved.
       </div>
     </div>
   </footer>

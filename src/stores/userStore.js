@@ -47,6 +47,7 @@ export const useUserStore = defineStore("user", {
           {},
           { withCredentials: true }
         );
+        window.location.href = "/";
       } catch {}
       this.user = null;
     },

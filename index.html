@@ -1,13 +1,35 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="https://media.api-sports.io/football/teams/33.png" />
+    <link
+      id="favicon"
+      rel="icon"
+      href="https://media.api-sports.io/football/teams/33.png"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MU - Fansite</title>
   </head>
   <body>
     <div id="app"></div>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script type="module">
+      async function setFavicon() {
+        try {
+          const response = await axios.get("http://localhost:5000/caulacbo/");
+          const club = response.data;
+          console.log("club", club[0].logo);
+
+          // Giả sử logo nằm ở club.logo
+          const favicon = document.getElementById("favicon");
+          favicon.href = club[0].logo || favicon.href;
+        } catch (error) {
+          console.error("Lấy logo thất bại", error);
+        }
+      }
+
+      setFavicon();
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

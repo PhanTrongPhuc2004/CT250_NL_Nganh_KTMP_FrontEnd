@@ -10,8 +10,6 @@ const user = ref(null);
 onMounted(async () => {
   await userStore.checkAuth();
   user.value = userStore.user; // reactive
-  console.log("goi app ");
-  console.log(user.value);
 });
 </script>
 

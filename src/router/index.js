@@ -6,7 +6,7 @@ import CauthuList from "@/pages/user/player/CauthuList.vue";
 import Sticket from "@/pages/user/sticket/Sticket.vue";
 import UserManagement from "@/pages/admin/userManagement/UserManagement.vue";
 import { useUserStore } from "@/stores/userStore";
-import ProfilePage from '@/pages/user/player/ProfilePage.vue';
+import ProfilePage from "@/pages/user/player/ProfilePage.vue";
 
 import Shop from "@/pages/user/player/Shop.vue";
 import ProductDetail from "@/pages/user/player/ProductDetail.vue";
@@ -15,34 +15,51 @@ import checkout from "@/pages/user/player/checkout.vue";
 import orders from "@/pages/user/player/orders.vue";
 
 import axios from "axios";
+import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
+import ClubManagement from "@/pages/admin/clubManagement/ClubManagement.vue";
+import CompeteManagement from "@/pages/admin/competeManagement/CompeteManagement.vue";
+import SeasonDetail from "@/pages/admin/seasonDetail/SeasonDetail.vue";
+import TournamentCard from "@/components/common/cards/tournamentCard/TournamentCard.vue";
+import TournamentDetail from "@/pages/admin/tournamentDetail/TournamentDetail.vue";
+const commonRouter = [
+  {
+    path: "/profile",
+    name: "Thông tin cá nhân",
+    component: UserProfile,
+    meta: { requiresAuth: true, common: true, user: false }, // ✅ route dùng chung cho mọi vai trò
+  },
+];
+
 const userRouter = [
   {
     path: "/",
     name: "Trang chủ",
     component: Home,
+    meta: { requiresAuth: false, user: true }, // 🚫 route không yêu cầu đăng nhập
   },
-  { path: "/cauthu",
+  {
+    path: "/cauthu",
     name: "Cầu Thủ",
-    component: CauthuList },
-  { path: "/cauthu/:id", 
-    component: CauthuDetail },
+    component: CauthuList,
+    meta: { requiresAuth: false, user: true },
+  },
+  { path: "/cauthu/:id", component: CauthuDetail },
   {
     path: "/ve",
     name: "Vé",
     component: Sticket,
+    meta: { requiresAuth: false, user: true },
   },
-  { path: "/shop", component: Shop, name: "Shop" },
-  { path: "/shop/:id", component: ProductDetail },
-  { path: "/cart", component: Cart,},
-  { path: '/checkout', component: checkout },
-  { path: '/orders', component: orders },
-
   {
-    path: '/profile',
-    // name: 'Thông tin cá nhân',
-    component: ProfilePage,
-    meta: { requiresAuth: true }, // nếu bạn muốn bảo vệ route này
+    path: "/shop",
+    component: Shop,
+    name: "Shop",
+    meta: { requiresAuth: true, user: true },
   },
+  { path: "/shop/:id", component: ProductDetail },
+  { path: "/cart", component: Cart },
+  { path: "/checkout", component: checkout },
+  { path: "/orders", component: orders },
 ];
 const adminRouter = [
   {
@@ -54,7 +71,7 @@ const adminRouter = [
   {
     path: "/admin/clubs",
     name: "Quản lý thông tin câu lạc bộ",
-    component: UserManagement,
+    component: ClubManagement,
     meta: { admin: true },
   },
   {
@@ -67,13 +84,19 @@ const adminRouter = [
     path: "/admin/tournaments",
     name: "Quản lý giải đấu",
     component: UserManagement,
+    meta: { admin: true, hidden: true },
+  },
+  {
+    path: "/admin/compete",
+    name: "Quản lý thi đấu",
+    component: CompeteManagement,
     meta: { admin: true },
   },
   {
-    path: "/admin/matches",
-    name: "Quản lý trận đấu",
-    component: UserManagement,
-    meta: { admin: true },
+    path: "/admin/compete/seasons/:id",
+    name: "Quản lý mùa giải",
+    component: SeasonDetail,
+    meta: { admin: true, hidden: true },
   },
   {
     path: "/admin/posts",
@@ -99,10 +122,16 @@ const adminRouter = [
     component: UserManagement,
     meta: { admin: true },
   },
+  {
+    path: "/admin/compete/seasons/:seasonId/tournaments/:tournamentId",
+    name: "Chi tiết giải đấu",
+    component: TournamentDetail,
+    meta: { admin: true, hidden: true },
+  },
 ];
-const routes = [...userRouter, ...adminRouter];
+const routes = [...userRouter, ...adminRouter, ...commonRouter];
 const router = createRouter({
-  history: createWebHistory(), // có thể dùng createWebHashHistory()
+  history: createWebHistory(),
   routes,
 });
 
@@ -111,21 +140,25 @@ router.beforeEach(async (to, from) => {
     const res = await axios.get("http://localhost:5000/nguoidung/me", {
       withCredentials: true,
     });
-
     const user = res.data;
     const vaiTro = user.vaiTro;
-    console.log(vaiTro);
+
+    // Nếu route chỉ dành cho admin
     if (to.meta?.admin && vaiTro !== "admin") {
-      return "/";
+      return { path: "/" };
     }
-    if (!to.meta?.admin && vaiTro == "admin") {
-      return "/admin";
+
+    // Nếu admin cố vào trang user, trừ khi đó là route chung
+    if (!to.meta?.admin && !to.meta?.common && vaiTro === "admin") {
+      return { path: "/admin" };
     }
   } catch (err) {
     console.log("Lỗi fetch user:", err);
-    if (to.meta?.admin) return "/";
+    if (to.meta?.requiresAuth) {
+      return { path: "/" };
+    }
   }
 });
 
-export { userRouter, adminRouter };
+export { userRouter, adminRouter, commonRouter };
 export default router;

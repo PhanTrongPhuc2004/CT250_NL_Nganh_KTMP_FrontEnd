@@ -4,15 +4,19 @@ import styles from "./header.module.scss";
 import { useRouter } from "vue-router";
 import Form from "@/components/common/form/Form.vue";
 import { useUserStore } from "@/stores/userStore";
+import Menu from "@/components/common/menu/Menu.vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { useDropdownManager } from "@/composables/useDropdownManager"; // 👈 thêm
 import { watchEffect } from "vue";
-const userStore = useUserStore();
-watchEffect(() => {
-  const user = useUserStore().user;
-});
-const router = useRouter();
-const routes = router.getRoutes();
 
+const userStore = useUserStore();
+const router = useRouter();
 const cx = classNames.bind(styles);
+
+// Sử dụng hook dropdown
+const { activeMenuId, toggleMenu } = useDropdownManager();
+
+const userRoutes = router.getRoutes().filter((r) => r.meta?.user);
 
 const registerFields = [
   { name: "hoVaTen", type: "text", label: "Họ và tên" },
@@ -24,12 +28,10 @@ const loginFields = [
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
 ];
-
-const userRoutes = router.getRoutes().filter((r) => !r.meta?.admin);
-console.log(userRoutes);
 </script>
 
 <template>
+  <!-- Nếu chưa đăng nhập -->
   <div :class="cx('header-wrapper')" v-if="!userStore.user">
     <nav :class="cx('nav-wrapper')">
       <div :class="cx('nav-list')">
@@ -63,6 +65,8 @@ console.log(userRoutes);
       </div>
     </nav>
   </div>
+
+  <!-- Nếu đã đăng nhập -->
   <div :class="cx('header-wrapper')" v-else>
     <nav :class="cx('nav-wrapper')">
       <div :class="cx('nav-list')">
@@ -75,20 +79,22 @@ console.log(userRoutes);
           {{ item.name }}
         </router-link>
       </div>
-      <div :class="cx('nav-action')">
-        <router-link 
-          to="/profile"
-          class="profile-link"
-        >
-          <i class="bi bi-person-circle"></i>
-          <span> 👤{{ userStore.user.hoVaTen }}</span>
-        </router-link>
-        <button
-          :class="cx('register-btn', 'btn', 'btn-primary')"
-          @click="userStore.logout()"
-        >
-          Đăng xuất
-        </button>
+
+      <div :class="cx('nav-action')" data-dropdown-id>
+        <div class="dropdown-trigger" @click.stop="toggleMenu('user-menu')">
+          <span>{{ userStore.user.hoVaTen }}</span>
+          <FontAwesomeIcon :icon="['fas', 'angle-down']" />
+        </div>
+
+        <!-- Menu người dùng -->
+        <Menu
+          v-show="activeMenuId === 'user-menu'"
+          :menu-items="[
+            { name: 'Trang cá nhân', link: '/profile' },
+            { name: 'Đăng xuất', action: () => userStore.logout() },
+          ]"
+          top="60px"
+        />
       </div>
     </nav>
   </div>
@@ -118,7 +124,7 @@ console.log(userRoutes);
 .profile-link {
   display: flex;
   align-items: center;
-  gap: 8px; /* khoảng cách giữa icon và tên */
+  gap: 8px;
   color: white;
   font-weight: 500;
   text-decoration: none;
@@ -129,7 +135,6 @@ console.log(userRoutes);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Khi hover: sáng lên nhẹ */
 .profile-link:hover {
   background-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
@@ -137,12 +142,6 @@ console.log(userRoutes);
   color: #fff;
 }
 
-/* Icon 👤 */
-.profile-link i {
-  font-size: 1.4rem;
-}
-
-/* Ẩn tên người dùng trên thiết bị nhỏ */
 @media (max-width: 768px) {
   .profile-link span {
     display: none;

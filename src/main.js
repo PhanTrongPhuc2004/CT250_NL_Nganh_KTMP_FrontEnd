@@ -12,7 +12,12 @@ import router from "./router";
 // FontAwesome
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faAngleRight,
+  faAngleDown,
+  faEllipsis,
+  faEllipsisV,
+} from "@fortawesome/free-solid-svg-icons";
 
 // Pinia
 import { createPinia } from "pinia";
@@ -21,8 +26,8 @@ import { createPinia } from "pinia";
 const app = createApp(App);
 
 // FontAwesome
-library.add(faAngleRight);
-app.component("font-awesome-icon", FontAwesomeIcon);
+library.add(faAngleRight, faAngleDown, faEllipsisV);
+app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 // Plugins
 app.use(BootstrapVue3);

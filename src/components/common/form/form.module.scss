@@ -1,19 +1,49 @@
 .form-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* dùng relative thay vì absolute cho dễ responsive */
-  z-index: 10;
-  width: 100%;
-  margin: 20px auto; /* căn giữa */
+  position: relative; /* thay absolute để responsive tốt hơn */
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 100%;
+  max-width: 500px; /* tránh form quá rộng */
+  margin: 0 auto;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 12px;
   background: #fafafa;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  transition: all 0.3s ease;
+
+  /* Khi form có quá nhiều input → cho phép cuộn */
+  max-height: 70vh;
+  overflow-y: auto;
+
+  /* Tùy chọn: thêm class .scrollable-form nếu cần hiệu ứng riêng */
+  &.scrollable-form {
+    background: #fff;
+    border-color: #ccc;
+  }
+
+  /* Scrollbar tinh tế */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 4px;
+  }
+
+  /* Responsive nhỏ hơn 768px */
+  @media (max-width: 768px) {
+    max-width: 90%;
+    padding: 15px;
+  }
+
+  /* Responsive cực nhỏ (mobile dọc) */
+  @media (max-height: 600px) {
+    max-height: 60vh;
+  }
 }
 
 .form-name{
