@@ -23,7 +23,7 @@
             >
               <img
                 v-if="item.anhMinhHoa"
-                :src="getImageUrl(item.anhMinhHoa)"
+                :src="resolveImage(item.anhMinhHoa)"
                 alt="Ảnh quà"
                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 8px;"
               />
@@ -41,22 +41,57 @@
 
 <script>
 import axios from "axios";
+import { useUserStore } from "@/stores/userStore";
 
 export default {
   name: "OrdersPage",
   data() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const username = user?.tenDangNhap || "guest";
+    const userStore = useUserStore();
+    let user = userStore.user;
+
+    // Nếu Pinia chưa có user (reload trang)
+    if (!user) {
+      user = JSON.parse(localStorage.getItem("user"));
+    }
+
     return {
-      username,
+      user,
       orders: [],
       loading: true,
     };
   },
+
+  async mounted() {
+    const userStore = useUserStore();
+
+    // Nếu chưa có user trong Pinia → kiểm tra lại session
+    if (!userStore.user) {
+      if (userStore.checkAuth) {
+        await userStore.checkAuth();
+      }
+      this.user = userStore.user || JSON.parse(localStorage.getItem("user"));
+    }
+
+    await this.fetchOrders();
+  },
+
   methods: {
     async fetchOrders() {
+      console.log("📦 USER object:", this.user);
+
+      const username = this.user?.tenDangNhap || this.user?.username;
+      console.log("🔑 Username dùng để fetch:", username);
+
+      if (!username) {
+        this.loading = false;
+        alert("⚠️ Vui lòng đăng nhập để xem đơn hàng của bạn!");
+        return;
+      }
+
       try {
-        const res = await axios.get(`http://localhost:5000/donhang/${this.username}`);
+        const res = await axios.get(`http://localhost:5000/donhang/${username}`);
+        console.log("📦 Dữ liệu đơn hàng nhận được:", res.data);
+
         this.orders = res.data;
       } catch (err) {
         console.error("❌ Lỗi khi tải đơn hàng:", err);
@@ -65,39 +100,48 @@ export default {
         this.loading = false;
       }
     },
-    getImageUrl(path) {
-      if (!path) return "";
-      if (path.startsWith("http")) return path;
-      return `http://localhost:5000/${path.replace(/^src\//, "")}`;
+
+    formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
     },
-    formatDate(date) {
-      const d = new Date(date);
-      return d.toLocaleString("vi-VN");
+
+    // ✅ Hàm xử lý hiển thị ảnh linh hoạt
+    resolveImage(anh) {
+      if (!anh) return "/default-player.jpg"; // ảnh mặc định
+      if (anh.startsWith("http") || anh.startsWith("data:image")) return anh;
+      return anh; // nếu là đường dẫn /data/... thì Vue sẽ tự lấy từ public/
     },
-  },
-  mounted() {
-    this.fetchOrders();
   },
 };
 </script>
 
 <style scoped>
 .orders-page {
-  background: linear-gradient(135deg, #42275a, #734b6d);
-  color: white;
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  color: #2c3e50;
   padding: 40px;
   min-height: 100vh;
 }
+
 .order-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dcdde1;
 }
+
 .loading {
   text-align: center;
   font-size: 1.2rem;
   margin-top: 30px;
+  color: #34495e;
 }
 </style>

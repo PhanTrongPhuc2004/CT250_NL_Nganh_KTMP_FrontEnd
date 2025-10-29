@@ -2,7 +2,6 @@
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
 const cx = classNames.bind(styles);
-import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import New from "@/components/common/new/New.vue";
 import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
@@ -136,11 +135,15 @@ onMounted(async () => {
       <div>
         <h1>Tran dau gan day</h1>
         <div
-          v-for="(match, index) in matchList"
-          :key="match._id || index"
-          :class="cx('recent-matches')"
+          class="d-flex flex-wrap gap-3 align-items-center justify-content-center flex-direction-row w-100"
         >
-          <PlayerCard :item="match" type="match" />
+          <div
+            v-for="(match, index) in matchList"
+            :key="match._id || index"
+            :class="cx('recent-matches ')"
+          >
+            <PlayerCard :item="match" type="match" />
+          </div>
         </div>
       </div>
 

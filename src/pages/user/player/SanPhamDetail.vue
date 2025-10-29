@@ -45,11 +45,13 @@ export default {
     }
   },
   methods: {
+    // ✅ Hàm xử lý ảnh linh hoạt
     getImageUrl(path) {
-      if (!path) return "";
-      if (path.startsWith("http")) return path;
-      return `http://localhost:5000/${path.replace(/^src\//, "")}`;
+      if (!path) return "https://via.placeholder.com/200x180?text=No+Image"; // ảnh mặc định
+      if (path.startsWith("http") || path.startsWith("data:image")) return path;
+      return `/${path}`; // ảnh từ public/data
     },
+
     muaNgay() {
       const user = JSON.parse(localStorage.getItem("user"));
       const username = user?.tenDangNhap || "guest";
@@ -78,10 +80,11 @@ export default {
 };
 </script>
 
+
 <style scoped>
 .product-detail {
   min-height: 100vh;
-  background: linear-gradient(135deg, #42275a, #734b6d);
+  background: linear-gradient(135deg, #236792, #734b6d);
   display: flex;
   justify-content: center;
   align-items: center;

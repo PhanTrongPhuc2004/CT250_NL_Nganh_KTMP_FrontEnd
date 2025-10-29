@@ -11,7 +11,7 @@ const adminMenuItems = [
   { label: "Quản lý trận đấu", to: "/admin/matches" },
   { label: "Quản lý bài viết", to: "/admin/posts" },
   { label: "Quản lý vé thi đấu", to: "/admin/tickets" },
-  { label: "Quản lý quà lưu niệm", to: "/admin/merchandise" },
+  { label: "Quản lý quà lưu niệm", to: "/admin/qualuuniem" },
   { label: "Quản lý giải đấu", to: "/admin/tournaments" },
   { label: "Thống kê", to: "/admin/statistics" },
 ];

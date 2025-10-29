@@ -40,6 +40,25 @@ export const useUserStore = defineStore("user", {
       }
     },
 
+    // async logout() {
+    //   try {
+    //     await axios.post(
+    //       "http://localhost:5000/nguoidung/logout",
+    //       {},
+    //       { withCredentials: true }
+    //     );
+    //   } catch {}
+    //   this.user = null;
+    // },
+    // setUser(userData) {
+    //   this.user = userData;
+    //   localStorage.setItem("vaiTro", JSON.stringify(userData));
+    // },
+    setUser(userData) {
+      this.user = userData;
+      localStorage.setItem("user", JSON.stringify(userData)); // ✅ lưu user đúng tên
+    },
+
     async logout() {
       try {
         await axios.post(

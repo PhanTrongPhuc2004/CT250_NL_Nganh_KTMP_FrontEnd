@@ -9,10 +9,13 @@ import { useUserStore } from "@/stores/userStore";
 import ProfilePage from "@/pages/user/player/ProfilePage.vue";
 
 import Shop from "@/pages/user/player/Shop.vue";
-import ProductDetail from "@/pages/user/player/ProductDetail.vue";
-import Cart from "@/pages/user/player/Cart.vue";
-import checkout from "@/pages/user/player/checkout.vue";
-import orders from "@/pages/user/player/orders.vue";
+import ProductDetail from "@/pages/user/player/SanPhamDetail.vue";
+import Cart from "@/pages/user/player/GioHang.vue";
+import checkout from "@/pages/user/player/ThanhToan.vue";
+import orders from "@/pages/user/player/Donhang.vue";
+
+import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue";
+import donhang from "@/pages/admin/component/DonHangPage.vue";
 
 import axios from "axios";
 import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
@@ -121,12 +124,6 @@ const adminRouter = [
     name: "Thống kê",
     component: UserManagement,
     meta: { admin: true },
-  },
-  {
-    path: "/admin/compete/seasons/:seasonId/tournaments/:tournamentId",
-    name: "Chi tiết giải đấu",
-    component: TournamentDetail,
-    meta: { admin: true, hidden: true },
   },
 ];
 const routes = [...userRouter, ...adminRouter, ...commonRouter];

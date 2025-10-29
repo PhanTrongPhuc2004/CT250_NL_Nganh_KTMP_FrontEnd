@@ -28,11 +28,11 @@ export default {
   name: "CheckoutPage",
   data() {
     const user = JSON.parse(localStorage.getItem("user"));
-    const username = user?.tenDangNhap || "guest";
+    const tenDangNhap = user?.tenDangNhap || "guest";
     return {
-      username,
+      tenDangNhap,
       order: { name: "", phone: "", address: "" },
-      cart: JSON.parse(localStorage.getItem(`cart_${username}`)) || [],
+      cart: JSON.parse(localStorage.getItem(`cart_${tenDangNhap}`)) || [],
       loading: false,
     };
   },
@@ -54,7 +54,7 @@ export default {
       this.loading = true;
 
       const newOrder = {
-        username: this.username,
+        tenDangNhap: this.tenDangNhap,
         ...this.order,
         cart: this.cart,
         total: this.totalAmount,
@@ -66,7 +66,7 @@ export default {
         await axios.post("http://localhost:5000/donhang", newOrder);
 
         // 🧹 Xóa giỏ hàng localStorage sau khi lưu thành công
-        localStorage.removeItem(`cart_${this.username}`);
+        localStorage.removeItem(`cart_${this.tenDangNhap}`);
 
         alert("🎉 Đơn hàng của bạn đã được thanh toán và lưu thành công!");
         this.$router.push("/orders");
@@ -83,40 +83,88 @@ export default {
 
 <style scoped>
 .checkout-page {
-  background: linear-gradient(135deg, #42275a, #734b6d);
-  color: white;
-  padding: 50px;
+  background: linear-gradient(135deg, #f0f2f5, #e4ebf1);
+  color: #333;
+  font-family: "Poppins", sans-serif;
+  padding: 60px 20px;
   min-height: 100vh;
 }
+
+.checkout-page h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2e3b55;
+  margin-bottom: 30px;
+}
+
 .checkout-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
   max-width: 500px;
   margin: 0 auto;
+  background: white;
+  padding: 30px 25px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
+
+.checkout-form label {
+  font-weight: 600;
+  color: #444;
+  text-align: left;
+}
+
 .checkout-form input,
 .checkout-form textarea {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
   font-size: 1rem;
+  outline: none;
+  transition: 0.2s ease;
+  background: #fafafa;
 }
+
+.checkout-form input:focus,
+.checkout-form textarea:focus {
+  border-color: #4e73df;
+  box-shadow: 0 0 6px rgba(78, 115, 223, 0.3);
+  background: #fff;
+}
+
+.checkout-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.checkout-form h3 {
+  text-align: right;
+  color: #2e3b55;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
 .confirm-btn {
-  background: linear-gradient(90deg, #00c853, #b2ff59);
-  color: black;
+  background: linear-gradient(90deg, #4e73df, #1cc88a);
+  color: white;
   font-weight: 600;
-  padding: 12px;
+  padding: 14px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.25s ease;
 }
+
 .confirm-btn:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
 }
+
 .confirm-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 </style>
+
