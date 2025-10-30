@@ -22,6 +22,7 @@
           class="order-card waiting-card"
         >
           <h3>🧾 Đơn hàng #{{ order._id }}</h3>
+          <p><b>Người nhận:</b> {{ order.tenDangNhap }}</p>
           <p><b>Người nhận:</b> {{ order.name }}</p>
           <p><b>Điện thoại:</b> {{ order.phone }}</p>
           <p><b>Địa chỉ:</b> {{ order.address }}</p>
