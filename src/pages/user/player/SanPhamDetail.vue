@@ -84,7 +84,7 @@ export default {
 <style scoped>
 .product-detail {
   min-height: 100vh;
-  background: linear-gradient(135deg, #236792, #734b6d);
+  background: linear-gradient(135deg, #dfe9f3, #ffffff);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -112,19 +112,32 @@ export default {
   flex: 1;
 }
 h1 {
-  font-size: 2rem;
-  background: linear-gradient(90deg, #ffeb3b, #ff4081);
+  font-size: 2.3rem;
+  font-weight: 800;
+  background: brown;
   background-clip: text;
+  -webkit-background-clip: text;
   color: transparent;
-  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
 }
+
 .price {
-  font-size: 1.5rem;
-  color: #ffe57f;
-  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e60000;
+  text-shadow: 0 2px 6px rgba(230, 0, 0, 0.4);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  font-family: "Poppins", sans-serif;
 }
+
 .desc {
   margin-bottom: 20px;
+  font-size: 1.2rem;
+  color: black;
 }
 .quantity {
   margin-bottom: 25px;
@@ -152,4 +165,25 @@ h1 {
   transform: scale(1.05);
   background: linear-gradient(90deg, #ee0979, #ff6a00);
 }
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-family: sans-serif;
+}
+
+.quantity label {
+  font-weight: bold;
+  color: #333;
+}
+
+.quantity input[type="number"] {
+  width: 60px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+}
+
 </style>

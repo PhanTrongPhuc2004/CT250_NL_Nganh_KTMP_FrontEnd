@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/pages/user/home/Home.vue";
 import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
 import CauthuList from "@/pages/user/player/CauthuList.vue";
+import HuanLuyenVien from "@/pages/user/player/HuanLuyenVien.vue";
 import Sticket from "@/pages/user/sticket/Sticket.vue";
 import UserManagement from "@/pages/admin/userManagement/UserManagement.vue";
 import { useUserStore } from "@/stores/userStore";
@@ -47,6 +48,7 @@ const userRouter = [
     meta: { requiresAuth: false, user: true },
   },
   { path: "/cauthu/:id", component: CauthuDetail },
+  { path: "/huanluyenvien/:id", component: HuanLuyenVien},
   {
     path: "/ve",
     name: "Vé",

@@ -1,35 +1,32 @@
 <template>
-  <div class="player-detail-page">
-    <div v-if="loading" class="loading">⚽ Đang tải dữ liệu cầu thủ...</div>
+  <div class="coach-detail-page">
+    <div v-if="loading" class="loading">🧢 Đang tải dữ liệu huấn luyện viên...</div>
 
-    <div v-else-if="player" class="player-card">
+    <div v-else-if="coach" class="coach-card">
       <!-- Ảnh và thông tin cơ bản -->
-      <div class="player-header">
-          <img
-            :src="resolveImage(player.anhMinhHoa)"
-            alt="Ảnh cầu thủ"
-            class="player-avatar"
-          />
-        <div class="player-basic">
-          <h1>{{ player.hoVaTen }}</h1>
-          <p><i class="bi bi-person-badge"></i> <strong>Vị trí:</strong> {{ player.viTri || 'Chưa cập nhật' }}</p>
-          <p><i class="bi bi-flag"></i> <strong>Quốc tịch:</strong> {{ player.quocTich || 'Không rõ' }}</p>
-          <p><i class="bi bi-hash"></i> <strong>Số áo:</strong> {{ player.soAo || 'N/A' }}</p>
-          <p><i class="bi bi-building"></i> <strong>CLB cũ:</strong> {{ player.cauLacBoCu || 'Không có' }}</p>
+      <div class="coach-header">
+        <img
+          :src="resolveImage(coach.anhMinhHoa)"
+          alt="Ảnh huấn luyện viên"
+          class="coach-avatar"
+        />
+        <div class="coach-basic">
+          <h1>{{ coach.hoVaTen }}</h1>
+          <p><i class="bi bi-flag"></i> <strong>Quốc tịch:</strong> {{ coach.quocTich || 'Không rõ' }}</p>
+          <p><i class="bi bi-building"></i> <strong>CLB cũ:</strong> {{ coach.cauLacBoCu || 'Không có' }}</p>
+          <p><i class="bi bi-calendar-check"></i> <strong>Năm hành nghề:</strong> {{ coach.namHanhNghe || 'Không rõ' }}</p>
+          <p><i class="bi bi-calendar-plus"></i> <strong>Ngày gia nhập:</strong> {{ formatDate(coach.ngayGiaNhap) }}</p>
         </div>
       </div>
 
       <!-- Thông tin chi tiết -->
-      <div class="player-info">
+      <div class="coach-info">
         <h2>📋 Thông tin chi tiết</h2>
         <ul>
-          <li><strong>Ngày sinh:</strong> {{ formatDate(player.namSinh) }}</li>
-          <li><strong>Chiều cao:</strong> {{ player.chieuCao ? player.chieuCao + ' cm' : 'Chưa có' }}</li>
-          <li><strong>Chân thuận:</strong> {{ player.chanThuan || 'Không rõ' }}</li>
-          <li><strong>Năm hành nghề:</strong> {{ player.namHanhNghe || 0 }}</li>
-          <li><strong>Ngày gia nhập:</strong> {{ formatDate(player.ngayGiaNhap) }}</li>
-          <li><strong>Email:</strong> {{ player.email || 'Không có' }}</li>
-          <li><strong>Số điện thoại:</strong> {{ player.sdt || 'Không có' }}</li>
+          <li><strong>Năm sinh:</strong> {{ coach.namSinh || 'Không rõ' }}</li>
+          <li><strong>Email:</strong> {{ coach.email || 'Không có' }}</li>
+          <li><strong>Số điện thoại:</strong> {{ coach.sdt || 'Không có' }}</li>
+          <li><strong>Địa chỉ:</strong> {{ coach.diaChi || 'Không rõ' }}</li>
         </ul>
       </div>
 
@@ -42,7 +39,7 @@
     </div>
 
     <div v-else class="empty">
-      ⚠️ Không tìm thấy thông tin cầu thủ.
+      ⚠️ Không tìm thấy thông tin huấn luyện viên.
     </div>
   </div>
 </template>
@@ -52,59 +49,55 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
-// --- Khai báo ---
 const route = useRoute();
-const player = ref(null);
+const coach = ref(null);
 const loading = ref(true);
 
-// ✅ Hàm xử lý ảnh linh hoạt
+// ✅ Xử lý ảnh linh hoạt
 const resolveImage = (anh) => {
-  if (!anh) return '/default-player.jpg';                  // ảnh mặc định nếu không có
-  if (anh.startsWith('http') || anh.startsWith('data:image')) return anh; // ảnh URL hoặc Base64
-  return `/${anh}`;                                   // ảnh từ public/data
+  if (!anh) return '/default-coach.jpg';
+  if (anh.startsWith('http') || anh.startsWith('data:image')) return anh;
+  return `/${anh}`;
 };
 
-// --- Hàm fetch chi tiết cầu thủ ---
-const fetchPlayer = async () => {
+// ✅ Fetch chi tiết HLV
+const fetchCoach = async () => {
   loading.value = true;
   try {
     const id = route.params.id;
     const res = await axios.get(`http://localhost:5000/nguoidung/${id}`);
-    player.value = res.data;
+    coach.value = res.data;
   } catch (err) {
-    console.error('Lỗi khi tải chi tiết cầu thủ:', err);
+    console.error('Lỗi khi tải chi tiết huấn luyện viên:', err);
   } finally {
     loading.value = false;
   }
 };
 
-// --- Hàm format ngày ---
+// ✅ Format ngày
 const formatDate = (dateString) => {
   if (!dateString) return 'Không rõ';
   const date = new Date(dateString);
   return date.toLocaleDateString('vi-VN');
 };
 
-// --- Lifecycle ---
-onMounted(fetchPlayer);
+onMounted(fetchCoach);
 </script>
 
-
 <style scoped>
-/* Toàn trang */
-.player-detail-page {
+/* Trang tổng thể */
+.coach-detail-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
   min-height: 100vh;
-  /* background: linear-gradient(135deg, #872c8d, #5a1741, #a11c1c); */
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   background-size: 200% 200%;
   animation: gradientMove 8s ease infinite;
-  color: #333;
+  color: #f9fafb;
 }
 
-/* Hiệu ứng chuyển màu nền nhẹ */
 @keyframes gradientMove {
   0% {
     background-position: 0% 50%;
@@ -118,18 +111,19 @@ onMounted(fetchPlayer);
 }
 
 /* Card chính */
-.player-card {
+.coach-card {
   background: rgba(255, 255, 255, 0.97);
   border-radius: 20px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-  max-width: 880px;
+  max-width: 850px;
   width: 100%;
   padding: 35px;
+  color: #111827;
   animation: fadeIn 0.6s ease-in-out;
 }
 
-/* Header (ảnh + info cơ bản) */
-.player-header {
+/* Header (ảnh + thông tin cơ bản) */
+.coach-header {
   display: flex;
   align-items: center;
   gap: 30px;
@@ -137,47 +131,45 @@ onMounted(fetchPlayer);
   padding-bottom: 25px;
 }
 
-.player-avatar {
+.coach-avatar {
   width: 200px;
   height: 200px;
   border-radius: 50%;
   object-fit: cover;
-  border: 5px solid #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  border: 5px solid #1e40af;
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
   background-color: #f3f4f6;
   transition: transform 0.3s ease;
 }
 
-.player-avatar:hover {
+.coach-avatar:hover {
   transform: scale(1.05);
 }
 
 /* Thông tin cơ bản */
-.player-basic h1 {
-  font-size: 2.2rem;
+.coach-basic h1 {
+  font-size: 2.1rem;
   color: #1e3a8a;
   margin-bottom: 12px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.player-basic p {
+.coach-basic p {
   margin: 6px 0;
   color: #374151;
   font-size: 1rem;
-  line-height: 1.4;
 }
 
-.player-basic strong {
+.coach-basic strong {
   color: #111827;
 }
 
-.player-basic i {
+.coach-basic i {
   color: #2563eb;
   margin-right: 6px;
 }
 
 /* Thông tin chi tiết */
-.player-info {
+.coach-info {
   margin-top: 30px;
   background: linear-gradient(180deg, #f9fafb, #eef2ff);
   border-radius: 15px;
@@ -185,27 +177,26 @@ onMounted(fetchPlayer);
   box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
-.player-info h2 {
+.coach-info h2 {
   color: #1e3a8a;
   margin-bottom: 18px;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.player-info ul {
+.coach-info ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.player-info li {
+.coach-info li {
   padding: 10px 0;
   border-bottom: 1px solid #e5e7eb;
   font-size: 1rem;
-  color: #111827;
 }
 
-.player-info li:last-child {
+.coach-info li:last-child {
   border-bottom: none;
 }
 
@@ -223,7 +214,6 @@ onMounted(fetchPlayer);
   text-decoration: none;
   font-weight: 500;
   font-size: 1rem;
-  letter-spacing: 0.3px;
   transition: all 0.3s;
   box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
 }
@@ -234,17 +224,15 @@ onMounted(fetchPlayer);
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
 }
 
-/* Trạng thái tải và trống */
+/* Loading & empty */
 .loading,
 .empty {
   margin-top: 60px;
   font-size: 1.2rem;
   color: #fff;
   text-align: center;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Hiệu ứng xuất hiện */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -258,23 +246,22 @@ onMounted(fetchPlayer);
 
 /* Responsive */
 @media (max-width: 768px) {
-  .player-header {
+  .coach-header {
     flex-direction: column;
     text-align: center;
   }
 
-  .player-avatar {
+  .coach-avatar {
     width: 160px;
     height: 160px;
   }
 
-  .player-basic h1 {
+  .coach-basic h1 {
     font-size: 1.7rem;
   }
 
-  .player-info {
+  .coach-info {
     padding: 18px;
   }
 }
 </style>
-

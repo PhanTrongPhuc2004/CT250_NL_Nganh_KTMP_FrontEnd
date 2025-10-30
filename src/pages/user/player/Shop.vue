@@ -166,13 +166,13 @@ h1 {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 10px;
-  color: #2c3e50;
+  color: #08175a;
 }
 
 /* Giá sản phẩm */
 .product-price {
   font-size: 1.1rem;
-  color: #16a085; /* xanh ngọc đậm, nổi bật nhưng vẫn nghiêm túc */
+  color: #a01616; /* xanh ngọc đậm, nổi bật nhưng vẫn nghiêm túc */
 }
 </style>
 
