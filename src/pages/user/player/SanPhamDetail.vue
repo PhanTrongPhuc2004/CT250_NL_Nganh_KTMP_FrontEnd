@@ -16,7 +16,7 @@
           <input type="number" v-model="quantity" min="1" />
         </div>
 
-        <button class="buy-btn" @click="muaNgay">🛍️ Thêm vào giỏ hàng</button>
+        <button class="buy-btn" @click="muaNgay">Thêm vào giỏ hàng</button>
       </div>
     </div>
 
