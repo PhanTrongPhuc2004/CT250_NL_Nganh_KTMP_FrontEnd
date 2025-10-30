@@ -4,7 +4,7 @@ import styles from "./playerCard.module.scss";
 import { formatTime, formatDate } from "@/utils";
 import Menu from "../../menu/Menu.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import axios from "axios";
@@ -19,6 +19,10 @@ const props = defineProps({
   type: {
     type: String,
     default: "default", // default, compact
+  },
+  class: {
+    type: String,
+    default: "",
   },
 });
 const showPlayerCardMenu = ref(false);
@@ -41,11 +45,14 @@ const deleteTournament = async (tournamentId) => {
     });
 };
 
+onMounted(() => {
+  console.log(props.class);
+});
+
 const detailAction = {
   season: (id) => router.push(`/admin/compete/seasons/${id}`),
   tournament: (id) => {
     router.push(`/admin/compete/seasons/${seasonId}/tournaments/${id}`);
-    console.log(tournamentId);
   },
   player: (id) => router.push(`/admin/compete/players/${id}`),
   souvenir: (id) => router.push(`/admin/compete/souvenirs/${id}`),
@@ -127,7 +134,11 @@ const tournamentCardMenuItems = [
 </script>
 
 <template>
-  <div :class="cx('player-card')" v-if="type == 'player'">
+  <div
+    :class="cx('player-card')"
+    v-if="type == 'player'"
+    class="border rounded-4 shadow-sm overflow-hidden"
+  >
     <!-- Ảnh cầu thủ -->
     <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" />
 
@@ -139,13 +150,17 @@ const tournamentCardMenuItems = [
     </div>
   </div>
 
-  <div v-if="type == 'season'" class="position-relative">
+  <div
+    v-if="type == 'season'"
+    class="position-relative border shadow-sm rounded-4"
+    :class="class"
+  >
     <img
       src="https://cdn.wallpapersafari.com/74/64/SqsDew.jpg"
       alt=""
-      class="col-md-12"
+      class="col-md-12 border rounded-top-4 overflow-hidden"
     />
-    <div>{{ item.namBatDau }} - {{ item.namKetThuc }}</div>
+    <div class="p-3">{{ item.namBatDau }} - {{ item.namKetThuc }}</div>
 
     <div class="d-flex justify-content-end align-items-center mt-2 p-3">
       <FontAwesomeIcon
@@ -154,29 +169,31 @@ const tournamentCardMenuItems = [
         @click="
           () => {
             showSeasonCardMenu = !showSeasonCardMenu;
-            console.log(showSeasonCardMenu);
           }
         "
       />
-      <Menu
-        v-if="showSeasonCardMenu"
-        :menu-items="seasonCardMenuItems"
-        top="280px"
-        :on-close="() => (showSeasonCardMenu = false)"
-      />
     </div>
+    <Menu
+      v-if="showSeasonCardMenu"
+      :menu-items="seasonCardMenuItems"
+      top="280px"
+      :on-close="() => (showSeasonCardMenu = false)"
+    />
   </div>
-
-  <div v-if="type === 'tournament'">
+  <div
+    v-if="type === 'tournament'"
+    class="position-relative border shadow-sm rounded-4"
+  >
     <div
-      class="card shadow-sm border-0 rounded-3"
+      class="card shadow-sm border-0 rounded-4"
       style="border-top: 4px solid var(--primary-color)"
     >
       <img
         src="https://img.freepik.com/free-vector/hexagon-shape-with-halftone-border-background_1409-1669.jpg?semt=ais_hybrid&w=740&q=80"
         alt=""
+        class="rounded-top-4"
       />
-      <div class="card-body">
+      <div class="card-body p-3">
         <h5
           class="card-title fw-semibold mb-2"
           :style="{ color: 'var(--primary-color)' }"
@@ -206,7 +223,6 @@ const tournamentCardMenuItems = [
             @click="
               () => {
                 showSeasonCardMenu = !showSeasonCardMenu;
-                console.log(showSeasonCardMenu);
               }
             "
           />
@@ -220,16 +236,20 @@ const tournamentCardMenuItems = [
       </div>
     </div>
   </div>
-  <div v-if="type == 'match'" class="col-md-3">
-    <div class="card shadow-sm mt-3">
-      <div class="col-md-12">
+  <div
+    v-if="type == 'match'"
+    :class="class"
+    class="border rounded-4 shadow-sm overflow-hidden"
+  >
+    <div class="">
+      <div class=" ">
         <img
           src="https://img.freepik.com/vector-gratis/papel-pintado-textura-hexagonal-oscuro-audaz-estilo-geometrico_1017-43003.jpg"
           alt=""
           class="col-md-12"
         />
       </div>
-      <div class="card-body">
+      <div class="card-body p-3">
         <p>{{ item.diaDiem }}</p>
         <p>{{ formatDate(item.ngayDienRa) }}</p>
         <p>{{ formatTime(item.thoiGianDienRa) }}</p>
@@ -248,7 +268,7 @@ const tournamentCardMenuItems = [
       />
 
       <!-- Nội dung -->
-      <div class="card-body d-flex flex-column">
+      <div class="card-body p-3 d-flex flex-column">
         <h5 class="card-title text-primary fw-bold text-truncate">
           {{ item.tenQuaLuuNiem }}
         </h5>

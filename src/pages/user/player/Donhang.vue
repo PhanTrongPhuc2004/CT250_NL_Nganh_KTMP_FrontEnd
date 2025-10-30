@@ -19,15 +19,21 @@
             <li
               v-for="item in order.cart"
               :key="item.tenQuaLuuNiem"
-              style="margin-bottom: 10px;"
+              style="margin-bottom: 10px"
             >
               <img
                 v-if="item.anhMinhHoa"
                 :src="resolveImage(item.anhMinhHoa)"
                 alt="Ảnh quà"
-                style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 8px;"
+                style="
+                  width: 60px;
+                  height: 60px;
+                  object-fit: cover;
+                  border-radius: 8px;
+                  margin-right: 8px;
+                "
               />
-              {{ item.tenQuaLuuNiem }} × {{ item.quantity }} — 
+              {{ item.tenQuaLuuNiem }} × {{ item.quantity }} —
               {{ (item.gia * item.quantity).toLocaleString() }}₫
             </li>
           </ul>
@@ -77,10 +83,7 @@ export default {
 
   methods: {
     async fetchOrders() {
-      console.log("📦 USER object:", this.user);
-
       const username = this.user?.tenDangNhap || this.user?.username;
-      console.log("🔑 Username dùng để fetch:", username);
 
       if (!username) {
         this.loading = false;
@@ -89,8 +92,9 @@ export default {
       }
 
       try {
-        const res = await axios.get(`http://localhost:5000/donhang/${username}`);
-        console.log("📦 Dữ liệu đơn hàng nhận được:", res.data);
+        const res = await axios.get(
+          `http://localhost:5000/donhang/${username}`
+        );
 
         this.orders = res.data;
       } catch (err) {

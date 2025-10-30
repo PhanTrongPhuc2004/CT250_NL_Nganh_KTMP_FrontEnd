@@ -38,7 +38,6 @@ onMounted(async () => {
       lienHe: { ...club.value.lienHe, ...(data.lienHe || {}) },
       sanNha: { ...club.value.sanNha, ...(data.sanNha || {}) },
     };
-    console.log("Fetched club data:", club.value);
   } catch (err) {
     console.error(err);
     message.value = "Không thể tải thông tin CLB.";

@@ -17,6 +17,9 @@ import {
   faAngleDown,
   faEllipsis,
   faEllipsisV,
+  faTrophy,
+  faBackspace,
+  faAngleLeft,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Pinia
@@ -26,7 +29,7 @@ import { createPinia } from "pinia";
 const app = createApp(App);
 
 // FontAwesome
-library.add(faAngleRight, faAngleDown, faEllipsisV);
+library.add(faAngleRight, faAngleDown, faEllipsisV, faAngleLeft);
 app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 // Plugins

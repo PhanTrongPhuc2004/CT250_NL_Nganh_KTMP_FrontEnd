@@ -6,11 +6,10 @@ import { onMounted, onBeforeUnmount, ref } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import Menu from "@/components/common/menu/Menu.vue";
 import { useUserStore } from "@/stores/userStore";
-
 const userStore = useUserStore();
 const router = useRouter();
 const cx = classNames.bind(styles);
-
+const clubInfo = ref([]);
 const showMenu = ref(false);
 const menuRef = ref(null);
 const triggerRef = ref(null);
@@ -33,7 +32,20 @@ const handleClickOutside = (e) => {
   }
 };
 
-onMounted(() => document.addEventListener("click", handleClickOutside));
+const fetchClubInfo = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/caulacbo/");
+    clubInfo.value = response.data;
+    console.log(clubInfo.value);
+  } catch (error) {
+    console.error("Lỗi khi tải thông tin câu lạc bộ:", error);
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+  fetchClubInfo();
+});
 onBeforeUnmount(() =>
   document.removeEventListener("click", handleClickOutside)
 );
@@ -44,9 +56,9 @@ onBeforeUnmount(() =>
   <div :class="cx('header-wrapper')" v-else class="col-md-12">
     <nav :class="cx('nav-wrapper')" class="col-md-12">
       <div class="col-md-2" :class="cx('nav-logo')">
-        <img src="https://media.api-sports.io/football/teams/33.png" alt="" />
+        <img :src="clubInfo[0]?.logo" alt="" />
         <p style="color: white; padding-left: 10px; margin-bottom: 0">
-          Manchester United
+          {{ clubInfo[0]?.ten }}
         </p>
       </div>
 

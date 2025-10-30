@@ -5,10 +5,10 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Form from "@/components/common/form/Form.vue";
 import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 const route = useRoute();
 const router = useRouter();
 const seasonId = route.params.id;
-console.log("Season ID:", seasonId);
 const addTournamentFields = [
   {
     name: "tenGiaiDau",
@@ -30,7 +30,6 @@ const fetchTournamentBySeason = async (id) => {
       `http://localhost:5000/muagiai/${id}/giaidau`
     );
     tournaments.value = response.data; // ✅ cập nhật reactive state
-    console.log("Competitions in Season:", tournaments.value);
   } catch (error) {
     console.error("Lỗi khi tải danh sách trận đấu:", error);
   }
@@ -44,12 +43,19 @@ const handleAddTournament = () => {
 onMounted(() => {
   fetchTournamentBySeason(seasonId);
 });
+
+const goBack = () => {
+  window.history.back();
+};
 </script>
 
 <template>
   <div class="mt-3 p-3">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Chi tiết mùa giải</h2>
+      <h2 class="m-0 d-flex" style="color: var(--primary-color)">
+        <FontAwesomeIcon icon="fa-solid fa-angle-left" @click="goBack()" />
+        <p>Chi tiết mùa giải</p>
+      </h2>
       <button class="btn btn-primary" @click="handleAddTournament">
         <i class="fas fa-plus me-2"></i>
         Thêm giải đấu

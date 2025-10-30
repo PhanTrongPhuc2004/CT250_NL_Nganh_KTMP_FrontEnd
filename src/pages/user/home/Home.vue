@@ -30,7 +30,6 @@ onMounted(async () => {
   //fetch infor club
   const clubResponse = await axios.get("http://localhost:5000/caulacbo/");
   clubInfo.value = clubResponse.data;
-  console.log("Club Info:", clubInfo.value);
   // await fetchSouvenirList();
   const souvenirListResponse = await axios.get(
     "http://localhost:5000/qualuuniem"
@@ -39,7 +38,6 @@ onMounted(async () => {
   // await fetchMatchList();
   const matchListResponse = await axios.get("http://localhost:5000/trandau");
   matchList.value = matchListResponse.data;
-  console.log("Match List:", matchList.value);
   //PHUC
   // await fetchPostList();
   // const postListResponse = await axios.get("http://localhost:5000/baidang");

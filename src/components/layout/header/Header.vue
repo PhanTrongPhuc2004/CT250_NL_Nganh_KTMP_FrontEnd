@@ -106,6 +106,7 @@ const loginFields = [
       method="POST"
       api="http://localhost:5000/nguoidung"
       :form-name="'Đăng ký'"
+      :orther-data="{ vaiTro: 'nguoihammo' }"
     />
   </div>
 

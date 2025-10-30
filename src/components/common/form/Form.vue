@@ -21,12 +21,6 @@ const formData = reactive({});
 
 // 🔹 Khi form render hoặc inputData thay đổi, copy dữ liệu vào formData
 const initFormData = () => {
-  console.log(
-    "Initializing form data with inputData:",
-    props.inputData,
-    "and muaGiaiId",
-    props.ortherData?.muaGiaiId
-  );
   props.inputFields.forEach((field) => {
     let value = props.inputData?.[field.name] ?? "";
 
@@ -49,9 +43,14 @@ const initFormData = () => {
   if (props.inputData?.vaiTro) {
     formData.vaiTro = props.inputData.vaiTro;
   }
+  console.log("FormData after initialization:", formData);
 };
 
-onMounted(initFormData);
+onMounted(() => {
+  initFormData();
+  console.log("fields", props.inputFields);
+  console.log("form data", formData);
+});
 // 🔹 Nếu inputData thay đổi (ví dụ khi chọn “Sửa” user khác)
 watch(
   () => props.inputData,
@@ -60,10 +59,6 @@ watch(
 );
 
 const handleSubmit = async () => {
-  console.log("Submitting form with data:", {
-    ...formData,
-    ...props.ortherData,
-  });
   try {
     const response = await axios({
       url: props.api,
@@ -81,6 +76,18 @@ const handleSubmit = async () => {
     alert("Có lỗi xảy ra");
     console.error(error);
   }
+};
+// ✅ Helper function để unwrap ref
+const getChildren = (field) => {
+  if (!field.children) return [];
+
+  // Nếu children là ref, lấy .value
+  if (field.children.value !== undefined) {
+    return field.children.value;
+  }
+
+  // Nếu là array thông thường
+  return field.children;
 };
 </script>
 
@@ -102,7 +109,7 @@ const handleSubmit = async () => {
         >
           <label :for="field.name">{{ field.label }}</label>
           <input
-            v-if="!field.children"
+            v-if="field.type !== 'select'"
             v-model="formData[field.name]"
             :id="field.name"
             :name="field.name"
@@ -111,6 +118,7 @@ const handleSubmit = async () => {
             :class="cx('form-control')"
             required
           />
+
           <select
             v-else
             v-model="formData[field.name]"
@@ -119,10 +127,11 @@ const handleSubmit = async () => {
             :class="cx('form-control')"
             required
           >
+            <!-- ✅ SỬA: Unwrap ref bằng cách kiểm tra field.children.value -->
             <option
-              v-for="(child, cIndex) in field.children.value"
+              v-for="(child, cIndex) in getChildren(field)"
               :key="cIndex"
-              :value="child._id ? child._id : child.name"
+              :value="child._id || child.name"
             >
               {{ child.name }}
             </option>

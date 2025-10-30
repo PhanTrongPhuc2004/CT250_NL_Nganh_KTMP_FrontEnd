@@ -66,12 +66,6 @@ const userRouter = [
 ];
 const adminRouter = [
   {
-    path: "/admin",
-    name: "Dashboard",
-    component: UserManagement,
-    meta: { admin: true },
-  },
-  {
     path: "/admin/clubs",
     name: "Quản lý thông tin câu lạc bộ",
     component: ClubManagement,

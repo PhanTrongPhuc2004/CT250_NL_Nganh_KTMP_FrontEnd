@@ -32,7 +32,6 @@ const isReady = ref(false);
 const handleClickOutside = (event) => {
   if (!isReady.value) return; // ✅ Bỏ qua lần click đầu tiên
   if (root.value && !root.value.contains(event.target)) {
-    console.log("dong menu");
     props.onClose && props.onClose();
   }
 };
