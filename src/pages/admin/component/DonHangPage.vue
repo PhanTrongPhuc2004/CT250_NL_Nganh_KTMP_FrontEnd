@@ -1,6 +1,6 @@
 <template> 
   <div class="orders-admin-page">
-    <h1>📦 Quản lý Đơn hàng</h1>
+    <h1>Quản lý Đơn hàng</h1>
 
     <!-- Bộ lọc hiển thị -->
     <div class="filter-container">
@@ -22,6 +22,7 @@
           class="order-card waiting-card"
         >
           <h3>🧾 Đơn hàng #{{ order._id }}</h3>
+          <p><b>Người nhận:</b> {{ order.tenDangNhap }}</p>
           <p><b>Người nhận:</b> {{ order.name }}</p>
           <p><b>Điện thoại:</b> {{ order.phone }}</p>
           <p><b>Địa chỉ:</b> {{ order.address }}</p>
@@ -105,42 +106,62 @@ export default {
     },
   },
   methods: {
+    // ✅ Lấy danh sách đơn hàng từ backend thật
     async fetchOrders() {
       try {
         const res = await axios.get("http://localhost:5000/donhang");
-        this.orders = res.data.map((o) => ({
-          ...o,
-          status: "Chờ xác nhận", // mặc định
-        }));
+        this.orders = res.data; // không thêm status giả
       } catch (err) {
         console.error("Lỗi tải đơn hàng:", err);
       }
     },
 
-    xacNhan(id) {
-      const order = this.orders.find((o) => o._id === id);
-      if (order) order.status = "Đã xác nhận";
+    // ✅ Xác nhận đơn hàng → gọi API PUT
+    async xacNhan(id) {
+      try {
+        const res = await axios.put(`http://localhost:5000/donhang/${id}`, {
+          status: "Đã xác nhận",
+        });
+        this.updateLocalStatus(id, res.data.status);
+      } catch (err) {
+        console.error("Lỗi khi xác nhận đơn:", err);
+      }
     },
 
-    huyXacNhan(id) {
-      const order = this.orders.find((o) => o._id === id);
-      if (order) order.status = "Chờ xác nhận";
+    // ✅ Hủy xác nhận → gọi API PUT
+    async huyXacNhan(id) {
+      try {
+        const res = await axios.put(`http://localhost:5000/donhang/${id}`, {
+          status: "Chờ xác nhận",
+        });
+        this.updateLocalStatus(id, res.data.status);
+      } catch (err) {
+        console.error("Lỗi khi hủy xác nhận:", err);
+      }
     },
 
-    // ✅ Hàm xử lý ảnh linh hoạt
+    // ✅ Cập nhật trạng thái đơn hàng trong bộ nhớ
+    updateLocalStatus(id, newStatus) {
+      const order = this.orders.find((o) => o._id === id);
+      if (order) order.status = newStatus;
+    },
+
+    // ✅ Hàm xử lý hiển thị ảnh linh hoạt (giữ nguyên)
     getImageUrl(path) {
       if (!path || path.trim() === "") {
         return "https://via.placeholder.com/100x100?text=No+Image"; // fallback
       }
-      if (path.startsWith("http") || path.startsWith("data:image")) return path; // URL/Base64
-      return `/${path}`; // ảnh từ public/data
+      if (path.startsWith("http") || path.startsWith("data:image")) return path;
+      return `/${path}`; // ảnh từ thư mục public
     },
   },
+
   mounted() {
     this.fetchOrders();
   },
 };
 </script>
+
 
 
 <style scoped>
@@ -157,7 +178,6 @@ h1 {
   font-weight: 700;
   color: #222;
   margin-bottom: 20px;
-  text-align: center;
 }
 
 /* Bộ lọc hiển thị */

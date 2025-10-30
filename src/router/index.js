@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/pages/user/home/Home.vue";
 import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
 import CauthuList from "@/pages/user/player/CauthuList.vue";
+import HuanLuyenVien from "@/pages/user/player/HuanLuyenVien.vue";
 import Sticket from "@/pages/user/sticket/Sticket.vue";
 import UserManagement from "@/pages/admin/userManagement/UserManagement.vue";
 import { useUserStore } from "@/stores/userStore";
@@ -47,6 +48,7 @@ const userRouter = [
     meta: { requiresAuth: false, user: true },
   },
   { path: "/cauthu/:id", component: CauthuDetail },
+  { path: "/huanluyenvien/:id", component: HuanLuyenVien },
   {
     path: "/ve",
     name: "Vé",
@@ -65,6 +67,16 @@ const userRouter = [
   { path: "/orders", component: orders },
 ];
 const adminRouter = [
+  {
+    // THÊM ROUTE NÀY VÀO ĐẦU DANH SÁCH
+    path: "/admin",
+    name: "Admin",
+    // Tùy chọn 1: Chuyển hướng đến một trang đã tồn tại
+    redirect: "/admin/compete",
+    // HOẶC Tùy chọn 2: Load thẳng component Dashboard
+    // component: AdminDashboard,
+    meta: { admin: true, hidden: true }, // Mặc định là route Admin
+  },
   {
     path: "/admin/clubs",
     name: "Quản lý thông tin câu lạc bộ",
@@ -102,9 +114,15 @@ const adminRouter = [
     meta: { admin: true },
   },
   {
-    path: "/admin/merchandise",
+    path: "/admin/qualuuniem",
     name: "Quản lý hàng lưu niệm",
-    component: UserManagement,
+    component: qualuuniem,
+    meta: { admin: true },
+  },
+  {
+    path: "/admin/qualuuniem/donhang",
+    component: donhang,
+    name: "Quản lý đơn hàng",
     meta: { admin: true },
   },
   {

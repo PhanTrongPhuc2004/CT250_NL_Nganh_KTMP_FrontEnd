@@ -35,9 +35,9 @@ watch(
       <Footer />
     </div>
 
-    <!-- cauthu -->
+    <!-- cauthu & huanluyenvien -->
     <div
-      v-if="toRaw(props.user).vaiTro?.toLowerCase() === 'cauthu'"
+      v-if="['cauthu', 'huanluyenvien'].includes(toRaw(props.user).vaiTro?.toLowerCase())"
       class="default-layout"
     >
       <Header />
@@ -46,6 +46,7 @@ watch(
       </main>
       <Footer />
     </div>
+
 
     <!-- Admin -->
     <div

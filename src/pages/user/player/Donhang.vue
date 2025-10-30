@@ -1,6 +1,6 @@
 <template>
   <div class="orders-page">
-    <h1>📦 Đơn hàng của bạn</h1>
+    <h1>Đơn hàng của bạn</h1>
 
     <div v-if="loading" class="loading">⏳ Đang tải dữ liệu...</div>
 
