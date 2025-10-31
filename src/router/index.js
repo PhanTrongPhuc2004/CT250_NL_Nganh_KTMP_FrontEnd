@@ -143,6 +143,12 @@ const adminRouter = [
     component: TournamentDetail,
     meta: { admin: true, hidden: true },
   },
+  {
+    path: "/admin/tickets",
+    name: "Quản lý vé",
+    component: () => import("@/pages/admin/ticketManagement/TicketManagement.vue"),
+    meta: { admin: true }
+  },
 ];
 const routes = [...userRouter, ...adminRouter, ...commonRouter];
 const router = createRouter({
