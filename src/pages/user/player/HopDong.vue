@@ -1,176 +1,234 @@
 <template>
-  <div class="contract-page">
-    <div class="contract-paper">
-      <h1 class="title">HỢP ĐỒNG CẦU THỦ</h1>
-      <p class="contract-code">Mã hợp đồng: {{ hopDong.maHopDong }}</p>
-      <hr />
+  <div class="contracts-page">
+    <h1>Danh sách hợp đồng cầu thủ</h1>
 
-      <!-- Thông tin cầu thủ -->
-      <section class="section">
-        <h2>1️⃣ Thông tin cầu thủ</h2>
-        <p><strong>Họ và tên:</strong> {{ hopDong.tenCauThu || "—" }}</p>
-        <p><strong>Quốc tịch:</strong> {{ hopDong.quocTichCauThu || "—" }}</p>
-        <p><strong>Vị trí:</strong> {{ hopDong.viTriCauThu || "—" }}</p>
-        <p><strong>Ngày sinh:</strong> {{ formatDate(hopDong.ngaySinhCauThu) }}</p>
-        <p><strong>Địa chỉ:</strong> {{ hopDong.diaChiCauThu || "—" }}</p>
-        <p><strong>Số điện thoại:</strong> {{ hopDong.sdtCauThu || "—" }}</p>
-      </section>
+    <div v-if="loading" class="loading">⏳ Đang tải dữ liệu...</div>
 
-      <!-- Thông tin CLB thuê -->
-      <section class="section">
-        <h2>2️⃣ Câu lạc bộ thuê</h2>
-        <p><strong>Tên CLB:</strong> {{ hopDong.tenCLBThue || "—" }}</p>
-        <p><strong>Quốc gia:</strong> {{ hopDong.quocGiaCLBThue || "—" }}</p>
-        <p><strong>Địa chỉ:</strong> {{ hopDong.diaChiCLBThue || "—" }}</p>
-      </section>
+    <div v-else-if="hopDongs.length">
+      <table class="contracts-table">
+        <thead>
+          <tr>
+            <th>Mã HĐ</th>
+            <th>Tên cầu thủ</th>
+            <th>Vị trí</th>
+            <th>CLB thuê</th>
+            <th>Ngày bắt đầu</th>
+            <th>Ngày kết thúc</th>
+            <th>Trạng thái</th>
+            <th>Người quản lý</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
 
-      <!-- Thông tin CLB chủ quản -->
-      <section class="section" v-if="hopDong.tenCLBChuQuan">
-        <h2>3️⃣ Câu lạc bộ chủ quản (nếu cho mượn)</h2>
-        <p><strong>Tên CLB:</strong> {{ hopDong.tenCLBChuQuan || "—" }}</p>
-        <p><strong>Quốc gia:</strong> {{ hopDong.quocGiaCLBChuQuan || "—" }}</p>
-        <p><strong>Giải đấu:</strong> {{ hopDong.giaiDauCLBChuQuan || "—" }}</p>
-      </section>
+        <tbody>
+          <tr v-for="hd in hopDongs" :key="hd._id">
+            <td>{{ hd.maHopDong }}</td>
+            <td>{{ hd.tenCauThu }}</td>
+            <td>{{ hd.viTriCauThu }}</td>
+            <td>{{ hd.tenCLBThue }}</td>
+            <td>{{ formatDate(hd.ngayBatDau) }}</td>
+            <td>{{ formatDate(hd.ngayKetThuc) }}</td>
+            <td :class="statusClass(hd.trangThai)">{{ hd.trangThai }}</td>
+            <td>{{ hd.nguoiDaiDien }}</td>
+            <td>
+              <button class="btn-detail" @click="xemChiTiet(hd)">Xem</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Thông tin hợp đồng -->
-      <section class="section">
-        <h2>4️⃣ Chi tiết hợp đồng</h2>
-        <p><strong>Ngày ký:</strong> {{ formatDate(hopDong.ngayKy) }}</p>
-        <p><strong>Ngày bắt đầu:</strong> {{ formatDate(hopDong.ngayBatDau) }}</p>
-        <p><strong>Ngày kết thúc:</strong> {{ formatDate(hopDong.ngayKetThuc) }}</p>
-        <p><strong>Phí thuê:</strong> {{ formatCurrency(hopDong.phiThue) }}</p>
-        <p><strong>Lương cầu thủ:</strong> {{ formatCurrency(hopDong.luongCauThu) }}</p>
-        <p><strong>Tiền thưởng:</strong> {{ formatCurrency(hopDong.tienThuong) }}</p>
-        <p><strong>Người đại diện:</strong> {{ hopDong.nguoiDaiDien || "—" }}</p>
-        <p><strong>Điều khoản:</strong> {{ hopDong.dieuKhoan || "—" }}</p>
-        <p><strong>Ghi chú:</strong> {{ hopDong.ghiChu || "—" }}</p>
-        <p><strong>Trạng thái:</strong>
-          <span :class="['status', hopDong.trangThai?.toLowerCase().replace(' ', '-')]">
-            {{ hopDong.trangThai }}
-          </span>
+    <p v-else>Không có hợp đồng nào.</p>
+
+    <!-- Hộp chi tiết hợp đồng -->
+    <div v-if="selectedHopDong" class="modal">
+      <div class="modal-content">
+        <h2>Chi tiết hợp đồng {{ selectedHopDong.maHopDong }}</h2>
+        <p><b>Tên cầu thủ:</b> {{ selectedHopDong.tenCauThu }}</p>
+        <p><b>Quốc tịch:</b> {{ selectedHopDong.quocTichCauThu }}</p>
+        <p><b>Vị trí:</b> {{ selectedHopDong.viTriCauThu }}</p>
+        <p><b>CLB thuê:</b> {{ selectedHopDong.tenCLBThue }}</p>
+        <p><b>CLB chủ quản:</b> {{ selectedHopDong.tenCLBChuQuan || "Không có" }}</p>
+        <p><b>Thời hạn:</b> 
+          {{ formatDate(selectedHopDong.ngayBatDau) }} → 
+          {{ formatDate(selectedHopDong.ngayKetThuc) }}
         </p>
-      </section>
+        <p><b>Phí thuê:</b> {{ formatMoney(selectedHopDong.phiThue) }}</p>
+        <p><b>Lương:</b> {{ formatMoney(selectedHopDong.luongCauThu) }}</p>
+        <p><b>Tiền thưởng:</b> {{ formatMoney(selectedHopDong.tienThuong) }}</p>
+        <p><b>Điều khoản:</b> {{ selectedHopDong.dieuKhoan }}</p>
+        <p><b>Người đại diện:</b> {{ selectedHopDong.nguoiDaiDien }}</p>
+        <p><b>Trạng thái:</b> {{ selectedHopDong.trangThai }}</p>
 
-      <!-- Footer -->
-      <footer>
-        <p>Người quản lý: <strong>{{ hopDong.tenDangNhap }}</strong></p>
-        <p>Ngày tạo: {{ formatDate(hopDong.createdAt) }}</p>
-      </footer>
+        <button class="btn-close" @click="selectedHopDong = null">Đóng</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
 import axios from "axios";
 
 export default {
-  name: "HopDong",
-  setup() {
-    const route = useRoute();
-    const hopDong = ref({});
-
-    const fetchHopDong = async () => {
-      const { id } = route.params;
-      if (!id) return;
+  name: "HopDongList",
+  data() {
+    return {
+      hopDongs: [],
+      loading: true,
+      selectedHopDong: null,
+    };
+  },
+  async mounted() {
+    await this.fetchHopDongs();
+  },
+  methods: {
+    async fetchHopDongs() {
       try {
-        const res = await axios.get(`http://localhost:5000/hopdong/${id}`);
-        hopDong.value = res.data;
+        const res = await axios.get("http://localhost:5000/hopdong");
+        this.hopDongs = res.data;
       } catch (err) {
-        console.error("Lỗi khi tải hợp đồng:", err.response?.data || err);
+        console.error("❌ Lỗi tải hợp đồng:", err);
+        alert("Không thể tải dữ liệu hợp đồng!");
+      } finally {
+        this.loading = false;
       }
-    };
-
-    const formatDate = (dateStr) => {
-      if (!dateStr) return "—";
-      return new Date(dateStr).toLocaleDateString("vi-VN");
-    };
-
-    const formatCurrency = (num) => {
-      if (!num && num !== 0) return "—";
-      return num.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-    };
-
-    onMounted(fetchHopDong);
-
-    return { hopDong, formatDate, formatCurrency };
+    },
+    xemChiTiet(hd) {
+      this.selectedHopDong = hd;
+    },
+    formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    },
+    formatMoney(num) {
+      return num?.toLocaleString("vi-VN") + "₫";
+    },
+    statusClass(status) {
+      return {
+        "status-active": status === "Đang hiệu lực",
+        "status-expired": status === "Hết hạn",
+        "status-pending": status === "Chưa ký",
+      };
+    },
   },
 };
 </script>
 
 <style scoped>
-.contract-page {
-  display: flex;
-  justify-content: center;
+.contracts-page {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  color: #2c3e50;
   padding: 40px;
-  background: #f5f2e9;
   min-height: 100vh;
 }
 
-.contract-paper {
-  width: 800px;
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.contracts-table {
+  width: 100%;
+  border-collapse: collapse;
   background: white;
-  padding: 40px 60px;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  font-family: "Times New Roman", serif;
-  color: #333;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.title {
-  text-align: center;
-  font-size: 32px;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 10px;
-  text-transform: uppercase;
+.contracts-table th,
+.contracts-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-.contract-code {
-  text-align: center;
-  font-style: italic;
-  color: #555;
-  margin-bottom: 20px;
+.contracts-table th {
+  background-color: #2c3e50;
+  color: #fff;
 }
 
-.section {
-  margin-bottom: 25px;
-}
-
-.section h2 {
-  font-size: 18px;
-  background: #f0f0f0;
-  padding: 6px 10px;
-  border-left: 5px solid #2c3e50;
-  margin-bottom: 10px;
-}
-
-.status {
-  padding: 4px 10px;
-  border-radius: 5px;
+.btn-detail {
+  background-color: #3498db;
+  border: none;
   color: white;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-detail:hover {
+  background-color: #2980b9;
+}
+
+.status-active {
+  color: green;
   font-weight: bold;
 }
 
-.status.chưa-ký {
-  background: #999;
+.status-expired {
+  color: red;
+  font-weight: bold;
 }
 
-.status.đang-hiệu-lực {
-  background: #27ae60;
+.status-pending {
+  color: orange;
+  font-weight: bold;
 }
 
-.status.hết-hạn {
-  background: #c0392b;
-}
-
-footer {
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
   margin-top: 30px;
-  border-top: 1px solid #ddd;
-  padding-top: 10px;
-  text-align: right;
-  color: #777;
-  font-style: italic;
+  color: #34495e;
+}
+
+/* Modal chi tiết */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-close {
+  background: linear-gradient(135deg, #ff4e50, #f13c3c); /* đỏ gradient đẹp */
+  color: #fff;
+  border: none;
+  width: 40px;
+  margin-bottom: 50px;
+  padding: 5px 10px 12px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 3px 10px rgba(231, 76, 60, 0.4);
+  transition: all 0.25s ease;
+}
+
+.btn-close:hover {
+  background: linear-gradient(135deg, #ff1e2d, #d12f2f);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(192, 57, 43, 0.5);
 }
 </style>

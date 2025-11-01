@@ -2,11 +2,11 @@
   <div class="qua-luu-niem-page">
     <h1>Quản lý Quà Lưu Niệm</h1>
         <button class="order-btn" @click="$router.push('/admin/qualuuniem/donhang')">
-          📋 Đơn hàng
+          Đơn hàng
         </button>
     <!-- Form thêm / cập nhật -->
     <div class="form-card">
-      <h3>{{ isEditing ? "✏️ Cập nhật Quà Lưu Niệm" : "➕ Thêm Quà Lưu Niệm" }}</h3>
+      <h3>{{ isEditing ? " Cập nhật Quà Lưu Niệm" : " Thêm Quà Lưu Niệm" }}</h3>
       <form @submit.prevent="handleSubmit">
         <input v-model="form.tenQuaLuuNiem" placeholder="Tên quà lưu niệm" required />
         <input v-model.number="form.gia" type="number" placeholder="Giá (VNĐ)" required />
@@ -24,7 +24,7 @@
 
     <!-- Danh sách sản phẩm -->
     <div class="product-list">
-      <h3>🛍 Danh sách Quà Lưu Niệm</h3>
+      <h3> Danh sách Quà Lưu Niệm</h3>
 
       <div v-if="items.length === 0">Chưa có quà lưu niệm nào.</div>
 
