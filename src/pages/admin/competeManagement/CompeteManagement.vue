@@ -4,8 +4,6 @@ import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./competeManagement.module.scss";
 import Form from "@/components/common/form/Form.vue";
-import SeasonCard from "@/components/common/cards/seasonCard/SeasonCard.vue";
-import CompeteCard from "@/components/common/cards/competeCard/CompeteCard.vue";
 import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 const cx = classNames.bind(styles);
 

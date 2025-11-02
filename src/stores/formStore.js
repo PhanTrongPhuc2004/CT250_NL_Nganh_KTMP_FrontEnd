@@ -10,6 +10,7 @@ export const useFormStore = defineStore("formStore", () => {
     currentForm.value = name;
     formData.value = { ...data }; // copy để tránh tham chiếu
     isOpen.value = true;
+    console.log("data nhan duoc khi mo form", data);
   }
 
   function closeForm() {
@@ -22,5 +23,5 @@ export const useFormStore = defineStore("formStore", () => {
     return currentForm.value === name && isOpen.value;
   }
 
-  return { openForm, closeForm, isCurrent };
+  return { openForm, closeForm, isCurrent, formData };
 });

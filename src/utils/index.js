@@ -30,3 +30,30 @@ export const formatDate = (time) => {
     return "";
   }
 };
+
+export const fetchSquad = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/doihinh");
+    let data = response.data;
+
+    if (data) {
+      data = data.map((item) => ({
+        _id: item._id,
+        name: item.doiHinh, // đổi field doiHinh -> name
+        cauLacBoId: item.cauLacBoId,
+      }));
+    }
+    return data;
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách đội hình:", error);
+  }
+};
+
+export const fetchClubInfo = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/caulacbo/");
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi tải thông tin câu lạc bộ:", error);
+  }
+};

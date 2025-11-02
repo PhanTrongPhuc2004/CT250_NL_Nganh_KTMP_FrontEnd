@@ -1,7 +1,7 @@
 <script setup>
 import Header from "../header/Header.vue";
 import Footer from "../footer/Footer.vue";
-import Dashboard from "@/pages/admin/dashboard/Dashboard.vue";
+import AdminBody from "@/pages/admin/adminBody/AdminBody.vue";
 import AdminHeader from "../adminHeader/AdminHeader.vue";
 import { useUserStore } from "@/stores/userStore";
 import { watch } from "vue";
@@ -37,7 +37,11 @@ watch(
 
     <!-- cauthu & huanluyenvien -->
     <div
-      v-if="['cauthu', 'huanluyenvien'].includes(toRaw(props.user).vaiTro?.toLowerCase())"
+      v-if="
+        ['cauthu', 'huanluyenvien'].includes(
+          toRaw(props.user).vaiTro?.toLowerCase()
+        )
+      "
       class="default-layout"
     >
       <Header />
@@ -47,14 +51,13 @@ watch(
       <Footer />
     </div>
 
-
     <!-- Admin -->
     <div
       v-else-if="toRaw(props.user).vaiTro?.toLowerCase() === 'admin'"
       class="default-layout"
     >
       <AdminHeader />
-      <Dashboard />
+      <AdminBody />
     </div>
   </div>
 

@@ -9,7 +9,6 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/autoplay";
 import { Autoplay } from "swiper/modules";
-import SouvenirCard from "@/components/common/cards/souvenirCard/SouvenirCard.vue";
 import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";

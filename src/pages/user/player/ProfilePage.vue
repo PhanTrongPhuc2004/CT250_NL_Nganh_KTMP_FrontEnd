@@ -137,7 +137,7 @@ const exitProfile = () => {
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 100px);
-    background: linear-gradient(135deg, #9b7b7f, #8d494d);
+  background: linear-gradient(135deg, #9b7b7f, #8d494d);
   padding: 40px;
 }
 

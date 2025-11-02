@@ -5,6 +5,7 @@
   padding: 16px;
   box-sizing: border-box;
   transition: transform 0.3s ease;
+  margin-top: var(--header-height);
     position: fixed;
   @media (max-width: 767px) {
     position: fixed;

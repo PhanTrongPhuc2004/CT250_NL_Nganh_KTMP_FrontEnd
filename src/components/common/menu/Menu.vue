@@ -21,6 +21,10 @@ const props = defineProps({
     type: String,
     default: "0",
   },
+  right: {
+    type: String,
+    default: "0",
+  },
   onClose: {
     // ✅ Thêm callback để đóng menu khi click ra ngoài
     type: Function,
@@ -47,7 +51,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" :class="cx('menu-wrapper')" :style="{ top: top }">
+  <div
+    ref="root"
+    :class="cx('menu-wrapper')"
+    :style="{ top: top, right: right, zIndex: 5 }"
+  >
     <ul>
       <li
         v-for="(item, index) in menuItems"

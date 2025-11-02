@@ -23,7 +23,8 @@
 .number {
   font-size: 14px;
   font-weight: bold;
-  color: #e53935;
+  color: var(--primary-color);
+  font-size: 40px;
 }
 
 .name {

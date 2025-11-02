@@ -55,13 +55,6 @@ onBeforeUnmount(() =>
   <div :class="cx('header-wrapper')" v-if="!userStore.user"></div>
   <div :class="cx('header-wrapper')" v-else class="col-md-12">
     <nav :class="cx('nav-wrapper')" class="col-md-12">
-      <div class="col-md-2" :class="cx('nav-logo')">
-        <img :src="clubInfo[0]?.logo" alt="" />
-        <p style="color: white; padding-left: 10px; margin-bottom: 0">
-          {{ clubInfo[0]?.ten }}
-        </p>
-      </div>
-
       <div :class="cx('nav-action')">
         <div
           :class="cx('user-name')"

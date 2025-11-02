@@ -23,8 +23,10 @@ import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
 import ClubManagement from "@/pages/admin/clubManagement/ClubManagement.vue";
 import CompeteManagement from "@/pages/admin/competeManagement/CompeteManagement.vue";
 import SeasonDetail from "@/pages/admin/seasonDetail/SeasonDetail.vue";
-import TournamentCard from "@/components/common/cards/tournamentCard/TournamentCard.vue";
 import TournamentDetail from "@/pages/admin/tournamentDetail/TournamentDetail.vue";
+import Dashboard from "@/pages/admin/dashboard/Dashboard.vue";
+import SquadManagement from "@/pages/admin/squadManagement/SquadManagement.vue";
+import SquadDetail from "@/pages/admin/squadDetail/SquadDetail.vue";
 const commonRouter = [
   {
     path: "/profile",
@@ -68,14 +70,20 @@ const userRouter = [
 ];
 const adminRouter = [
   {
-    // THÊM ROUTE NÀY VÀO ĐẦU DANH SÁCH
     path: "/admin",
     name: "Admin",
+    component: Dashboard,
+    meta: { admin: true, hidden: true },
+  },
+  {
+    // THÊM ROUTE NÀY VÀO ĐẦU DANH SÁCH
+    path: "/admin/dashboard",
+    name: "Dashboard",
     // Tùy chọn 1: Chuyển hướng đến một trang đã tồn tại
-    redirect: "/admin/compete",
     // HOẶC Tùy chọn 2: Load thẳng component Dashboard
     // component: AdminDashboard,
-    meta: { admin: true, hidden: true }, // Mặc định là route Admin
+    component: Dashboard,
+    meta: { admin: true }, // Mặc định là route Admin
   },
   {
     path: "/admin/clubs",
@@ -100,6 +108,18 @@ const adminRouter = [
     name: "Quản lý thi đấu",
     component: CompeteManagement,
     meta: { admin: true },
+  },
+  {
+    path: "/admin/squad",
+    name: "Quản lý đội hình",
+    component: SquadManagement,
+    meta: { admin: true },
+  },
+  {
+    path: "/admin/squad/:squadId",
+    name: "Quản lý chi tiết đội hình",
+    component: SquadDetail,
+    meta: { admin: true, hidden: true },
   },
   {
     path: "/admin/compete/seasons/:id",

@@ -1,6 +1,5 @@
 .menu-wrapper {
   position: absolute;
-  right: 10px;
   background-color: #fff;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -9,7 +8,6 @@
   z-index: 1000;
   transform: translateY(-10px);
   transition: all 0.25s ease;
-  position: absolute;
   &.show {
     opacity: 1;
     transform: translateY(0);

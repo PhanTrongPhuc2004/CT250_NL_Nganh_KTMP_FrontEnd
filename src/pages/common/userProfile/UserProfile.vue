@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useUserStore } from "@/stores/userStore"; // nếu bạn dùng Pinia
 
 // ⚙️ Props (nếu không dùng store)
@@ -19,6 +19,10 @@ const userData = computed(() => props.user || store?.user || {});
 const role = computed(
   () => userData.value?.vaiTro?.toLowerCase() || "nguoihammo"
 );
+
+onMounted(() => {
+  console.log("thong tin ca nhan", userData);
+});
 </script>
 
 <template>
