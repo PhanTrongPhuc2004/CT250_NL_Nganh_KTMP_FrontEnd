@@ -85,6 +85,7 @@ const goBack = () => {
       method="POST"
       :orther-data="{ giaiDauId: tournamentId }"
       @submitted="() => fetchMatchByTournamentId(tournamentId)"
+      @closed="showMatchForm = false"
     />
   </div>
 </template>

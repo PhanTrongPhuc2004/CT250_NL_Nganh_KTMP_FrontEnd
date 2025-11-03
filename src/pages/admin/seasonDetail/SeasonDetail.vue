@@ -7,7 +7,7 @@ import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 const route = useRoute();
 const router = useRouter();
-const seasonId = route.params.id;
+const seasonId = route.params.seasonId;
 const addTournamentFields = [
   {
     name: "tenGiaiDau",
@@ -35,7 +35,8 @@ const fetchTournamentBySeason = async (id) => {
 };
 
 // Hàm xử lý khi nhấn nút "Thêm trận đấu"
-const handleAddTournament = () => {
+const handleAddTournament = async () => {
+  await fetchTournamentBySeason(seasonId);
   showTournamentForm.value = !showTournamentForm.value;
 };
 
@@ -80,6 +81,7 @@ const goBack = () => {
     </div>
   </div>
   <!--cac modal-->
+
   <Form
     form-name="Thêm giải đấu mới"
     :input-fields="addTournamentFields"
@@ -87,6 +89,10 @@ const goBack = () => {
     :api="'http://localhost:5000/giaidau'"
     :orther-data="{ muaGiaiId: seasonId }"
     method="POST"
+    modal-id="addTournamentForm"
+    @submitted="handleAddTournament"
+    @updated="handleAddTournament"
+    @closed="showTournamentForm = false"
   />
 </template>
 

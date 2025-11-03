@@ -82,109 +82,123 @@ const adminRouter = [
     name: "Admin",
     component: Dashboard,
     meta: { admin: true, hidden: true },
+    icon: ["fas", "gauge"], // faGauge (bảng điều khiển)
   },
   {
-    // THÊM ROUTE NÀY VÀO ĐẦU DANH SÁCH
     path: "/admin/dashboard",
     name: "Dashboard",
-    // Tùy chọn 1: Chuyển hướng đến một trang đã tồn tại
-    // HOẶC Tùy chọn 2: Load thẳng component Dashboard
-    // component: AdminDashboard,
     component: Dashboard,
-    meta: { admin: true }, // Mặc định là route Admin
+    meta: { admin: true },
+    icon: ["fas", "gauge"],
   },
   {
     path: "/admin/clubs",
     name: "Quản lý thông tin câu lạc bộ",
     component: ClubManagement,
     meta: { admin: true },
+    icon: ["fas", "shield-alt"], // faShieldAlt
   },
   {
     path: "/admin/users",
     name: "Quản lý người dùng",
     component: UserManagement,
     meta: { admin: true },
+    icon: ["far", "user"], // faUser (regular)
   },
   {
     path: "/admin/tournaments",
     name: "Quản lý giải đấu",
     component: UserManagement,
     meta: { admin: true, hidden: true },
+    icon: ["fas", "medal"], // faMedal
   },
   {
     path: "/admin/compete",
     name: "Quản lý thi đấu",
     component: CompeteManagement,
     meta: { admin: true },
+    icon: ["fas", "trophy"], // faTrophy
   },
   {
     path: "/admin/squad",
     name: "Quản lý đội hình",
     component: SquadManagement,
     meta: { admin: true },
+    icon: ["fas", "users"], // faUsers
   },
   {
     path: "/admin/squad/:squadId",
     name: "Quản lý chi tiết đội hình",
     component: SquadDetail,
     meta: { admin: true, hidden: true },
+    icon: ["fas", "user-group"],
   },
   {
-    path: "/admin/compete/seasons/:id",
+    path: "/admin/compete/seasons/:seasonId",
     name: "Quản lý mùa giải",
     component: SeasonDetail,
     meta: { admin: true, hidden: true },
+    icon: ["fas", "calendar-alt"], // faCalendarAlt
   },
   {
     path: "/admin/posts",
     name: "Quản lý bài viết",
     component: UserManagement,
     meta: { admin: true },
+    icon: ["fas", "newspaper"], // faNewspaper
   },
   {
     path: "/admin/qualuuniem",
     name: "Quản lý hàng lưu niệm",
     component: qualuuniem,
     meta: { admin: true },
+    icon: ["fas", "gift"], // faGift
   },
   {
     path: "/admin/qualuuniem/donhang",
     component: donhang,
     name: "Quản lý đơn hàng",
     meta: { admin: true },
+    icon: ["fas", "box-open"], // faBoxOpen
   },
   {
     path: "/admin/tickets",
     name: "Quản lý vé",
     component: UserManagement,
     meta: { admin: true },
+    icon: ["fas", "ticket-alt"], // faTicketAlt
   },
   {
     path: "/admin/statistics",
     name: "Thống kê",
     component: UserManagement,
     meta: { admin: true },
+    icon: ["fas", "chart-bar"], // faChartBar
   },
   {
     path: "/admin/compete/seasons/:id/tournaments/:tournamentId",
     name: "Quản lý giải đấu",
     component: TournamentDetail,
     meta: { admin: true, hidden: true },
+    icon: ["fas", "medal"],
   },
-    {
+  {
     path: "/admin/hopdong",
-    name: "Quản lý hợp đông",
+    name: "Quản lý hợp đồng",
     component: HopDongManage,
-    meta: { admin: true},
+    meta: { admin: true },
+    icon: ["fas", "file-contract"], // faFileContract
   },
   {
     path: "/admin/tickets",
     name: "Quản lý vé",
-    component: () => import("@/pages/admin/ticketManagement/TicketManagement.vue"),
-    meta: { admin: true }
+    component: () =>
+      import("@/pages/admin/ticketManagement/TicketManagement.vue"),
+    meta: { admin: true },
+    icon: ["fas", "ticket-alt"],
   },
-
 ];
+
 const routes = [...userRouter, ...adminRouter, ...commonRouter];
 const router = createRouter({
   history: createWebHistory(),

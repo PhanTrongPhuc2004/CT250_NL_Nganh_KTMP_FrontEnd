@@ -5,6 +5,9 @@ import classNames from "classnames/bind";
 import styles from "./competeManagement.module.scss";
 import Form from "@/components/common/form/Form.vue";
 import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
+import { useFormStore } from "@/stores/formStore";
+
+const formStore = useFormStore();
 const cx = classNames.bind(styles);
 
 // --- STATE ---
@@ -60,20 +63,9 @@ onMounted(fetchSeasons);
       <button
         type="button"
         class="btn btn-primary"
-        data-bs-toggle="modal"
-        :data-bs-target="`#${seasonModalId}`"
+        @click="() => formStore.openForm('Tạo mùa giải', {})"
       >
         + Tạo mùa giải
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-success ms-2"
-        data-bs-toggle="modal"
-        :data-bs-target="`#${competitionModalId}`"
-        :disabled="!currentSeason"
-      >
-        + Tạo giải đấu
       </button>
     </div>
 
@@ -96,39 +88,21 @@ onMounted(fetchSeasons);
     </div>
 
     <!-- Modal tạo mùa giải -->
-    <div
-      class="modal fade"
-      :id="seasonModalId"
-      tabindex="-1"
-      aria-hidden="true"
-    >
+    <div>
       <Form
+        v-if="formStore.isCurrent('Tạo mùa giải')"
         :inputFields="seasonFields"
-        :inputData="{}"
+        :inputData="formStore.formData"
         formName="Tạo mùa giải"
         :api="seasonApi"
         method="POST"
-        :modalId="seasonModalId"
-        @submitted="fetchSeasons"
-      />
-    </div>
-
-    <!-- Modal tạo giải đấu -->
-    <div
-      class="modal fade"
-      :id="competitionModalId"
-      tabindex="-1"
-      aria-hidden="true"
-    >
-      <Form
-        :inputFields="competitionFields"
-        :inputData="{}"
-        :ortherData="{ muaGiaiId: currentSeason?._id }"
-        formName="Tạo giải đấu"
-        :api="competitionApi"
-        method="POST"
-        :modalId="competitionModalId"
-        @submitted="() => fetchCompetitions(currentSeason._id)"
+        @submitted="
+          () => {
+            fetchSeasons();
+            formStore.closeForm();
+          }
+        "
+        @closed="formStore.closeForm"
       />
     </div>
   </div>
