@@ -9,6 +9,7 @@ onMounted(async () => {
     const response = await axios.get("http://localhost:5000/caulacbo/");
     // API trả về mảng, lấy phần tử đầu tiên
     clubInfo.value = response.data[0] || {};
+    console.log("clubInfo", clubInfo.value);
   } catch (error) {
     console.error("Fetch club info error:", error);
   }
@@ -36,10 +37,7 @@ onMounted(async () => {
             </h5>
           </div>
           <p class="small text-muted">
-            {{
-              clubInfo.moTa ||
-              "The world's most successful football club, home to legends and dreams."
-            }}
+            {{ clubInfo?.moTa }}
           </p>
         </div>
 

@@ -8,6 +8,25 @@ import { onMounted, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Form from "../../form/Form.vue";
 import axios from "axios";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/css/index.css";
+
+const isLoading = ref(false);
+const spinner = "dots"; // có thể thay đổi: 'spinner', 'dots', 'bars'
+
+// Hàm hiển thị loading
+const showLoading = () => {
+  isLoading.value = true;
+
+  // Giả lập API call hoặc xử lý dữ liệu
+  setTimeout(() => {
+    isLoading.value = false;
+  }, 3000); // Loading sẽ tắt sau 3 giây
+};
+// Hàm khi người dùng cancel loading
+const onCancel = () => {
+  console.log("Loading đã bị hủy");
+};
 import {
   seasonFields,
   tournamentFields,
@@ -38,7 +57,6 @@ const props = defineProps({
     default: "",
   },
 });
-
 // ✅ Quản lý menu - chỉ dùng 1 biến
 const openMenuId = ref(null);
 
@@ -48,6 +66,7 @@ const toggleMenu = (itemId) => {
 
 const closeMenu = () => {
   openMenuId.value = null;
+  formStore.closeForm();
 };
 
 const isMenuOpen = (itemId) => {
@@ -108,6 +127,7 @@ const deleteAction = {
     axios
       .delete(`http://localhost:5000/muagiai/${id}`)
       .then(() => {
+        window.location.reload()
         router.push("/admin/compete");
       })
       .catch((error) => {
@@ -117,10 +137,14 @@ const deleteAction = {
   },
   tournament: (id) => {
     if (!confirm("Bạn có chắc muốn xóa giải đấu này?")) return;
+    const seasonId = route.params.seasonId;
+    console.log("seasonId", seasonId);
     axios
       .delete(`http://localhost:5000/giaidau/${id}`)
       .then(() => {
-        router.push("/admin/compete");
+        window.location.reload()
+        console.log("seasonId", seasonId);
+        router.push(`/admin/compete/seasons/${seasonId}`);
       })
       .catch((error) => {
         console.error("Error deleting tournament:", error);
@@ -132,6 +156,7 @@ const deleteAction = {
     axios
       .delete(`http://localhost:5000/cauthu/${id}`)
       .then(() => {
+        window.location.reload()
         router.push("/admin/compete");
       })
       .catch((error) => {
@@ -144,6 +169,7 @@ const deleteAction = {
     axios
       .delete(`http://localhost:5000/qualuuniem/${id}`)
       .then(() => {
+        window.location.reload()
         router.push("/admin/compete");
       })
       .catch((error) => {
@@ -156,6 +182,7 @@ const deleteAction = {
     axios
       .delete(`http://localhost:5000/doihinh/${id}`)
       .then(() => {
+        window.location.reload()
         router.push("/admin/compete");
       })
       .catch((error) => {
@@ -171,7 +198,6 @@ const menuItemsByType = {
       name: "Chỉnh sửa trận đấu",
       action: () => {
         formStore.openForm(formNames.match, props.item);
-        closeMenu();
       },
     },
     {
@@ -203,9 +229,7 @@ const menuItemsByType = {
       name: "Chỉnh sửa mùa giải",
       action: () => {
         formStore.openForm(formNames.season, props.item);
-        console.log("item sua", props.item);
-        console.log("api sua", editAction.season.api);
-        closeMenu();
+        
       },
     },
     {
@@ -229,7 +253,6 @@ const menuItemsByType = {
       name: "Chỉnh sửa giải đấu",
       action: () => {
         formStore.openForm(formNames.tournament, props.item);
-        closeMenu();
       },
     },
     {
@@ -253,7 +276,6 @@ const menuItemsByType = {
       name: "Chỉnh sửa thông tin cầu thủ",
       action: () => {
         formStore.openForm(formNames.player, props.item);
-        closeMenu();
       },
     },
     {
@@ -301,7 +323,6 @@ const menuItemsByType = {
       name: "Chỉnh sửa đội hình",
       action: () => {
         formStore.openForm(formNames.squad, props.item);
-        closeMenu();
       },
     },
     {
@@ -366,7 +387,10 @@ const inputFields = {
       alt=""
       class="col-md-12 border rounded-top-4 overflow-hidden"
     />
-    <div class="p-3">{{ item.namBatDau }} - {{ item.namKetThuc }}</div>
+    <div class="p-3">{{ item.namBatDau }} - {{ item.namKetThuc }}
+
+
+    </div>
 
     <div
       class="d-flex justify-content-end align-items-center mt-2 p-3 position-relative"
@@ -376,6 +400,7 @@ const inputFields = {
         :class="cx('more-btn')"
         @click="toggleMenu(item._id)"
       />
+
       <Menu
         v-if="isMenuOpen(item._id)"
         top="46px"
@@ -541,11 +566,15 @@ const inputFields = {
   </div>
 
   <!-- Modal Form for Edit -->
-  <div
-    v-if="formStore.isCurrent(formNames[type])"
-    class="position-fixed top-50 start-50 translate-middle"
-    style="min-width: 400px; z-index: 1050"
-  >
+ <!-- Modal overlay controlled by Pinia -->
+<div
+  v-if="formStore.isOpen && formStore.isCurrent(formNames[type])"
+  class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+  style="background: rgba(0, 0, 0, 0.5); z-index: 1050"
+  @click.self="formStore.closeForm"  
+>
+  <!-- Form content -->
+  <div class="bg-white p-4 rounded-4 shadow-lg" style="min-width: 400px; max-width: 600px;">
     <Form
       :input-fields="inputFields[type]"
       modal-id="userModal"
@@ -554,6 +583,12 @@ const inputFields = {
       :api="editAction[type]?.api || ''"
       :method="editAction[type]?.method || ''"
       :orther-data="{ cauLacBoId }"
+      @submitted="() => { formStore.closeForm(); closeMenu(); }"
+      @closed="formStore.closeForm"
     />
   </div>
+</div>
+
+
+  
 </template>

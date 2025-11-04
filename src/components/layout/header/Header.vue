@@ -8,8 +8,9 @@ import Menu from "@/components/common/menu/Menu.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { useDropdownManager } from "@/composables/useDropdownManager"; // 👈 thêm
 import { watchEffect } from "vue";
-
+import { useFormStore } from "@/stores/formStore";
 const userStore = useUserStore();
+const formStore = useFormStore();
 const router = useRouter();
 const cx = classNames.bind(styles);
 
@@ -48,8 +49,11 @@ const loginFields = [
         <button
           :class="cx('register-btn', 'btn', 'btn-primary')"
           type="button"
-          data-bs-toggle="modal"
-          data-bs-target="#loginModal"
+          @click="
+            () => {
+              formStore.openForm('Đăng nhập', {});
+            }
+          "
         >
           Đăng nhập
         </button>
@@ -57,8 +61,11 @@ const loginFields = [
         <button
           :class="cx('register-btn', 'btn', 'btn-primary')"
           type="button"
-          data-bs-toggle="modal"
-          data-bs-target="#registerModal"
+          @click="
+            () => {
+              formStore.openForm('Đăng ký', {});
+            }
+          "
         >
           Đăng ký
         </button>
@@ -100,25 +107,29 @@ const loginFields = [
   </div>
 
   <!-- Modal Đăng ký -->
-  <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
-    <Form
-      :inputFields="registerFields"
-      method="POST"
-      api="http://localhost:5000/nguoidung"
-      :form-name="'Đăng ký'"
-      :orther-data="{ vaiTro: 'nguoihammo' }"
-    />
-  </div>
+  <Form
+    v-if="formStore.isCurrent('Đăng ký')"
+    :inputFields="registerFields"
+    method="POST"
+    api="http://localhost:5000/nguoidung"
+    :form-name="'Đăng ký'"
+    :orther-data="{ vaiTro: 'nguoihammo' }"
+    @closed="formStore.closeForm"
+    @submitted="() => formStore.closeForm()"
+  />
 
   <!-- Modal Đăng nhập -->
-  <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-    <Form
-      :inputFields="loginFields"
-      method="POST"
-      api="http://localhost:5000/nguoidung/login"
-      :form-name="'Đăng nhập'"
-    />
-  </div>
+
+  <Form
+    v-if="formStore.isCurrent('Đăng nhập')"
+    formName="Đăng nhập"
+    :inputFields="loginFields"
+    method="POST"
+    api="http://localhost:5000/nguoidung/login"
+    :form-name="'Đăng nhập'"
+    @closed="formStore.closeForm"
+    @submitted="() => userStore.login()"
+  />
 </template>
 
 <style scoped>

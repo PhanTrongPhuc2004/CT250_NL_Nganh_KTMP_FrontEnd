@@ -1,49 +1,91 @@
 import { createApp } from "vue";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-vue-3/dist/bootstrap-vue-3.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js"; // 👈 thêm dòng này
-import * as bootstrap from "bootstrap"; // 👈 thêm dòng này
-window.bootstrap = bootstrap; // 👈 và dòng này
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import * as bootstrap from "bootstrap";
+window.bootstrap = bootstrap;
+
 import BootstrapVue3 from "bootstrap-vue-3";
+import { LoadingPlugin } from "vue-loading-overlay";
+import "vue-loading-overlay/dist/css/index.css";
 
 import App from "./App.vue";
 import router from "./router";
+import { createPinia } from "pinia";
 
-// FontAwesome
+// ✅ FontAwesome
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+// Solid icons
 import {
   faAngleRight,
   faAngleDown,
-  faEllipsis,
   faEllipsisV,
-  faTrophy,
-  faBackspace,
   faAngleLeft,
   faTrash,
   faPen,
+  faPlus,
+  faClose,
+  faTachometerAlt,
+  faShieldAlt,
+  faUser,
+  faTrophy,
+  faUsers,
+  faNewspaper,
+  faGift,
+  faBoxOpen,
+  faTicketAlt,
+  faChartBar,
+  faFileContract,
 } from "@fortawesome/free-solid-svg-icons";
 
-// Pinia
-import { createPinia } from "pinia";
+// Regular icons
+import {
+  faUser as farUser,
+  faCalendar as farCalendar,
+  faFile as farFile,
+} from "@fortawesome/free-regular-svg-icons";
 
-// --- App setup ---
-const app = createApp(App);
+// Brands (nếu có)
+import { faFacebook, faTwitter } from "@fortawesome/free-brands-svg-icons";
 
-// FontAwesome
+// Add vào library
 library.add(
+  // Solid
   faAngleRight,
   faAngleDown,
   faEllipsisV,
   faAngleLeft,
   faTrash,
-  faPen
+  faPen,
+  faPlus,
+  faClose,
+  faTachometerAlt,
+  faShieldAlt,
+  faUser,
+  faTrophy,
+  faUsers,
+  faNewspaper,
+  faGift,
+  faBoxOpen,
+  faTicketAlt,
+  faChartBar,
+  faFileContract,
+  // Regular
+  farUser,
+  farCalendar,
+  farFile,
+  // Brands
+  faFacebook,
+  faTwitter
 );
-app.component("FontAwesomeIcon", FontAwesomeIcon);
 
-// Plugins
+// Tạo app
+const app = createApp(App);
+app.component("FontAwesomeIcon", FontAwesomeIcon);
 app.use(BootstrapVue3);
 app.use(createPinia());
 app.use(router);
-
+app.use(LoadingPlugin);
 app.mount("#app");

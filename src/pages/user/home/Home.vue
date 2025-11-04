@@ -12,6 +12,8 @@ import { Autoplay } from "swiper/modules";
 import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
+import MarqueeText from "vue-marquee-text-component";
+
 const handleBookSticket = () => {
   alert("Chức năng đặt vé sẽ sớm được cập nhật!");
 };
@@ -25,10 +27,19 @@ const tranDau = {
   diaDiem: "Sân Old Trafford",
   thoiGianDienRa: "20:00, 15/08/2024",
 };
+
+// Tạo text dài để chạy liên tục
+const marqueeText = ref("");
+
 onMounted(async () => {
   //fetch infor club
   const clubResponse = await axios.get("http://localhost:5000/caulacbo/");
   clubInfo.value = clubResponse.data;
+
+  // Tạo text lặp lại nhiều lần để không bị đứt
+  const baseText = clubInfo.value[0]?.moTa;
+  marqueeText.value = `${baseText} • ${baseText} • ${baseText} • ${baseText}`;
+
   // await fetchSouvenirList();
   const souvenirListResponse = await axios.get(
     "http://localhost:5000/qualuuniem"
@@ -37,57 +48,12 @@ onMounted(async () => {
   // await fetchMatchList();
   const matchListResponse = await axios.get("http://localhost:5000/trandau");
   matchList.value = matchListResponse.data;
-  //PHUC
-  // await fetchPostList();
-  // const postListResponse = await axios.get("http://localhost:5000/baidang");
-  // postList.value = postListResponse.data;
   // await fetchPlayerList();
   const response = await axios.get("http://localhost:5000/cauthu/", {
     withCredentials: true,
   });
   playerList.value = response.data;
 });
-
-//     maQuaLuuNiem: "QLN001",
-//     tenQuaLuuNiem: "Áo đấu Manchester United 2025",
-//     gia: 1200000,
-//     moTa: "Áo thi đấu chính thức mùa giải 2025, chất liệu thoáng mát, in logo MU.",
-//     anhMinhHoa:
-//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-//   },
-//   {
-//     maQuaLuuNiem: "QLN002",
-//     tenQuaLuuNiem: "Khăn choàng cổ MU",
-//     gia: 250000,
-//     moTa: "Khăn choàng cổ màu đỏ đen với logo Manchester United, thích hợp cổ vũ.",
-//     anhMinhHoa:
-//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-//   },
-//   {
-//     maQuaLuuNiem: "QLN003",
-//     tenQuaLuuNiem: "Bóng đá Manchester United",
-//     gia: 550000,
-//     moTa: "Quả bóng chính hãng in logo MU, chất liệu da PU, dùng để thi đấu và trưng bày.",
-//     anhMinhHoa:
-//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-//   },
-//   {
-//     maQuaLuuNiem: "QLN004",
-//     tenQuaLuuNiem: "Móc khóa logo MU",
-//     gia: 80000,
-//     moTa: "Móc khóa kim loại in nổi logo Manchester United, nhỏ gọn, tiện dụng.",
-//     anhMinhHoa:
-//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-//   },
-//   {
-//     maQuaLuuNiem: "QLN005",
-//     tenQuaLuuNiem: "Ly sứ MU",
-//     gia: 150000,
-//     moTa: "Ly sứ cao cấp in logo Manchester United, thích hợp dùng uống cà phê, trưng bày.",
-//     anhMinhHoa:
-//       "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lozb9tz9f90b50",
-//   },
-// ];
 </script>
 
 <template>
@@ -101,12 +67,18 @@ onMounted(async () => {
       {{ clubInfo[0]?.slogan }}
     </div>
   </div>
-  <p class="mt-2 text-muted">
-    {{
-      clubInfo.moTa ||
-      "The world's most successful football club, home to legends and dreams."
-    }}
-  </p>
+
+  <!-- Marquee chạy liên tục -->
+  <div class="marquee-wrapper">
+    <MarqueeText
+      :duration="60"
+      :repeat="2"
+      :paused="false"
+      class="marquee-text"
+    >
+      {{ marqueeText }}
+    </MarqueeText>
+  </div>
 
   <div :class="cx('next-match')">
     <div>
@@ -127,6 +99,7 @@ onMounted(async () => {
       <FontAwesomeIcon :icon="['fas', 'angle-right']" :class="'display-3'" />
     </div>
   </div>
+
   <div :class="cx('home-wrapper')">
     <div :class="cx('container', 'home-body')">
       <div>
@@ -137,14 +110,6 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-
-      <!-- <div :class="cx('recent-news')">
-        <New
-          v-for="(baiDang, index) in postList"
-          :bai-dang="baiDang"
-          :key="index"
-        />
-      </div> -->
 
       <swiper
         :modules="[Autoplay]"
@@ -173,6 +138,7 @@ onMounted(async () => {
       </swiper>
     </div>
   </div>
+
   <div class="sponsors mt-3">
     <h6>Nhà tài trợ</h6>
     <ul
@@ -184,15 +150,38 @@ onMounted(async () => {
     </ul>
   </div>
 </template>
+
 <style scoped>
+/* Wrapper cho marquee */
+.marquee-wrapper {
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(90deg, #dc3545 0%, #8b0000 50%, #dc3545 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Style cho MarqueeText component */
+.marquee-text {
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  white-space: nowrap;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+}
+
+/* Style cho sponsors */
 .sponsors h6 {
   font-weight: 600;
-  color: #dc3545; /* đỏ nổi bật giống Bootstrap btn-danger */
+  color: #dc3545;
   margin-bottom: 0.75rem;
 }
 
 .sponsor-list li {
-  background-color: #343a40; /* xám đậm nền */
+  background-color: #343a40;
   color: #fff;
   padding: 0.3rem 0.6rem;
   border-radius: 0.5rem;
@@ -203,7 +192,7 @@ onMounted(async () => {
 }
 
 .sponsor-list li:hover {
-  background-color: #495057; /* sáng hơn khi hover */
+  background-color: #495057;
   transform: translateY(-2px);
 }
 

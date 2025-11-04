@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="d-flex flex-column bg-white border-end p-3 vh-100 position-fixed top-0 start-0 shadow-sm mt-5"
+    class="d-flex flex-column bg-white p-3 vh-100 position-fixed top-0 start-0 shadow-sm mt-5 border-end border-secondary-subtle shadow-sm"
     style="width: 250px; transition: transform 0.3s ease"
     :style="{
       transform: isSidebarVisible ? 'translateX(0)' : 'translateX(-100%)',
@@ -49,6 +49,7 @@
             class="fs-5"
             style="width: 22px"
           />
+
           <span class="fw-semibold">{{ item.name }}</span>
         </RouterLink>
       </li>

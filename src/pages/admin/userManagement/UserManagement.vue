@@ -76,21 +76,26 @@
     </div>
 
     <!-- Modal Form -->
-    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
-      <Form
-        v-if="formData.vaiTro && dataObj[formData.vaiTro]"
-        :key="`${formData.vaiTro}-${formMode}-${formData._id || 'new'}`"
-        :input-fields="dataObj[formData.vaiTro].fields"
-        :input-data="formData"
-        :form-name="formMode === 'add' ? formNameAddUser : formNameEditUser"
-        :api="`http://localhost:5000/nguoidung${
-          formMode === 'add' ? '' : '/' + formData._id
-        }`"
-        :method="formMode === 'add' ? 'POST' : 'PUT'"
-        modal-id="userModal"
-        @success="fetchUsers"
-      />
-    </div>
+    <Form
+      v-if="
+        formStore.isCurrent(
+          formMode == 'add' ? formNameAddUser : formNameEditUser
+        )
+      "
+      :key="`${formData.vaiTro}-${formMode}-${formData._id || 'new'}`"
+      :input-fields="dataObj[formData.vaiTro].fields"
+      :input-data="formData"
+      :form-name="formMode === 'add' ? formNameAddUser : formNameEditUser"
+      :api="`http://localhost:5000/nguoidung${
+        formMode === 'add' ? '' : '/' + formData._id
+      }`"
+      :method="formMode === 'add' ? 'POST' : 'PUT'"
+      modal-id="userModal"
+      @success="fetchUsers"
+      @closed="formStore.closeForm"
+      @submitted="formStore.closeForm"
+      @updated="formStore.closeForm"
+    />
   </div>
 </template>
 
@@ -99,6 +104,8 @@ import { ref, reactive, onMounted, nextTick } from "vue";
 import axios from "axios";
 import Form from "@/components/common/form/Form.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { useFormStore } from "@/stores/formStore";
+const formStore = useFormStore();
 import {
   adminFields,
   nguoiHamMoFields,
@@ -147,14 +154,15 @@ const deleteUser = async (id) => {
 async function handleOpenForm(mode, vaiTro, user = null) {
   formMode.value = mode;
   formData.value = mode === "add" ? { vaiTro } : { ...user };
+  console.log("formData", formData.value);
+
   if (vaiTro === "cauthu" || vaiTro === "huanluyenvien") await fetchSquad();
 
   formNameAddUser.value = "Thêm người dùng";
   formNameEditUser.value = "Chỉnh sửa thông tin";
-
-  await nextTick();
-  const modalEl = document.getElementById("userModal");
-  if (modalEl) new bootstrap.Modal(modalEl).show();
+  formStore.openForm(
+    mode === "add" ? formNameAddUser.value : formNameEditUser.value
+  );
 }
 
 onMounted(fetchUsers);

@@ -1,30 +1,34 @@
 <template>
   <div>
-    <h3>Danh sách đội hình</h3>
-
-    <!-- Nút Thêm đội hình -->
-    <button
-      class="btn btn-primary mb-3"
-      @click="formStore.openForm('Thêm đội hình')"
-    >
-      Thêm đội hình
-    </button>
-
-    <!-- Danh sách đội hình -->
-    <div v-for="(squad, index) in squads" :key="squad._id">
-      <PlayerCard type="squad" :item="squad" @updated="fetchDoiHinh" />
+    <div class="d-flex justify-content-between align-items-center">
+      <button
+        class="btn btn-primary"
+        @click="formStore.openForm('Thêm đội hình')"
+      >
+        <FontAwesomeIcon icon="fa-solid fa-plus"></FontAwesomeIcon>
+        Thêm đội hình
+      </button>
     </div>
 
-    <!--Form them doi hinh-->
-    <Form
-      v-if="formStore.isCurrent('Thêm đội hình')"
-      :input-fields="squadFields"
-      form-name="Thêm đội hình"
-      :api="formAction.add.api"
-      :method="formAction.add.method"
-      :orther-data="{ cauLacBoId }"
-    />
-    <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
+    <div class="pt-3 mt-4 border-top">
+      <h4 class="text-secondary mb-3">Danh sách đội hình</h4>
+
+      <!-- Danh sách đội hình -->
+      <div v-for="(squad, index) in squads" :key="squad._id">
+        <PlayerCard type="squad" :item="squad" @updated="fetchDoiHinh" />
+      </div>
+
+      <!--Form them doi hinh-->
+      <Form
+        v-if="formStore.isCurrent('Thêm đội hình')"
+        :input-fields="squadFields"
+        form-name="Thêm đội hình"
+        :api="formAction.add.api"
+        :method="formAction.add.method"
+        :orther-data="{ cauLacBoId }"
+      />
+      <p v-if="errorMessage" class="text-danger">{{ errorMessage }}</p>
+    </div>
   </div>
 </template>
 
@@ -35,7 +39,7 @@ import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import Form from "@/components/common/form/Form.vue";
 import { useFormStore } from "@/stores/formStore";
 import { fetchClubInfo } from "@/utils";
-
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 const clubInfor = ref([]);
 const squads = ref([]);
 const formStore = useFormStore();
@@ -62,18 +66,6 @@ const formAction = {
   },
 };
 
-const onAddSuccess = (newSquad) => {
-  // Kiểm tra trùng tên
-  const exists = squads.value.some((s) => s.doiHinh === newSquad.doiHinh);
-  if (exists) {
-    errorMessage.value = "Tên đội hình đã tồn tại, không thể thêm!";
-    return;
-  }
-  squads.value.push(newSquad); // Cập nhật UI ngay
-  formStore.closeForm(); // Đóng form
-  errorMessage.value = "";
-};
-
 const onAddError = (err) => {
   console.error("Lỗi thêm đội hình:", err);
   errorMessage.value = "Không thể thêm đội hình. Vui lòng thử lại!";
@@ -87,4 +79,8 @@ onMounted(async () => {
 const cauLacBoId = computed(() => {
   return clubInfor.value?.[0]?._id || null;
 });
+
+const goBack = () => {
+  window.history.back();
+};
 </script>
