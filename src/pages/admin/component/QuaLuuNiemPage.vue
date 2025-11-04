@@ -1,57 +1,140 @@
 <template>
   <div class="qua-luu-niem-page">
-    <h1>Quản lý Quà Lưu Niệm</h1>
-    <button
-      class="order-btn"
-      @click="$router.push('/admin/qualuuniem/donhang')"
-    >
-      Đơn hàng
-    </button>
-    <!-- Form thêm / cập nhật -->
-    <div class="form-card">
-      <h3>{{ isEditing ? " Cập nhật Quà Lưu Niệm" : " Thêm Quà Lưu Niệm" }}</h3>
+    <div class="container-fluid py-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Quản lý Quà Lưu Niệm</h1>
+        <div>
+          <button
+            class="btn btn-outline-primary me-2"
+            @click="$router.push('/admin/qualuuniem/donhang')"
+          >
+            Đơn hàng
+          </button>
+          <button v-if="!showForm" class="btn btn-primary" @click="showAddForm">
+            + Thêm mới
+          </button>
+        </div>
+      </div>
 
-      <form @submit.prevent="handleSubmit">
-        <input
-          v-model="form.tenQuaLuuNiem"
-          placeholder="Tên quà lưu niệm"
-          required
-        />
-        <input
-          v-model.number="form.gia"
-          type="number"
-          placeholder="Giá (VNĐ)"
-          required
-        />
-        <textarea v-model="form.moTa" placeholder="Mô tả"></textarea>
-        <input
-          v-model="form.anhMinhHoa"
-          placeholder="URL ảnh minh họa (tùy chọn)"
-        />
+      <!-- Overlay -->
+      <div v-if="showForm" class="modal-backdrop fade show"></div>
 
-        <button type="submit" class="btn btn-primary">
-          {{ isEditing ? "Cập nhật" : "Thêm mới" }}
-        </button>
-        <button
-          v-if="isEditing"
-          @click="cancelEdit"
-          type="button"
-          class="btn btn-secondary"
-        >
-          Hủy
-        </button>
-      </form>
-    </div>
+      <!-- Form thêm / cập nhật -->
+      <div v-if="showForm" class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                {{ isEditing ? "Cập nhật Quà Lưu Niệm" : "Thêm Quà Lưu Niệm" }}
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                @click="cancelEdit"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <form @submit.prevent="handleSubmit">
+                <div class="mb-3">
+                  <label class="form-label">Tên quà lưu niệm</label>
+                  <input
+                    v-model="form.tenQuaLuuNiem"
+                    type="text"
+                    class="form-control"
+                    required
+                  />
+                </div>
 
-    <!-- Danh sách sản phẩm -->
-    <div class="product-list">
-      <h3>Danh sách Quà Lưu Niệm</h3>
+                <div class="mb-3">
+                  <label class="form-label">Giá (VNĐ)</label>
+                  <input
+                    v-model.number="form.gia"
+                    type="number"
+                    class="form-control"
+                    required
+                  />
+                </div>
 
-      <div v-if="items.length === 0">Chưa có quà lưu niệm nào.</div>
+                <div class="mb-3">
+                  <label class="form-label">Mô tả</label>
+                  <textarea
+                    v-model="form.moTa"
+                    class="form-control"
+                    rows="3"
+                  ></textarea>
+                </div>
 
-      <div class="product-grid">
-        <div v-for="item in items" :key="item._id" class="product-card">
-          <PlayerCard :item="item" type="souvenir" />
+                <div class="mb-3">
+                  <label class="form-label">URL ảnh minh họa</label>
+                  <input
+                    v-model="form.anhMinhHoa"
+                    type="text"
+                    class="form-control"
+                  />
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill">
+                    {{ isEditing ? "Cập nhật" : "Thêm mới" }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary flex-fill"
+                    @click="cancelEdit"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách sản phẩm -->
+      <div class="product-list">
+        <div v-if="items.length === 0" class="text-center text-muted py-5">
+          Chưa có quà lưu niệm nào.
+        </div>
+
+        <div v-else class="row g-4">
+          <div
+            v-for="item in items"
+            :key="item._id"
+            class="col-12 col-sm-6 col-md-4 col-lg-3"
+          >
+            <div class="card h-100">
+              <img
+                :src="getImage(item.anhMinhHoa)"
+                :alt="item.tenQuaLuuNiem"
+                class="card-img-top"
+                style="height: 200px; object-fit: cover"
+              />
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ item.tenQuaLuuNiem }}</h5>
+                <p class="card-text text-danger fw-bold fs-5">
+                  {{ formatPrice(item.gia) }} VNĐ
+                </p>
+                <p class="card-text text-muted small flex-grow-1">
+                  {{ item.moTa || "Không có mô tả" }}
+                </p>
+                <div class="d-flex gap-2 mt-2">
+                  <button
+                    @click="editItem(item)"
+                    class="btn btn-sm btn-outline-warning flex-fill"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    @click="deleteItem(item._id)"
+                    class="btn btn-sm btn-outline-danger flex-fill"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -60,12 +143,8 @@
 
 <script>
 import axios from "axios";
-import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 export default {
   name: "QuaLuuNiemPage",
-  components: {
-    PlayerCard, // ✅ Thêm dòng này
-  },
 
   data() {
     return {
@@ -78,6 +157,7 @@ export default {
       },
       isEditing: false,
       editId: null,
+      showForm: false,
     };
   },
   created() {
@@ -116,17 +196,25 @@ export default {
       }
     },
 
+    // Hiển thị form thêm mới
+    showAddForm() {
+      this.showForm = true;
+      this.isEditing = false;
+      this.resetForm();
+    },
+
     // Sửa
     editItem(item) {
+      this.showForm = true;
       this.isEditing = true;
       this.editId = item._id;
       this.form = { ...item };
-      window.scrollTo({ top: 0, behavior: "smooth" });
     },
 
     // Hủy chỉnh sửa
     cancelEdit() {
       this.resetForm();
+      this.showForm = false;
     },
 
     // Xóa
@@ -149,16 +237,20 @@ export default {
       this.form = { tenQuaLuuNiem: "", gia: "", moTa: "", anhMinhHoa: "" };
     },
 
-    // ✅ Hàm xử lý ảnh linh hoạt
+    // Hàm xử lý ảnh linh hoạt
     getImage(url) {
       if (!url || url.trim() === "") {
-        return "https://via.placeholder.com/200x150?text=No+Image"; // ảnh fallback
+        return "https://via.placeholder.com/200x150?text=No+Image";
       }
       if (url.startsWith("http") || url.startsWith("data:image")) {
-        return url; // URL hoặc Base64
+        return url;
       }
-      // ảnh từ public/data
       return `/${url}`;
+    },
+
+    // Format giá tiền
+    formatPrice(price) {
+      return new Intl.NumberFormat("vi-VN").format(price);
     },
   },
 };
@@ -166,80 +258,20 @@ export default {
 
 <style scoped>
 .qua-luu-niem-page {
-  padding: 30px;
-  max-width: 1000px;
-  margin: auto;
+  min-height: 100vh;
+  background: #f8f9fa;
 }
 
-.form-card {
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.modal {
+  background: rgba(0, 0, 0, 0.5);
 }
 
-.form-card form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.form-card input,
-.form-card textarea {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-warning {
-  background: #ffc107;
-}
-
-.btn-danger {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-secondary {
-  background: #6c757d;
-  color: white;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-}
-
-.actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-.order-btn {
-  background: linear-gradient(90deg, #3d76b7, #63679f);
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 400;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 </style>
