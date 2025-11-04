@@ -35,6 +35,7 @@
     </div>
 
     <p v-else>Giỏ hàng của bạn đang trống.</p>
+    <button class="back-btn" @click="$router.push('/shop')">Tiếp tục mua hàng</button>
   </div>
 </template>
 
@@ -176,5 +177,25 @@ export default {
   opacity: 0.9;
   transform: translateY(-1px);
 }
+.back-btn {
+  background: linear-gradient(90deg, #36b9cc, #4e73df);
+  color: white;
+  border: none;
+  padding: 12px 26px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  box-shadow: 0 4px 10px rgba(78, 115, 223, 0.2);
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(78, 115, 223, 0.3);
+  opacity: 0.95;
+}
+
 </style>
 

@@ -17,7 +17,6 @@ import orders from "@/pages/user/player/Donhang.vue";
 
 import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue";
 import donhang from "@/pages/admin/component/DonHangPage.vue";
-import HopDong from "@/pages/user/player/HopDong.vue";
 import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
 
 import axios from "axios";
@@ -66,15 +65,10 @@ const userRouter = [
     meta: { requiresAuth: true, user: true },
   },
   { path: "/shop/:id", component: ProductDetail },
-  { path: "/cart", component: Cart },
+  { path: "/cart", component: Cart},
   { path: "/checkout", component: checkout },
   { path: "/orders", component: orders },
-  {
-    path: "/hopdong",
-    name: "Hợp Đồng",
-    component: HopDong,
-    meta: { requiresAuth: true, user: true },
-  },
+
 ];
 const adminRouter = [
   {
