@@ -20,6 +20,7 @@
     "@fortawesome/vue-fontawesome": "^3.1.2",
     "axios": "^1.12.2",
     "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "bootstrap-vue-3": "^0.5.1",
     "chart.js": "^4.5.0",
     "classnames": "^2.5.1",

@@ -3,12 +3,15 @@
     <div class="shop-container">
       <div class="shop-header">
         <h1>Cửa hàng Quà Lưu Niệm</h1>
-        <button class="cart-btn" @click="$router.push('/orders')">
-          📋 Đơn hàng
-        </button>
-        <button class="cart-btn" @click="$router.push('/cart')">
-          🛒 Giỏ Hàng
-        </button>
+          <button class="btn btn-outline-primary me-2" @click="$router.push('/orders')">
+            <i class="bi bi-receipt me-1"></i> Đơn hàng
+          </button>
+
+          <button class="btn btn-primary" @click="$router.push('/cart')">
+            <i class="bi bi-cart-fill me-1"></i> Giỏ hàng
+          </button>
+
+
       </div>
 
       <div v-if="loading" class="loading">Đang tải dữ liệu...</div>
@@ -32,7 +35,9 @@
 
 <script>
 import axios from "axios";
-
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "bootstrap";
 export default {
   name: "Shop",
   data() {

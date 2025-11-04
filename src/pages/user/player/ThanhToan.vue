@@ -1,6 +1,6 @@
 <template>
   <div class="checkout-page">
-    <h1>💳 Thanh toán</h1>
+    <h1>Thanh toán</h1>
 
     <form @submit.prevent="confirmOrder" class="checkout-form">
       <label>Họ và tên người nhận:</label>
@@ -14,9 +14,18 @@
 
       <h3>Tổng thanh toán: {{ totalAmount.toLocaleString() }}₫</h3>
 
-      <button type="submit" class="confirm-btn" :disabled="loading">
-        {{ loading ? "⏳ Đang xử lý..." : "✅ Xác nhận thanh toán" }}
+      <button
+        type="submit"
+        class="btn btn-success w-100"
+        :disabled="loading"
+      >
+        <i v-if="!loading" class="bi bi-check-circle me-1"></i>
+        <span v-if="!loading">Xác nhận thanh toán</span>
+        <span v-else>
+          <i class="bi bi-hourglass-split me-1"></i> Đang xử lý...
+        </span>
       </button>
+
     </form>
   </div>
 </template>
