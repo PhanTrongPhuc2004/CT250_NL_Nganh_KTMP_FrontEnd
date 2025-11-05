@@ -1,11 +1,11 @@
 <script setup>
-import { onMounted, reactive, watch } from "vue";
+import { onMounted, reactive, watch, ref } from "vue";
 import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./form.module.scss";
 import { uploadToCloudinary } from "@/config/cloudinary.conf";
 
-const emit = defineEmits(["submitted", "updated", "deleted", "closed"]); // ✅ thêm "closed"
+const emit = defineEmits(["submitted", "updated", "deleted", "closed"]);
 
 const cx = classNames.bind(styles);
 
@@ -19,13 +19,37 @@ const props = defineProps({
 });
 
 const formData = reactive({});
+const isSubmitting = ref(false);
 
-// ✅ Khởi tạo dữ liệu form
+// ================= INIT FORM DATA =================
 const initFormData = () => {
-  console.log("form data nhan duoc truoc khi init", props.inputData);
+  console.log(
+    "%c=================== FORM INIT ===================",
+    "color: blue; font-weight: bold"
+  );
+  console.log("Input Data:", props.inputData);
+  console.log("Other Data:", props.ortherData);
+  console.log("API URL:", props.api);
+  console.log("Method:", props.method);
+  console.log(
+    "================================================",
+    "color: blue"
+  );
+
   if (!props.inputFields) return;
+
+  // Clear trước khi init
+  Object.keys(formData).forEach((key) => delete formData[key]);
+
   props.inputFields.forEach((field) => {
+    // THÊM: Bỏ qua divider và các field không có name
+    if (field.type === "divider" || !field.name) {
+      console.log(`Bỏ qua field: ${field.label} - type: ${field.type}`);
+      return;
+    }
+
     let value = props.inputData?.[field.name] ?? "";
+
     if (
       field.type === "date" &&
       typeof value === "string" &&
@@ -33,76 +57,143 @@ const initFormData = () => {
     ) {
       value = value.split("T")[0];
     }
+
     if (
       field.type === "array" &&
       (!Array.isArray(value) || value.length === 0)
     ) {
       value = ["", ""];
     }
+
     formData[field.name] = value;
   });
+
   // Thêm vaiTro nếu có
   if (props.inputData?.vaiTro) {
     formData.vaiTro = props.inputData.vaiTro;
   }
 
-  console.log("formData sau khi init", formData);
+  // Lưu _id để tracking
+  if (props.inputData?._id) {
+    formData._id = props.inputData._id;
+  }
 
-  if (props.inputData?._id) formData._id = props.inputData._id;
+  console.log(
+    "%cForm Data sau khi init:",
+    "color: green; font-weight: bold",
+    formData
+  );
 };
 
 onMounted(() => initFormData());
 
 watch(
-  () => props.inputData,
-  () => initFormData(),
-  { deep: true, immediate: true }
+  () => props.inputData?._id,
+  (newId) => {
+    if (newId) initFormData();
+  },
+  { immediate: true }
 );
 
-// ✅ Submit form
+watch(
+  () => props.api,
+  (newApi) => {
+    console.log(
+      "%cAPI URL changed to:",
+      "color: orange; font-weight: bold",
+      newApi
+    );
+  }
+);
+
+// ================= HANDLE SUBMIT =================
 const handleSubmit = async () => {
+  if (isSubmitting.value) {
+    console.warn("Form đang submit, bỏ qua request mới");
+    return;
+  }
+
   try {
+    isSubmitting.value = true;
+
     const payload = { ...formData, ...props.ortherData };
+    const itemId = props.inputData?._id;
+
     if ("_id" in payload) delete payload._id;
+    const url = props.api;
 
-    const id = props.inputData?._id;
-    let url = props.api;
-    console.log("data gui di", { ...formData, ...props.ortherData });
-    if (!id) url = props.api;
+    console.log(
+      "%c=================== SUBMIT ===================",
+      "color: teal; font-weight: bold"
+    );
+    console.log("Item ID:", itemId);
+    console.log("URL:", url);
+    console.log("Method:", props.method);
+    console.log("Payload trước gửi:", payload, props.ortherData);
+    console.log("=============================================", "color: teal");
 
-    let imageUrl = "";
-    if (payload.anhMinhHoa) {
-      imageUrl = await uploadToCloudinary(payload.anhMinhHoa);
+    // Kiểm tra URL có chứa đúng ID
+    if (itemId && props.method !== "POST" && !url.includes(itemId)) {
+      console.error(
+        "%c❌ CẢNH BÁO: URL không chứa ID đúng!",
+        "color: red; font-weight: bold"
+      );
+      console.error("Expected ID:", itemId);
+      console.error("URL:", url);
+      alert("Lỗi: URL API không đúng! Vui lòng thử lại.");
+      isSubmitting.value = false;
+      return;
     }
 
+    // Upload ảnh nếu cần
+    if (payload.anhMinhHoa && typeof payload.anhMinhHoa !== "string") {
+      console.log("%cĐang upload ảnh...", "color: orange;");
+      const imageUrl = await uploadToCloudinary(payload.anhMinhHoa);
+      payload.anhMinhHoa = imageUrl;
+      console.log("%cUpload ảnh thành công:", "color: green;", imageUrl);
+    }
+
+    // Gửi request
     const response = await axios({
       url,
       method: props.method.toLowerCase(),
-      data: { ...payload, anhMinhHoa: imageUrl },
+      data: payload,
       withCredentials: true,
     });
-    if (props.formName == "Đăng nhập") {
-      window.location.reload();
-    }
-    if (props.method === "POST") emit("submitted", response.data);
-    if (["PUT", "PATCH"].includes(props.method)) emit("updated", response.data);
-    if (props.method === "DELETE") emit("deleted", { _id: formData._id });
 
-    // ✅ tự đóng form sau khi submit thành công
+    console.log(
+      "%c✅ Response nhận được:",
+      "color: green; font-weight: bold",
+      response.data
+    );
+
+    // Emit events
+    if (props.method === "POST") emit("submitted", response.data);
+    else if (["PUT", "PATCH"].includes(props.method))
+      emit("updated", response.data);
+    else if (props.method === "DELETE") emit("deleted", { _id: itemId });
+    if (props.formName == "Đăng nhập") window.location.reload();
     handleClose();
-    emit("closed");
   } catch (error) {
-    console.error(error);
-    alert("Có lỗi xảy ra khi gửi form!");
+    console.error("%c❌ Lỗi khi submit form:", "color: red; font-weight: bold");
+    console.error("Error:", error);
+    console.error("Response:", error.response?.data);
+    console.error("Status:", error.response?.status);
+
+    const errorMsg =
+      error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
+    alert(errorMsg);
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
-// ✅ Nhấn nút X để đóng
+// ================= HANDLE CLOSE =================
 const handleClose = () => {
   emit("closed");
 };
 
-// ✅ Trả danh sách con
+// ================= GET CHILDREN =================
 const getChildren = (field) => {
   if (!field.children) return [];
   return field.children.value !== undefined
@@ -112,15 +203,15 @@ const getChildren = (field) => {
 </script>
 
 <template>
-  <!-- Overlay phủ toàn màn hình -->
   <div
     class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50"
     style="z-index: 1050"
+    @click.self="handleClose"
   >
-    <!-- Khung form chính -->
     <div
       class="modal-content shadow-lg p-4 rounded-4 bg-white w-50"
       style="min-width: 500px; max-height: 90vh; overflow-y: auto"
+      @click.stop
     >
       <button
         type="button"
@@ -131,15 +222,25 @@ const getChildren = (field) => {
 
       <h2 class="text-center mb-4 fw-bold">{{ formName }}</h2>
 
+      <!-- Debug info -->
+      <div class="alert alert-info small mb-3" v-if="formData._id">
+        <strong>Đang chỉnh sửa ID:</strong> {{ formData._id }}<br />
+        <strong>API:</strong> {{ api }}<br />
+        <strong>Payload hiện tại:</strong>
+        <pre>{{ formData }}</pre>
+      </div>
+
       <form @submit.prevent="handleSubmit" class="d-flex flex-column gap-3">
         <div v-for="(field, index) in inputFields" :key="index" class="mb-2">
-          <label :for="field.name" class="form-label fw-semibold">{{
-            field.label
-          }}</label>
+          <label
+            :for="field.name"
+            class="form-label fw-semibold"
+            v-if="field.type != 'divider'"
+            >{{ field.label }}</label
+          >
 
-          <!-- Input text -->
           <input
-            v-if="!['file', 'select', 'array'].includes(field.type)"
+            v-if="!['file', 'select', 'array', 'divider'].includes(field.type)"
             v-model="formData[field.name]"
             :id="field.name"
             :type="field.type || 'text'"
@@ -148,7 +249,6 @@ const getChildren = (field) => {
             required
           />
 
-          <!-- Input file -->
           <input
             v-else-if="field.type === 'file'"
             type="file"
@@ -157,7 +257,6 @@ const getChildren = (field) => {
             @change="(e) => (formData[field.name] = e.target.files[0])"
           />
 
-          <!-- Select -->
           <select
             v-else-if="field.type === 'select'"
             v-model="formData[field.name]"
@@ -174,7 +273,6 @@ const getChildren = (field) => {
             </option>
           </select>
 
-          <!-- Array input -->
           <div v-else-if="field.type === 'array'" class="d-flex gap-2">
             <input
               v-for="(team, i) in formData[field.name]"
@@ -185,9 +283,23 @@ const getChildren = (field) => {
               :placeholder="`Đội ${i + 1}`"
             />
           </div>
+          <div
+            v-else-if="field.type == 'divider'"
+            class="d-flex align-items-center my-4"
+          >
+            <hr class="flex-grow-1" />
+            <span class="px-3 text-muted fw-bold">{{ field.label }}</span>
+            <hr class="flex-grow-1" />
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-danger w-100 mt-2">Gửi</button>
+        <button
+          type="submit"
+          class="btn btn-danger w-100 mt-2"
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? "Đang xử lý..." : "Gửi" }}
+        </button>
       </form>
     </div>
   </div>

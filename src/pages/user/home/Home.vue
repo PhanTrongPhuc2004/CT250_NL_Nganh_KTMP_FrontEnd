@@ -13,7 +13,7 @@ import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import MarqueeText from "vue-marquee-text-component";
-
+import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 const handleBookSticket = () => {
   alert("Chức năng đặt vé sẽ sớm được cập nhật!");
 };
@@ -106,7 +106,7 @@ onMounted(async () => {
         <h1>Tran dau gan day</h1>
         <div class="d-flex flex-wrap gap-3 flex-row w-100">
           <div class="col-md-3" v-for="(match, index) in matchList.slice(0, 3)">
-            <PlayerCard :item="match" type="match" />
+            <MatchCard :item="match" />
           </div>
         </div>
       </div>

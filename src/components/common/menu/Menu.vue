@@ -43,6 +43,7 @@ const handleClickOutside = (event) => {
 onMounted(() => {
   setTimeout(() => (isReady.value = true), 0); // Kích hoạt sau 1 tick
   document.addEventListener("click", handleClickOutside);
+  console.log("menu mound", props.menuItems);
 });
 
 onBeforeUnmount(() => {
@@ -64,9 +65,9 @@ onBeforeUnmount(() => {
         @click="item.action && item.action()"
       >
         <a v-if="item.link" :href="item.link" :class="cx('menu-link')">
-          {{ item.name }}
+          {{ item.label }}
         </a>
-        <span v-else :class="cx('menu-link')">{{ item.name }}</span>
+        <span v-else :class="cx('menu-link')">{{ item.label }}</span>
       </li>
     </ul>
   </div>

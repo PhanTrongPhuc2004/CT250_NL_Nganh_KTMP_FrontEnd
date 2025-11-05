@@ -28,6 +28,7 @@ import TournamentDetail from "@/pages/admin/tournamentDetail/TournamentDetail.vu
 import Dashboard from "@/pages/admin/dashboard/Dashboard.vue";
 import SquadManagement from "@/pages/admin/squadManagement/SquadManagement.vue";
 import SquadDetail from "@/pages/admin/squadDetail/SquadDetail.vue";
+import Notifivation from "@/pages/user/notification/Notifivation.vue";
 const commonRouter = [
   {
     path: "/profile",
@@ -65,10 +66,15 @@ const userRouter = [
     meta: { requiresAuth: true, user: true },
   },
   { path: "/shop/:id", component: ProductDetail },
-  { path: "/cart", component: Cart},
+  { path: "/cart", component: Cart },
   { path: "/checkout", component: checkout },
   { path: "/orders", component: orders },
-
+  {
+    path: "/notifications",
+    component: Notifivation,
+    name: "Thông báo",
+    meta: { requiresAuth: true, user: true },
+  },
 ];
 const adminRouter = [
   {

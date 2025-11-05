@@ -96,29 +96,22 @@ const detailAction = {
   souvenir: (id) => router.push(`/admin/compete/souvenirs/${id}`),
   squad: (id) => router.push(`/admin/squad/${id}`),
 };
-
-const editAction = {
-  season: {
-    api: `http://localhost:5000/muagiai/${props.item._id}`,
-    method: "PUT",
-  },
-  tournament: {
-    api: `http://localhost:5000/giaidau/${props.item._id}`,
-    method: "PUT",
-  },
-  player: {
-    api: `http://localhost:5000/cauthu/${props.item._id}`,
-    method: "PUT",
-  },
-  souvenir: {
-    api: `http://localhost:5000/qualuuniem/${props.item._id}`,
-    method: "PUT",
-  },
-  squad: {
-    api: `http://localhost:5000/doihinh/${props.item._id}`,
-    method: "PUT",
-  },
+const getEditAction = (type, id) => {
+  const itemId = id || props.item?._id || props.item?.id;
+  const baseUrls = {
+    season: 'http://localhost:5000/muagiai',
+    tournament: 'http://localhost:5000/giaidau', 
+    player: 'http://localhost:5000/cauthu',
+    souvenir: 'http://localhost:5000/qualuuniem',
+    squad: 'http://localhost:5000/doihinh'
+  };
+  
+  return itemId ? {
+    api: `${baseUrls[type]}/${itemId}`,
+    method: "PUT"
+  } : { api: '', method: '' };
 };
+
 
 // 🟢 Nhóm hành động "xóa"
 const deleteAction = {
@@ -199,6 +192,12 @@ const menuItemsByType = {
       action: () => {
         formStore.openForm(formNames.match, props.item);
       },
+    },
+    {
+      name: "Cập nhật kết quả",
+      action: () => {
+        formStore.openForm(formNames.match, props.item);
+      }
     },
     {
       name: "Xóa trận đấu",
@@ -352,6 +351,8 @@ const inputFields = {
   souvenir: souvenirFields,
   squad: squadFields,
 };
+
+
 </script>
 
 <template>
@@ -565,29 +566,22 @@ const inputFields = {
     </div>
   </div>
 
-  <!-- Modal Form for Edit -->
- <!-- Modal overlay controlled by Pinia -->
-<div
-  v-if="formStore.isOpen && formStore.isCurrent(formNames[type])"
-  class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-  style="background: rgba(0, 0, 0, 0.5); z-index: 1050"
-  @click.self="formStore.closeForm"  
->
+
   <!-- Form content -->
-  <div class="bg-white p-4 rounded-4 shadow-lg" style="min-width: 400px; max-width: 600px;">
-    <Form
-      :input-fields="inputFields[type]"
-      modal-id="userModal"
-      :form-name="formNames[type]"
-      :input-data="formStore.formData"
-      :api="editAction[type]?.api || ''"
-      :method="editAction[type]?.method || ''"
-      :orther-data="{ cauLacBoId }"
-      @submitted="() => { formStore.closeForm(); closeMenu(); }"
-      @closed="formStore.closeForm"
-    />
-  </div>
-</div>
+<!-- Trong template -->
+<Form
+  v-if="formStore.isCurrent(formNames[type])"
+  :input-fields="inputFields[type]"
+  :form-name="formNames[type]"
+  :input-data="formStore.formData"
+  :api="getEditAction(type, formStore.formData?._id || formStore.formData?.id)?.api"
+  :method="getEditAction(type, formStore.formData?._id || formStore.formData?.id)?.method"
+  :orther-data="{ cauLacBoId }"
+  @submitted="() => { formStore.closeForm(); closeMenu(); window.location.reload(); }"
+  @closed="formStore.closeForm"
+  @click.stop
+/>
+
 
 
   

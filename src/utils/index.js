@@ -57,3 +57,14 @@ export const fetchClubInfo = async () => {
     console.error("Lỗi khi tải thông tin câu lạc bộ:", error);
   }
 };
+
+export const getMe = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/nguoidung/me", {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi tải thông tin người dùng:", error);
+  }
+};
