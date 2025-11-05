@@ -21,7 +21,9 @@
 
       <!-- Thông tin chi tiết -->
       <div class="player-info">
-        <h2>📋 Thông tin chi tiết</h2>
+        <h4 class="fw-semibold text-dark mb-4">
+          <i class="bi bi-info-circle text-primary me-2"></i>Thông tin chi tiết
+        </h4>
         <ul>
           <li><strong>Ngày sinh:</strong> {{ formatDate(player.namSinh) }}</li>
           <li><strong>Chiều cao:</strong> {{ player.chieuCao ? player.chieuCao + ' cm' : 'Chưa có' }}</li>
@@ -34,11 +36,12 @@
       </div>
 
       <!-- Nút quay lại -->
-      <div class="back-btn">
-        <router-link to="/cauthu" class="btn-back">
-          ⬅️ Quay lại danh sách
+      <div class="text-center mt-4">
+        <router-link to="/cauthu" class="btn btn-primary btn-lg shadow-sm px-4">
+          <i class="bi bi-arrow-left-circle me-2"></i> Quay lại danh sách
         </router-link>
       </div>
+
     </div>
 
     <div v-else class="empty">

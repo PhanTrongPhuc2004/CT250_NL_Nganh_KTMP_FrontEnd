@@ -26,7 +26,7 @@
         >
           <img :src="getImageUrl(item.anhMinhHoa)" alt="Ảnh quà" class="product-image" />
           <h3 class="product-name">{{ item.tenQuaLuuNiem }}</h3>
-          <p class="product-price">{{ item.gia.toLocaleString() }}₫</p>
+          <p class="product-price">{{ item.gia.toLocaleString() }} VND</p>
         </div>
       </div>
     </div>

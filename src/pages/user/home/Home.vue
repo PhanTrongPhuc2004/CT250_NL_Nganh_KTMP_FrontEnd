@@ -13,6 +13,7 @@ import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import MarqueeText from "vue-marquee-text-component";
+import ThongBaoMoi from "./ThongBaoMoi.vue";
 
 const handleBookSticket = () => {
   alert("Chức năng đặt vé sẽ sớm được cập nhật!");
@@ -99,7 +100,9 @@ onMounted(async () => {
       <FontAwesomeIcon :icon="['fas', 'angle-right']" :class="'display-3'" />
     </div>
   </div>
-
+    <section class="mt-5">
+      <ThongBaoMoi />
+    </section>
   <div :class="cx('home-wrapper')">
     <div :class="cx('container', 'home-body')">
       <div>

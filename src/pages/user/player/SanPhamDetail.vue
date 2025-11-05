@@ -8,7 +8,7 @@
       />
       <div class="detail-info">
         <h1>{{ product.tenQuaLuuNiem }}</h1>
-        <p class="price">{{ product.gia.toLocaleString() }}₫</p>
+        <p class="price">{{ product.gia.toLocaleString() }} VND</p>
         <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
 
         <div class="quantity">
@@ -16,7 +16,11 @@
           <input type="number" v-model="quantity" min="1" />
         </div>
 
-        <button class="buy-btn" @click="muaNgay">Thêm vào giỏ hàng</button>
+        <button @click="muaNgay" class="btn btn-success btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2 px-4 py-2">
+          <i class="bi bi-cart-plus"></i>
+          Thêm vào giỏ hàng
+        </button>
+
       </div>
     </div>
 
