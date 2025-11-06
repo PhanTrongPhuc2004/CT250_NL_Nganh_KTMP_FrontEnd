@@ -3,7 +3,7 @@
     <h1>Danh sách Hợp Đồng Cầu Thủ</h1>
 
     <div class="actions">
-      <button class="btn-add" @click="moFormTaoMoi"> Tạo hợp đồng mới</button>
+      <button class="btn-add" @click="moFormTaoMoi">Tạo hợp đồng mới</button>
     </div>
 
     <div v-if="loading" class="loading">⏳ Đang tải dữ liệu...</div>
@@ -37,7 +37,9 @@
             <td>
               <button class="btn-detail" @click="xemChiTiet(hd)">Xem</button>
               <button class="btn-edit" @click="moFormSua(hd)">Sửa</button>
-              <button class="btn-delete" @click="xoaHopDong(hd._id)">Xóa</button>
+              <button class="btn-delete" @click="xoaHopDong(hd._id)">
+                Xóa
+              </button>
             </td>
           </tr>
         </tbody>
@@ -54,8 +56,13 @@
         <p><b>Quốc tịch:</b> {{ selectedHopDong.quocTichCauThu }}</p>
         <p><b>Vị trí:</b> {{ selectedHopDong.viTriCauThu }}</p>
         <p><b>CLB thuê:</b> {{ selectedHopDong.tenCLBThue }}</p>
-        <p><b>CLB chủ quản:</b> {{ selectedHopDong.tenCLBChuQuan || "Không có" }}</p>
-        <p><b>Thời hạn:</b> {{ formatDate(selectedHopDong.ngayBatDau) }} → {{ formatDate(selectedHopDong.ngayKetThuc) }}</p>
+        <p>
+          <b>CLB chủ quản:</b> {{ selectedHopDong.tenCLBChuQuan || "Không có" }}
+        </p>
+        <p>
+          <b>Thời hạn:</b> {{ formatDate(selectedHopDong.ngayBatDau) }} →
+          {{ formatDate(selectedHopDong.ngayKetThuc) }}
+        </p>
         <p><b>Phí thuê:</b> {{ formatMoney(selectedHopDong.phiThue) }}</p>
         <p><b>Lương:</b> {{ formatMoney(selectedHopDong.luongCauThu) }}</p>
         <p><b>Tiền thưởng:</b> {{ formatMoney(selectedHopDong.tienThuong) }}</p>
@@ -72,14 +79,25 @@
       <div class="modal-content">
         <h2>{{ isEditing ? " Sửa hợp đồng" : " Tạo hợp đồng mới" }}</h2>
 
-        <div class="form-group" v-for="(value, key) in editableHopDong" :key="key" v-if="key !== '_id'">
+        <div
+          class="form-group"
+          v-for="(value, key) in editableHopDong"
+          :key="key"
+          v-if="key !== '_id'"
+        >
           <label>{{ chuyenLabel(key) }}:</label>
           <input
             v-if="!['dieuKhoan', 'trangThai'].includes(key)"
             v-model="editableHopDong[key]"
-            :type="isDateField(key) ? 'date' : isNumberField(key) ? 'number' : 'text'"
+            :type="
+              isDateField(key) ? 'date' : isNumberField(key) ? 'number' : 'text'
+            "
           />
-          <textarea v-if="key === 'dieuKhoan'" v-model="editableHopDong[key]" rows="2"></textarea>
+          <textarea
+            v-if="key === 'dieuKhoan'"
+            v-model="editableHopDong[key]"
+            rows="2"
+          ></textarea>
           <select v-if="key === 'trangThai'" v-model="editableHopDong[key]">
             <option>Đang hiệu lực</option>
             <option>Hết hạn</option>
@@ -88,7 +106,7 @@
         </div>
 
         <div class="btn-group">
-          <button class="btn-save" @click="luuHopDong"> Lưu</button>
+          <button class="btn-save" @click="luuHopDong">Lưu</button>
           <button class="btn-close" @click="huyForm">✖ Hủy</button>
         </div>
       </div>
@@ -117,7 +135,9 @@ export default {
   methods: {
     async fetchHopDongs() {
       try {
-        const res = await axios.get("http://localhost:5000/hopdong");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/hopdong`
+        );
         this.hopDongs = res.data;
       } catch (err) {
         alert("Lỗi tải hợp đồng!");
@@ -157,10 +177,18 @@ export default {
     async luuHopDong() {
       try {
         if (this.isEditing) {
-          await axios.put(`http://localhost:5000/hopdong/${this.editableHopDong._id}`, this.editableHopDong);
+          await axios.put(
+            `${import.meta.env.VITE_API_BE_BASE_URL}/hopdong/${
+              this.editableHopDong._id
+            }`,
+            this.editableHopDong
+          );
           alert("Cập nhật hợp đồng thành công!");
         } else if (this.isCreating) {
-          await axios.post("http://localhost:5000/hopdong", this.editableHopDong);
+          await axios.post(
+            `${import.meta.env.VITE_API_BE_BASE_URL}/hopdong`,
+            this.editableHopDong
+          );
           alert("Tạo hợp đồng mới thành công!");
         }
         await this.fetchHopDongs();
@@ -172,7 +200,9 @@ export default {
     async xoaHopDong(id) {
       if (confirm("Bạn có chắc muốn xóa hợp đồng này không?")) {
         try {
-          await axios.delete(`http://localhost:5000/hopdong/${id}`);
+          await axios.delete(
+            `${import.meta.env.VITE_API_BE_BASE_URL}/hopdong/${id}`
+          );
           alert(" Đã xóa hợp đồng!");
           await this.fetchHopDongs();
         } catch (err) {

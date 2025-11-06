@@ -86,9 +86,7 @@
       :input-fields="dataObj[formData.vaiTro].fields"
       :input-data="formData"
       :form-name="formMode === 'add' ? formNameAddUser : formNameEditUser"
-      :api="`http://localhost:5000/nguoidung${
-        formMode === 'add' ? '' : '/' + formData._id
-      }`"
+      :api="api"
       :method="formMode === 'add' ? 'POST' : 'PUT'"
       modal-id="userModal"
       @success="fetchUsers"
@@ -119,7 +117,9 @@ const formData = ref({});
 const formNameAddUser = ref("");
 const formNameEditUser = ref("");
 const squad = ref([]);
-
+const api = `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung${
+  formMode === "add" ? "" : "/" + formData._id
+}`;
 const viTriOptions = [
   { name: "Tiền đạo" },
   { name: "Tiền vệ" },
@@ -138,16 +138,20 @@ const dataObj = {
 
 // --- API
 const fetchSquad = async () => {
-  const res = await axios.get("http://localhost:5000/doihinh/");
+  const res = await axios.get(
+    `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh/`
+  );
   squad.value = res.data.map((i) => ({ _id: i._id, name: i.doiHinh }));
 };
 const fetchUsers = async () => {
-  const res = await axios.get("http://localhost:5000/nguoidung/");
+  const res = await axios.get(
+    `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/`
+  );
   users.value = res.data;
 };
 const deleteUser = async (id) => {
   if (!confirm("Xóa người dùng này?")) return;
-  await axios.delete(`http://localhost:5000/nguoidung/${id}`);
+  await axios.delete(`${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${id}`);
   fetchUsers();
 };
 

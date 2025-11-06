@@ -70,7 +70,9 @@ const fetchThongBaos = async () => {
     console.log("📡 Fetching thông báo cho doiHinhId:", doiHinhId.value);
 
     const response = await axios.get(
-      `http://localhost:5000/thongbao/doihinh/${doiHinhId.value}`
+      `${import.meta.env.VITE_API_BE_BASE_URL}/thongbao/doihinh/${
+        doiHinhId.value
+      }`
     );
     thongBaos.value = response.data;
     console.log("✅ Nhận được thông báo:", response.data);
@@ -92,7 +94,9 @@ const fetchThongBaos = async () => {
 // Thử API alternative: lấy tất cả thông báo rồi filter
 const tryAlternativeAPI = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/thongbao");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/thongbao`
+    );
     // Filter thông báo theo doiHinhId
     thongBaos.value = response.data.filter(
       (thongBao) =>
@@ -108,7 +112,9 @@ const tryAlternativeAPI = async () => {
 // Đánh dấu đã đọc
 const markAsRead = async (thongBaoId) => {
   try {
-    await axios.put(`http://localhost:5000/thongbao/${thongBaoId}/read`);
+    await axios.put(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/thongbao/${thongBaoId}/read`
+    );
 
     // Cập nhật UI
     const thongBao = thongBaos.value.find((tb) => tb._id === thongBaoId);

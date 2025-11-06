@@ -33,7 +33,9 @@ export const formatDate = (time) => {
 
 export const fetchSquad = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/doihinh");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
+    );
     let data = response.data;
 
     if (data) {
@@ -51,7 +53,9 @@ export const fetchSquad = async () => {
 
 export const fetchClubInfo = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/caulacbo/");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tải thông tin câu lạc bộ:", error);
@@ -60,9 +64,12 @@ export const fetchClubInfo = async () => {
 
 export const getMe = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/nguoidung/me", {
-      withCredentials: true,
-    });
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/me`,
+      {
+        withCredentials: true,
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tải thông tin người dùng:", error);

@@ -42,7 +42,7 @@ const handleAddPlayerToSquad = async () => {
 };
 const fetchPlayerBySqaudId = async () => {
   const res = await axios.get(
-    `http://localhost:5000/doihinh/${squadId}/cauthu`
+    `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh/${squadId}/cauthu`
   );
   playersInSquad.value = res.data.cauThus;
   console.log("data tra ve", res.data);
@@ -60,7 +60,7 @@ const goBack = () => {
 const fetchPlayers = async () => {
   try {
     const response = await axios.get(
-      "http://localhost:5000/nguoidung/vaitro?vaiTro=cauthu"
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/vaitro?vaiTro=cauthu`
     );
     players.value = response.data;
 

@@ -85,7 +85,13 @@ const initFormData = () => {
   );
 };
 
-onMounted(() => initFormData());
+onMounted(async () => {
+  initFormData();
+  const res = await axios.get(
+    "https://12g1p2qc-5000.asse.devtunnels.ms/test-cors"
+  );
+  console.log("test thu cors", res.data);
+});
 
 watch(
   () => props.inputData?._id,

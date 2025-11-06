@@ -6,7 +6,10 @@
 
     <div v-else-if="orders.length">
       <div v-for="order in orders" :key="order._id" class="order-card">
-        <h3>🧾 Đơn hàng #{{ order._id.slice(-6).toUpperCase() }}</h3>
+        <h3 class="text-info fw-bold my-3">
+          <i class="bi bi-box-seam-fill me-2"></i>
+          Đơn hàng #{{ order._id.slice(-6).toUpperCase() }}
+        </h3>
         <p><b>Người nhận:</b> {{ order.name }}</p>
         <p><b>SĐT:</b> {{ order.phone }}</p>
         <p><b>Địa chỉ:</b> {{ order.address }}</p>
@@ -93,7 +96,7 @@ export default {
 
       try {
         const res = await axios.get(
-          `http://localhost:5000/donhang/${username}`
+          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang/${username}`
         );
 
         this.orders = res.data;

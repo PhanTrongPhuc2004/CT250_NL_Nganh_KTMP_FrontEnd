@@ -11,9 +11,12 @@ export const useUserStore = defineStore("user", {
     async checkAuth() {
       this.loading = true;
       try {
-        const res = await axios.get("http://localhost:5000/nguoidung/check", {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/check`,
+          {
+            withCredentials: true,
+          }
+        );
         this.user = res.data.user;
       } catch (err) {
         this.user = null;
@@ -26,7 +29,7 @@ export const useUserStore = defineStore("user", {
     async login(credentials) {
       try {
         const res = await axios.post(
-          "http://localhost:5000/nguoidung/login",
+          `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/login`,
           credentials,
           {
             withCredentials: true,
@@ -43,7 +46,7 @@ export const useUserStore = defineStore("user", {
     // async logout() {
     //   try {
     //     await axios.post(
-    //       "http://localhost:5000/nguoidung/logout",
+    //       "${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/logout",
     //       {},
     //       { withCredentials: true }
     //     );
@@ -62,7 +65,7 @@ export const useUserStore = defineStore("user", {
     async logout() {
       try {
         await axios.post(
-          "http://localhost:5000/nguoidung/logout",
+          `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/logout`,
           {},
           { withCredentials: true }
         );
@@ -76,9 +79,12 @@ export const useUserStore = defineStore("user", {
     },
     async fetchUser() {
       try {
-        const res = await axios.get("http://localhost:5000/nguoidung/me", {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/me`,
+          {
+            withCredentials: true,
+          }
+        );
         this.user = res.data;
       } catch (err) {
         this.user = null;

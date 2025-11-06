@@ -1,4 +1,4 @@
-<template> 
+<template>
   <div class="orders-admin-page">
     <h1>Quản lý Đơn hàng</h1>
 
@@ -12,7 +12,10 @@
     </div>
 
     <!-- Danh sách Chờ xác nhận -->
-    <section v-if="filterOption === 'waiting' || filterOption === 'all'" class="order-section">
+    <section
+      v-if="filterOption === 'waiting' || filterOption === 'all'"
+      class="order-section"
+    >
       <h2>🟡 Xác nhận đơn</h2>
 
       <div v-if="waitingOrders.length" class="orders-list">
@@ -32,7 +35,10 @@
             <p><b>Danh sách sản phẩm:</b></p>
             <ul>
               <li v-for="item in order.cart" :key="item.tenQuaLuuNiem">
-                <img v-if="item.anhMinhHoa" :src="getImageUrl(item.anhMinhHoa)" />
+                <img
+                  v-if="item.anhMinhHoa"
+                  :src="getImageUrl(item.anhMinhHoa)"
+                />
                 {{ item.tenQuaLuuNiem }} - {{ item.quantity }} x
                 {{ item.gia.toLocaleString() }}₫
               </li>
@@ -49,7 +55,10 @@
     </section>
 
     <!-- Danh sách Đã xác nhận -->
-    <section v-if="filterOption === 'confirmed' || filterOption === 'all'" class="order-section">
+    <section
+      v-if="filterOption === 'confirmed' || filterOption === 'all'"
+      class="order-section"
+    >
       <h2>✅ Đã xác nhận</h2>
 
       <div v-if="confirmedOrders.length" class="orders-list">
@@ -68,7 +77,10 @@
             <p><b>Danh sách sản phẩm:</b></p>
             <ul>
               <li v-for="item in order.cart" :key="item.tenQuaLuuNiem">
-                <img v-if="item.anhMinhHoa" :src="getImageUrl(item.anhMinhHoa)" />
+                <img
+                  v-if="item.anhMinhHoa"
+                  :src="getImageUrl(item.anhMinhHoa)"
+                />
                 {{ item.tenQuaLuuNiem }} - {{ item.quantity }} x
                 {{ item.gia.toLocaleString() }}₫
               </li>
@@ -109,7 +121,9 @@ export default {
     // ✅ Lấy danh sách đơn hàng từ backend thật
     async fetchOrders() {
       try {
-        const res = await axios.get("http://localhost:5000/donhang");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang`
+        );
         this.orders = res.data; // không thêm status giả
       } catch (err) {
         console.error("Lỗi tải đơn hàng:", err);
@@ -119,9 +133,12 @@ export default {
     // ✅ Xác nhận đơn hàng → gọi API PUT
     async xacNhan(id) {
       try {
-        const res = await axios.put(`http://localhost:5000/donhang/${id}`, {
-          status: "Đã xác nhận",
-        });
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang/${id}`,
+          {
+            status: "Đã xác nhận",
+          }
+        );
         this.updateLocalStatus(id, res.data.status);
       } catch (err) {
         console.error("Lỗi khi xác nhận đơn:", err);
@@ -131,9 +148,12 @@ export default {
     // ✅ Hủy xác nhận → gọi API PUT
     async huyXacNhan(id) {
       try {
-        const res = await axios.put(`http://localhost:5000/donhang/${id}`, {
-          status: "Chờ xác nhận",
-        });
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang/${id}`,
+          {
+            status: "Chờ xác nhận",
+          }
+        );
         this.updateLocalStatus(id, res.data.status);
       } catch (err) {
         console.error("Lỗi khi hủy xác nhận:", err);
@@ -161,8 +181,6 @@ export default {
   },
 };
 </script>
-
-
 
 <style scoped>
 .orders-admin-page {

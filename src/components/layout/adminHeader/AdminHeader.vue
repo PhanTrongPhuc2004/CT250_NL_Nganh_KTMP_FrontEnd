@@ -34,7 +34,9 @@ const handleClickOutside = (e) => {
 
 const fetchClubInfo = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/caulacbo/");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
+    );
     clubInfo.value = response.data;
     console.log(clubInfo.value);
   } catch (error) {
@@ -71,8 +73,8 @@ onBeforeUnmount(() =>
           v-show="showMenu"
           ref="menuRef"
           :menu-items="[
-            { name: 'Trang cá nhân', link: '/profile' },
-            { name: 'Đăng xuất', action: () => userStore.logout() },
+            { label: 'Trang cá nhân', link: '/profile' },
+            { label: 'Đăng xuất', action: () => userStore.logout() },
           ]"
           top="60px"
         />
