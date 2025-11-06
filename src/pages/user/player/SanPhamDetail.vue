@@ -8,7 +8,7 @@
       />
       <div class="detail-info">
         <h1>{{ product.tenQuaLuuNiem }}</h1>
-        <p class="price">{{ product.gia.toLocaleString() }}₫</p>
+        <p class="price">{{ product.gia.toLocaleString() }} VND</p>
         <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
 
         <div class="quantity">
@@ -16,7 +16,13 @@
           <input type="number" v-model="quantity" min="1" />
         </div>
 
-        <button class="buy-btn" @click="muaNgay">Thêm vào giỏ hàng</button>
+        <button
+          @click="muaNgay"
+          class="btn btn-success btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2 px-4 py-2"
+        >
+          <i class="bi bi-cart-plus"></i>
+          Thêm vào giỏ hàng
+        </button>
       </div>
     </div>
 
@@ -38,7 +44,9 @@ export default {
   async mounted() {
     const id = this.$route.params.id;
     try {
-      const res = await axios.get(`http://localhost:5000/qualuuniem/${id}`);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`
+      );
       this.product = res.data;
     } catch (err) {
       console.error("❌ Lỗi tải sản phẩm:", err);
@@ -74,12 +82,13 @@ export default {
 
       localStorage.setItem(cartKey, JSON.stringify(cart));
 
-      alert(`✅ Đã thêm ${this.quantity} x ${this.product.tenQuaLuuNiem} vào giỏ hàng.`);
+      alert(
+        `✅ Đã thêm ${this.quantity} x ${this.product.tenQuaLuuNiem} vào giỏ hàng.`
+      );
     },
   },
 };
 </script>
-
 
 <style scoped>
 .product-detail {
@@ -185,5 +194,4 @@ h1 {
   border-radius: 5px;
   text-align: center;
 }
-
 </style>

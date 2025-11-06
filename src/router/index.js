@@ -207,9 +207,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from) => {
   try {
-    const res = await axios.get("http://localhost:5000/nguoidung/me", {
-      withCredentials: true,
-    });
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/me`,
+      {
+        withCredentials: true,
+      }
+    );
     const user = res.data;
     const vaiTro = user.vaiTro;
 

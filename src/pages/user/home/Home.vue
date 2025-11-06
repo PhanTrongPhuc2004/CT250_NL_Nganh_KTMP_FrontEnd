@@ -8,12 +8,17 @@ import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/autoplay";
-import { Autoplay } from "swiper/modules";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+// Import đúng các modules
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import MarqueeText from "vue-marquee-text-component";
+import ThongBaoMoi from "./ThongBaoMoi.vue";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
+
 const handleBookSticket = () => {
   alert("Chức năng đặt vé sẽ sớm được cập nhật!");
 };
@@ -33,7 +38,9 @@ const marqueeText = ref("");
 
 onMounted(async () => {
   //fetch infor club
-  const clubResponse = await axios.get("http://localhost:5000/caulacbo/");
+  const clubResponse = await axios.get(
+    "${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/"
+  );
   clubInfo.value = clubResponse.data;
 
   // Tạo text lặp lại nhiều lần để không bị đứt
@@ -42,16 +49,21 @@ onMounted(async () => {
 
   // await fetchSouvenirList();
   const souvenirListResponse = await axios.get(
-    "http://localhost:5000/qualuuniem"
+    `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
   );
   souvenirList.value = souvenirListResponse.data;
   // await fetchMatchList();
-  const matchListResponse = await axios.get("http://localhost:5000/trandau");
+  const matchListResponse = await axios.get(
+    `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`
+  );
   matchList.value = matchListResponse.data;
   // await fetchPlayerList();
-  const response = await axios.get("http://localhost:5000/cauthu/", {
-    withCredentials: true,
-  });
+  const response = await axios.get(
+    `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/`,
+    {
+      withCredentials: true,
+    }
+  );
   playerList.value = response.data;
 });
 </script>
@@ -99,7 +111,9 @@ onMounted(async () => {
       <FontAwesomeIcon :icon="['fas', 'angle-right']" :class="'display-3'" />
     </div>
   </div>
-
+  <section class="mt-5">
+    <ThongBaoMoi />
+  </section>
   <div :class="cx('home-wrapper')">
     <div :class="cx('container', 'home-body')">
       <div>
@@ -112,11 +126,13 @@ onMounted(async () => {
       </div>
 
       <swiper
-        :modules="[Autoplay]"
+        :modules="[Autoplay, Navigation, Pagination]"
         :slides-per-view="3"
         :space-between="20"
         :autoplay="{ delay: 2000, disableOnInteraction: false }"
         :loop="true"
+        :navigation="true"
+        :pagination="{ clickable: true }"
         class="playerSlice"
       >
         <swiper-slide v-for="(player, index) in playerList" :key="index">

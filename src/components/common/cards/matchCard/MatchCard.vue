@@ -37,7 +37,7 @@ const fetchMatchResult = async () => {
   isLoading.value = true;
   try {
     const response = await axios.get(
-      `http://localhost:5000/ketquatrandau/${props.item._id}`
+      `${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau/${props.item._id}`
     );
     matchResult.value = response.data;
     console.log("Kết quả trận đấu:", matchResult.value);
@@ -133,6 +133,11 @@ const isMatchToday = computed(() => {
   return matchDateOnly.getTime() === todayOnly.getTime();
 });
 
+// Kiểm tra trận đấu sắp diễn ra (chưa diễn ra)
+const isMatchUpcoming = computed(() => {
+  return !isMatchFinished.value && !isMatchToday.value && !hasResult.value;
+});
+
 // Format data with fallbacks
 const formattedData = computed(() => ({
   teams: `${props.item.doiNha || "Chưa có"} - ${
@@ -184,6 +189,16 @@ const homeStats = computed(() => {
 const awayStats = computed(() => {
   return matchResult.value?.thongKe?.doiKhach || {};
 });
+
+// Xử lý đặt vé
+const handleBookTicket = () => {
+  if (isMatchUpcoming.value && userInfor.value?.vaiTro !== "admin") {
+    alert(
+      `Đặt vé cho trận đấu: ${formattedData.value.teams}\nNgày: ${formattedData.value.date}\nGiờ: ${formattedData.value.time}\nĐịa điểm: ${formattedData.value.location}`
+    );
+    // Thêm logic đặt vé thực tế ở đây
+  }
+};
 
 // Fetch kết quả khi component được mount
 onMounted(async () => {
@@ -261,105 +276,31 @@ watch(
 
       <!-- Match details -->
       <div class="card-body p-3 flex-grow-1">
-        <div class="match-info">
+        <div class="match-details mb-3">
           <div class="d-flex align-items-center mb-2">
             <FontAwesomeIcon
               :icon="['fas', 'map-marker-alt']"
-              class="text-primary me-2"
-              style="width: 16px"
+              class="text-muted me-2"
             />
-            <span class="text-muted small">{{ formattedData.location }}</span>
+            <small class="text-muted">{{ formattedData.location }}</small>
           </div>
           <div class="d-flex align-items-center mb-2">
             <FontAwesomeIcon
               :icon="['fas', 'calendar']"
-              class="text-primary me-2"
-              style="width: 16px"
+              class="text-muted me-2"
             />
-            <span class="text-muted small">{{ formattedData.date }}</span>
+            <small class="text-muted">{{ formattedData.date }}</small>
           </div>
-          <div class="d-flex align-items-center mb-3">
-            <FontAwesomeIcon
-              :icon="['fas', 'clock']"
-              class="text-primary me-2"
-              style="width: 16px"
-            />
-            <span class="text-muted small">{{ formattedData.time }}</span>
+          <div class="d-flex align-items-center">
+            <FontAwesomeIcon :icon="['fas', 'clock']" class="text-muted me-2" />
+            <small class="text-muted">{{ formattedData.time }}</small>
           </div>
+        </div>
 
-          <!-- Hiển thị thống kê nếu có kết quả -->
-          <div v-if="showStats" class="match-stats border-top pt-3">
-            <h6 class="fw-bold mb-2 small">Thống kê trận đấu:</h6>
-
-            <!-- Tỉ lệ kiểm soát bóng -->
-            <div
-              v-if="homeStats.tiLeKiemSoatBong || awayStats.tiLeKiemSoatBong"
-              class="mb-2"
-            >
-              <div class="d-flex justify-content-between small">
-                <span>Kiểm soát bóng:</span>
-                <span class="fw-semibold">
-                  {{ homeStats.tiLeKiemSoatBong || 0 }}% -
-                  {{ awayStats.tiLeKiemSoatBong || 0 }}%
-                </span>
-              </div>
-            </div>
-
-            <!-- Số đường chuyền -->
-            <div
-              v-if="homeStats.soDuongChuyen || awayStats.soDuongChuyen"
-              class="mb-2"
-            >
-              <div class="d-flex justify-content-between small">
-                <span>Đường chuyền:</span>
-                <span class="fw-semibold">
-                  {{ homeStats.soDuongChuyen || 0 }} -
-                  {{ awayStats.soDuongChuyen || 0 }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Thẻ phạt -->
-            <div
-              v-if="
-                homeStats.soTheVang ||
-                homeStats.soTheDo ||
-                awayStats.soTheVang ||
-                awayStats.soTheDo
-              "
-              class="mb-2"
-            >
-              <div class="d-flex justify-content-between small">
-                <span>Thẻ phạt:</span>
-                <span class="fw-semibold">
-                  🟡{{ homeStats.soTheVang || 0 }}🔴{{
-                    homeStats.soTheDo || 0
-                  }}
-                  - 🟡{{ awayStats.soTheVang || 0 }}🔴{{
-                    awayStats.soTheDo || 0
-                  }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Pha phạm lỗi -->
-            <div
-              v-if="homeStats.soPhaPhamLoi || awayStats.soPhaPhamLoi"
-              class="mb-2"
-            >
-              <div class="d-flex justify-content-between small">
-                <span>Pha phạm lỗi:</span>
-                <span class="fw-semibold">
-                  {{ homeStats.soPhaPhamLoi || 0 }} -
-                  {{ awayStats.soPhaPhamLoi || 0 }}
-                </span>
-              </div>
-            </div>
-          </div>
-
+        <div class="match-info">
           <!-- Thông báo nếu trận đã kết thúc nhưng chưa có kết quả -->
           <div
-            v-else-if="isMatchFinished && !hasResult && !isLoading"
+            v-if="isMatchFinished && !hasResult && !isLoading"
             class="border-top pt-3"
           >
             <div class="alert alert-warning small mb-0 p-2">
@@ -370,6 +311,17 @@ watch(
               Trận đấu đã kết thúc nhưng chưa có kết quả
             </div>
           </div>
+        </div>
+
+        <!-- Nút đặt vé - CHỈ HIỂN THỊ KHI TRẬN SẮP DIỄN RA VÀ KHÔNG PHẢI ADMIN -->
+        <div
+          v-if="isMatchUpcoming && userInfor?.vaiTro !== 'admin'"
+          class="mt-3"
+        >
+          <button class="btn btn-warning w-100" @click="handleBookTicket">
+            <FontAwesomeIcon :icon="['fas', 'ticket-alt']" class="me-2" />
+            Đặt vé ngay
+          </button>
         </div>
       </div>
 
@@ -393,9 +345,6 @@ watch(
           :on-close="closeMenu"
         />
       </div>
-    </div>
-    <div v-if="!isMatchFinished && !hasResult && userInfor?.vaiTro != 'admin'">
-      <button class="btn btn-primary">Đặt vé ngay</button>
     </div>
   </div>
 </template>

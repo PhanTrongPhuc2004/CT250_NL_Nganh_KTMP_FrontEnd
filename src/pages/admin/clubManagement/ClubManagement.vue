@@ -269,7 +269,9 @@ const newSponsor = ref("");
 // 🧩 Fetch thông tin
 onMounted(async () => {
   try {
-    const res = await axios.get("http://localhost:5000/caulacbo/");
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
+    );
     const data = Array.isArray(res.data) ? res.data[0] : res.data;
     club.value = {
       ...club.value,
@@ -288,7 +290,7 @@ const updateClub = async () => {
   message.value = "";
   try {
     await axios.put(
-      `http://localhost:5000/caulacbo/${club.value._id}`,
+      `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/${club.value._id}`,
       club.value
     );
     message.value = "✅ Cập nhật thông tin thành công!";

@@ -22,8 +22,8 @@ const showEditSeasonForm = ref(false);
 const currentEditSeason = ref(null);
 
 // API endpoints
-const seasonApi = "http://localhost:5000/muagiai";
-const competitionApi = "http://localhost:5000/giaidau";
+const seasonApi = `${import.meta.env.VITE_API_BE_BASE_URL}/muagiai`;
+const competitionApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
 
 // --- FORM FIELDS ---
 const seasonFields = [

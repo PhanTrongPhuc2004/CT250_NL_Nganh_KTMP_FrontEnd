@@ -99,11 +99,11 @@ const detailAction = {
 const getEditAction = (type, id) => {
   const itemId = id || props.item?._id || props.item?.id;
   const baseUrls = {
-    season: 'http://localhost:5000/muagiai',
-    tournament: 'http://localhost:5000/giaidau', 
-    player: 'http://localhost:5000/cauthu',
-    souvenir: 'http://localhost:5000/qualuuniem',
-    squad: 'http://localhost:5000/doihinh'
+    season: `${import.meta.env.VITE_API_BE_BASE_URL}/muagiai`,
+    tournament: `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`, 
+    player: `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu`,
+    souvenir: `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`,
+    squad: `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
   };
   
   return itemId ? {
@@ -118,7 +118,7 @@ const deleteAction = {
   season: (id) => {
     if (!confirm("Bạn có chắc muốn xóa mùa giải này?")) return;
     axios
-      .delete(`http://localhost:5000/muagiai/${id}`)
+      .delete(`${import.meta.env.VITE_API_BE_BASE_URL}/muagiai/${id}`)
       .then(() => {
         window.location.reload()
         router.push("/admin/compete");
@@ -133,7 +133,7 @@ const deleteAction = {
     const seasonId = route.params.seasonId;
     console.log("seasonId", seasonId);
     axios
-      .delete(`http://localhost:5000/giaidau/${id}`)
+      .delete(`${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${id}`)
       .then(() => {
         window.location.reload()
         console.log("seasonId", seasonId);
@@ -147,7 +147,7 @@ const deleteAction = {
   player: (id) => {
     if (!confirm("Bạn có chắc muốn xóa cầu thủ này?")) return;
     axios
-      .delete(`http://localhost:5000/cauthu/${id}`)
+      .delete(`${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/${id}`)
       .then(() => {
         window.location.reload()
         router.push("/admin/compete");
@@ -160,7 +160,7 @@ const deleteAction = {
   souvenir: (id) => {
     if (!confirm("Bạn có chắc muốn xóa vật phẩm này?")) return;
     axios
-      .delete(`http://localhost:5000/qualuuniem/${id}`)
+      .delete(`${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`)
       .then(() => {
         window.location.reload()
         router.push("/admin/compete");
@@ -173,7 +173,7 @@ const deleteAction = {
   squad: (id) => {
     if (!confirm("Bạn có chắc muốn xóa đội hình này?")) return;
     axios
-      .delete(`http://localhost:5000/doihinh/${id}`)
+      .delete(`${import.meta.env.VITE_API_BE_BASE_URL}/doihinh/${id}`)
       .then(() => {
         window.location.reload()
         router.push("/admin/compete");
@@ -203,7 +203,7 @@ const menuItemsByType = {
       name: "Xóa trận đấu",
       action: () => {
         axios
-          .delete(`http://localhost:5000/trandau/${props.item._id}`)
+          .delete(`${import.meta.env.VITE_API_BE_BASE_URL}/trandau/${props.item._id}`)
           .then(() => {
             alert("Xóa trận đấu thành công!");
             closeMenu();

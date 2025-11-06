@@ -3,11 +3,15 @@
     <div class="shop-container">
       <div class="shop-header">
         <h1>Cửa hàng Quà Lưu Niệm</h1>
-        <button class="cart-btn" @click="$router.push('/orders')">
-          📋 Đơn hàng
+        <button
+          class="btn btn-outline-primary me-2"
+          @click="$router.push('/orders')"
+        >
+          <i class="bi bi-receipt me-1"></i> Đơn hàng
         </button>
-        <button class="cart-btn" @click="$router.push('/cart')">
-          🛒 Giỏ Hàng
+
+        <button class="btn btn-primary" @click="$router.push('/cart')">
+          <i class="bi bi-cart-fill me-1"></i> Giỏ hàng
         </button>
       </div>
 
@@ -21,9 +25,13 @@
           class="product-card"
           @click="goToDetail(item._id)"
         >
-          <img :src="getImageUrl(item.anhMinhHoa)" alt="Ảnh quà" class="product-image" />
+          <img
+            :src="getImageUrl(item.anhMinhHoa)"
+            alt="Ảnh quà"
+            class="product-image"
+          />
           <h3 class="product-name">{{ item.tenQuaLuuNiem }}</h3>
-          <p class="product-price">{{ item.gia.toLocaleString() }}₫</p>
+          <p class="product-price">{{ item.gia.toLocaleString() }} VND</p>
         </div>
       </div>
     </div>
@@ -32,7 +40,9 @@
 
 <script>
 import axios from "axios";
-
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "bootstrap";
 export default {
   name: "Shop",
   data() {
@@ -45,7 +55,9 @@ export default {
   methods: {
     async fetchProducts() {
       try {
-        const res = await axios.get("http://localhost:5000/qualuuniem");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
+        );
         this.products = res.data;
       } catch (err) {
         this.error = "Không thể tải danh sách quà lưu niệm.";
@@ -73,7 +85,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .shop-header {
   display: flex;
@@ -84,7 +95,11 @@ export default {
 
 /* Nút giỏ hàng: nghiêm túc, hiện đại */
 .cart-btn {
-  background: linear-gradient(90deg, #2c3e50, #4ca1af); /* Xanh than -> xanh xám */
+  background: linear-gradient(
+    90deg,
+    #2c3e50,
+    #4ca1af
+  ); /* Xanh than -> xanh xám */
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -101,7 +116,11 @@ export default {
 /* Nền trang tổng thể */
 .shop-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #dfe9f3, #ffffff); /* Xanh nhạt -> trắng */
+  background: linear-gradient(
+    135deg,
+    #dfe9f3,
+    #ffffff
+  ); /* Xanh nhạt -> trắng */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -175,4 +194,3 @@ h1 {
   color: #a01616; /* xanh ngọc đậm, nổi bật nhưng vẫn nghiêm túc */
 }
 </style>
-

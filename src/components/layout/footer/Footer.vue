@@ -6,7 +6,9 @@ const clubInfo = ref({});
 
 onMounted(async () => {
   try {
-    const response = await axios.get("http://localhost:5000/caulacbo/");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
+    );
     // API trả về mảng, lấy phần tử đầu tiên
     clubInfo.value = response.data[0] || {};
     console.log("clubInfo", clubInfo.value);

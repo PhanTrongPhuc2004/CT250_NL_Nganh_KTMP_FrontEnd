@@ -10,7 +10,9 @@ import { useDropdownManager } from "@/composables/useDropdownManager";
 import { ref, onMounted } from "vue"; // 👈 Thêm onMounted
 import { useFormStore } from "@/stores/formStore";
 import { getMe } from "@/utils";
-
+const API_BASE_URL = import.meta.env.VITE_API_BE_BASE_URL;
+const registerApiUrl = `${API_BASE_URL}/nguoidung`;
+const loginApiUrl = `${API_BASE_URL}/nguoidung/login`;
 const userStore = useUserStore();
 const formStore = useFormStore();
 const router = useRouter();
@@ -123,8 +125,8 @@ watchEffect(() => {
         <Menu
           v-show="activeMenuId === 'user-menu'"
           :menu-items="[
-            { name: 'Trang cá nhân', link: '/profile' },
-            { name: 'Đăng xuất', action: () => userStore.logout() },
+            { label: 'Trang cá nhân', link: '/profile' },
+            { label: 'Đăng xuất', action: () => userStore.logout() },
           ]"
           top="60px"
         />
@@ -137,7 +139,7 @@ watchEffect(() => {
     v-if="formStore.isCurrent('Đăng ký')"
     :inputFields="registerFields"
     method="POST"
-    api="http://localhost:5000/nguoidung"
+    :api="registerApiUrl"
     :form-name="'Đăng ký'"
     :orther-data="{ vaiTro: 'nguoihammo' }"
     @closed="formStore.closeForm"
@@ -149,7 +151,7 @@ watchEffect(() => {
     v-if="formStore.isCurrent('Đăng nhập')"
     :inputFields="loginFields"
     method="POST"
-    api="http://localhost:5000/nguoidung/login"
+    :api="loginApiUrl"
     :form-name="'Đăng nhập'"
     @closed="formStore.closeForm"
     @submitted="userStore.login"

@@ -20,7 +20,10 @@
             <td>{{ item.quantity }}</td>
             <td>{{ (item.gia * item.quantity).toLocaleString() }}₫</td>
             <td>
-              <button class="delete-btn" @click="removeItem(index)">❌</button>
+              <button class="btn btn-danger btn-sm" @click="removeItem(index)">
+                <i class="bi bi-trash"></i>
+              </button>
+
             </td>
           </tr>
         </tbody>
@@ -29,13 +32,21 @@
       <h3 class="total">Tổng cộng: {{ totalAmount.toLocaleString() }}₫</h3>
 
       <div class="action-buttons">
-        <button class="clear-btn" @click="clearCart">Xóa giỏ hàng</button>
-        <button class="checkout-btn" @click="goToCheckout">Thanh toán</button>
+        <button class="btn btn-outline-danger me-2" @click="clearCart">
+          <i class="bi bi-trash me-1"></i> Xóa giỏ hàng
+        </button>
+
+        <button class="btn btn-success" @click="goToCheckout">
+          <i class="bi bi-credit-card me-1"></i> Thanh toán
+        </button>
       </div>
     </div>
 
     <p v-else>Giỏ hàng của bạn đang trống.</p>
-    <button class="back-btn" @click="$router.push('/shop')">Tiếp tục mua hàng</button>
+    <button class="btn btn-outline-primary" @click="$router.push('/shop')">
+      <i class="bi bi-arrow-left-circle me-1"></i> Tiếp tục mua hàng
+    </button>
+
   </div>
 </template>
 

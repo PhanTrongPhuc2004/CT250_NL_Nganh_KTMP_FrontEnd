@@ -6,7 +6,6 @@ import Form from "@/components/common/form/Form.vue";
 import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import TournamentCard from "@/components/common/cards/tournamentCard/TournamentCard.vue";
-
 const route = useRoute();
 const router = useRouter();
 const seasonId = route.params.seasonId;
@@ -15,7 +14,10 @@ const tournaments = ref([]);
 const showTournamentForm = ref(false);
 const showEditTournamentForm = ref(false);
 const currentEditTournament = ref(null);
-
+const editTournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${
+  currentEditTournament?._id
+}`;
+const addTournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
 // Fields cho form thêm và chỉnh sửa
 const tournamentFields = [
   {
@@ -77,7 +79,9 @@ const deleteTournament = async (item) => {
   console.log("Xóa giải đấu:", item);
   if (confirm(`Bạn có chắc muốn xóa giải đấu "${item.tenGiaiDau}"?`)) {
     try {
-      await axios.delete(`http://localhost:5000/giaidau/${item._id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${item._id}`
+      );
       console.log("Đã xóa giải đấu thành công");
       await fetchTournamentBySeason(seasonId); // Reload danh sách
     } catch (error) {
@@ -103,7 +107,7 @@ const handleEditSubmitted = () => {
 const fetchTournamentBySeason = async (id) => {
   try {
     const response = await axios.get(
-      `http://localhost:5000/muagiai/${id}/giaidau`
+      `${import.meta.env.VITE_API_BE_BASE_URL}/muagiai/${id}/giaidau`
     );
     tournaments.value = response.data;
   } catch (error) {
@@ -182,7 +186,7 @@ const goBack = () => {
     form-name="Thêm giải đấu mới"
     :input-fields="tournamentFields"
     v-if="showTournamentForm"
-    :api="'http://localhost:5000/giaidau'"
+    :api="addTournamentApi"
     :orther-data="{ muaGiaiId: seasonId }"
     method="POST"
     @submitted="handleAddTournamentSubmitted"
@@ -195,7 +199,7 @@ const goBack = () => {
     :input-fields="tournamentFields"
     v-if="showEditTournamentForm"
     :input-data="currentEditTournament"
-    :api="`http://localhost:5000/giaidau/${currentEditTournament?._id}`"
+    :api="editTournamentApi"
     method="PUT"
     @submitted="handleEditSubmitted"
     @closed="closeEditTournamentForm"

@@ -17,6 +17,11 @@ const showEditForm = ref(false);
 const currentEditMatch = ref(null);
 const showUpdateResultForm = ref(false); // Thêm state cho form cập nhật kết quả
 const currentUpdateMatch = ref(null); // Thêm state lưu trận đấu đang cập nhật kết quả
+const addMatchApi = `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`;
+const updateResultApi = `${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau`;
+const updateMatchApi = `${import.meta.env.VITE_API_BE_BASE_URL}/trandau/${
+  currentUpdateMatch?._id
+}`;
 
 // Fields cho form cập nhật kết quả
 const updateResultMatchFields = [
@@ -135,7 +140,7 @@ const menuItems = [
 const fetchMatchByTournamentId = async (tournamentId) => {
   try {
     const response = await axios.get(
-      `http://localhost:5000/giaidau/${tournamentId}/trandau`
+      `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${tournamentId}/trandau`
     );
     matches.value = response.data;
     console.log("Matches data:", matches.value);
@@ -146,7 +151,9 @@ const fetchMatchByTournamentId = async (tournamentId) => {
 
 const fetchSquad = async () => {
   try {
-    const response = await axios.get("http://localhost:5000/doihinh");
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
+    );
     let data = response.data;
 
     if (data) {
@@ -184,7 +191,9 @@ const handleDeleteMatch = async (match) => {
     )
   ) {
     try {
-      await axios.delete(`http://localhost:5000/trandau/${match._id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_BE_BASE_URL}/trandau/${match._id}`
+      );
       console.log("Đã xóa trận đấu thành công");
       await fetchMatchByTournamentId(tournamentId);
     } catch (error) {
@@ -306,7 +315,7 @@ const transformUpdateResultData = (formData) => {
       v-if="showMatchForm"
       :input-fields="matchFields"
       form-name="Thêm trận đấu mới"
-      api="http://localhost:5000/trandau"
+      :api="addMatchApi"
       method="POST"
       :orther-data="{ giaiDauId: tournamentId }"
       @submitted="
@@ -324,7 +333,7 @@ const transformUpdateResultData = (formData) => {
       :input-fields="matchFields"
       form-name="Chỉnh sửa trận đấu"
       :input-data="currentEditMatch"
-      :api="`http://localhost:5000/trandau/${currentEditMatch?._id}`"
+      :api="updateMatchApi"
       method="PUT"
       @submitted="handleEditSubmitted"
       @closed="closeEditForm"
@@ -336,7 +345,7 @@ const transformUpdateResultData = (formData) => {
       :input-fields="updateResultMatchFields"
       form-name="Cập nhật kết quả trận đấu"
       :input-data="currentUpdateMatch"
-      :api="`http://localhost:5000/ketquatrandau/${currentUpdateMatch?._id}`"
+      :api="updateResultApi"
       method="PUT"
       :transform-data="transformUpdateResultData"
       @submitted="handleUpdateResultSubmitted"

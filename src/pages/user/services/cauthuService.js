@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/cauthu"; // 🔗 thay bằng URL backend của bạn
+const API_URL = `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu`; // 🔗 thay bằng URL backend của bạn
 
 // Lấy tất cả cầu thủ
 export const getAllCauthu = async () => {
