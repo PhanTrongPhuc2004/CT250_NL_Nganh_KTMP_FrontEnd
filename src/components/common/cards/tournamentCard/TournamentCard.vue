@@ -105,23 +105,6 @@ const formattedData = computed(() => ({
           <p class="text-muted small mb-3">
             {{ formattedData.description }}
           </p>
-
-          <div class="tournament-stats small text-muted">
-            <div class="d-flex align-items-center mb-1">
-              <FontAwesomeIcon
-                :icon="['fas', 'trophy']"
-                class="text-warning me-2"
-              />
-              <span>Giải đấu chuyên nghiệp</span>
-            </div>
-            <div class="d-flex align-items-center">
-              <FontAwesomeIcon
-                :icon="['fas', 'users']"
-                class="text-primary me-2"
-              />
-              <span>Nhiều đội bóng tham gia</span>
-            </div>
-          </div>
         </div>
       </div>
 

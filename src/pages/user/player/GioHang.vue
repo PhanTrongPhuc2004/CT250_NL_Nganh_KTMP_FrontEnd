@@ -16,9 +16,9 @@
         <tbody>
           <tr v-for="(item, index) in cart" :key="item._id">
             <td>{{ item.tenQuaLuuNiem }}</td>
-            <td>{{ item.gia.toLocaleString() }}₫</td>
+            <td>{{ item.gia.toLocaleString() }} VND</td>
             <td>{{ item.quantity }}</td>
-            <td>{{ (item.gia * item.quantity).toLocaleString() }}₫</td>
+            <td>{{ (item.gia * item.quantity).toLocaleString() }} VND</td>
             <td>
               <button class="btn btn-danger btn-sm" @click="removeItem(index)">
                 <i class="bi bi-trash"></i>
@@ -29,7 +29,7 @@
         </tbody>
       </table>
 
-      <h3 class="total">Tổng cộng: {{ totalAmount.toLocaleString() }}₫</h3>
+      <h3 class="total">Tổng cộng: {{ totalAmount.toLocaleString() }} VND</h3>
 
       <div class="action-buttons">
         <button class="btn btn-outline-danger me-2" @click="clearCart">

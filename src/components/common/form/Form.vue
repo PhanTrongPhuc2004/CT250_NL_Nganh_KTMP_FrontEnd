@@ -5,6 +5,8 @@ import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./form.module.scss";
 import { uploadToCloudinary } from "@/config/cloudinary.conf";
+import { useFormStore } from "@/stores/formStore";
+const formStore = useFormStore();
 
 const emit = defineEmits(["submitted", "updated", "deleted", "closed"]);
 
@@ -88,10 +90,6 @@ const initFormData = () => {
 
 onMounted(async () => {
   initFormData();
-  const res = await axios.get(
-    "https://12g1p2qc-5000.asse.devtunnels.ms/test-cors"
-  );
-  console.log("test thu cors", res.data);
 });
 
 watch(
@@ -114,6 +112,7 @@ watch(
 );
 
 // ================= HANDLE SUBMIT =================
+// TRONG COMPONENT FORM - THÊM DEBUG
 const handleSubmit = async () => {
   if (isSubmitting.value) {
     console.warn("Form đang submit, bỏ qua request mới");
@@ -129,36 +128,12 @@ const handleSubmit = async () => {
     if ("_id" in payload) delete payload._id;
     const url = props.api;
 
-    console.log(
-      "%c=================== SUBMIT ===================",
-      "color: teal; font-weight: bold"
-    );
-    console.log("Item ID:", itemId);
-    console.log("URL:", url);
-    console.log("Method:", props.method);
-    console.log("Payload trước gửi:", payload, props.ortherData);
-    console.log("=============================================", "color: teal");
-
-    // Kiểm tra URL có chứa đúng ID
-    if (itemId && props.method !== "POST" && !url.includes(itemId)) {
-      console.error(
-        "%c❌ CẢNH BÁO: URL không chứa ID đúng!",
-        "color: red; font-weight: bold"
-      );
-      console.error("Expected ID:", itemId);
-      console.error("URL:", url);
-      alert("Lỗi: URL API không đúng! Vui lòng thử lại.");
-      isSubmitting.value = false;
-      return;
-    }
-
-    // Upload ảnh nếu cần
-    if (payload.anhMinhHoa && typeof payload.anhMinhHoa !== "string") {
-      console.log("%cĐang upload ảnh...", "color: orange;");
-      const imageUrl = await uploadToCloudinary(payload.anhMinhHoa);
-      payload.anhMinhHoa = imageUrl;
-      console.log("%cUpload ảnh thành công:", "color: green;", imageUrl);
-    }
+    console.log("🔄 Đang gửi form...", {
+      url,
+      method: props.method,
+      payload,
+      formName: props.formName,
+    });
 
     // Gửi request
     const response = await axios({
@@ -168,28 +143,25 @@ const handleSubmit = async () => {
       withCredentials: true,
     });
 
-    console.log(
-      "%c✅ Response nhận được:",
-      "color: green; font-weight: bold",
-      response.data
-    );
+    console.log("✅ Response nhận được:", response.data);
 
-    // Emit events
-    if (props.method === "POST") emit("submitted", response.data);
-    else if (["PUT", "PATCH"].includes(props.method))
-      emit("updated", response.data);
-    else if (props.method === "DELETE") emit("deleted", { _id: itemId });
-    if (props.formName == "Đăng nhập") window.location.reload();
+    // QUAN TRỌNG: Debug emit events
+    if (props.method === "POST") {
+      console.log("📤 Trigger refresh squads từ store");
+      formStore.triggerRefreshSquads();
+    } else if (["PUT", "PATCH"].includes(props.method)) {
+      console.log("📤 Trigger refresh squads từ store");
+      formStore.triggerRefreshSquads();
+    }
+
+    console.log("✅ Store đã được cập nhật");
     handleClose();
   } catch (error) {
-    console.error("%c❌ Lỗi khi submit form:", "color: red; font-weight: bold");
-    console.error("Error:", error);
-    console.error("Response:", error.response?.data);
-    console.error("Status:", error.response?.status);
-
+    console.error("❌ Lỗi khi submit form:", error);
     const errorMsg =
       error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
     alert(errorMsg);
+    emit("error", error);
   } finally {
     isSubmitting.value = false;
   }
