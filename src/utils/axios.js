@@ -1,9 +1,8 @@
-// src/utils/axios.js
-import axios from 'axios';
+import axios from "axios";
 
 const instance = axios.create({
-    baseURL: 'http://localhost:5000',
-    withCredentials: true, // Dùng để gửi cookie cùng với yêu cầu HTTP tới Server
+    baseURL: import.meta.env.VITE_API_BE_BASE_URL || "http://localhost:5000",
+    withCredentials: true,
 });
 
 export default instance;
