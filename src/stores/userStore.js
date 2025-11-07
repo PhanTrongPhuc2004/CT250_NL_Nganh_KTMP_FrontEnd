@@ -112,14 +112,14 @@ export const useUserStore = defineStore("user", {
           { withCredentials: true }
         );
 
-        // ✅ Cập nhật user từ checkAuth hoặc response
+        // Cập nhật user từ checkAuth hoặc response
         await this.checkAuth();
         if (!this.user && res.data?.user) this.user = res.data.user;
 
         if (this.user) {
           this.setUser(this.user);
 
-          // 🔄 Merge giỏ hàng guest sang user
+          // Merge giỏ hàng guest sang user
           const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
           const userCartKey = `cart_${this.user.tenDangNhap}`;
           const userCart = JSON.parse(localStorage.getItem(userCartKey)) || [];
