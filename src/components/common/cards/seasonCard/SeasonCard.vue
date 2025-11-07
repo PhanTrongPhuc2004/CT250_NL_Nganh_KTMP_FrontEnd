@@ -89,7 +89,6 @@ const formattedData = computed(() => ({
     props.item.tenMuaGiai ||
     `Mùa giải ${props.item.namBatDau}-${props.item.namKetThuc}`,
   years: `${props.item.namBatDau || "N/A"} - ${props.item.namKetThuc || "N/A"}`,
-  description: props.item.moTa || "Mùa giải bóng đá chuyên nghiệp",
   duration:
     props.item.namBatDau && props.item.namKetThuc
       ? `${props.item.namBatDau} - ${props.item.namKetThuc}`
@@ -139,29 +138,6 @@ const seasonDuration = computed(() => {
           </p>
 
           <!-- Additional season stats -->
-          <div class="season-stats small text-muted">
-            <div class="d-flex align-items-center mb-1">
-              <FontAwesomeIcon
-                :icon="['fas', 'trophy']"
-                class="text-warning me-2"
-              />
-              <span>Nhiều giải đấu hấp dẫn</span>
-            </div>
-            <div class="d-flex align-items-center mb-1">
-              <FontAwesomeIcon
-                :icon="['fas', 'users']"
-                class="text-primary me-2"
-              />
-              <span>Hàng trăm đội bóng tham gia</span>
-            </div>
-            <div class="d-flex align-items-center">
-              <FontAwesomeIcon
-                :icon="['fas', 'star']"
-                class="text-success me-2"
-              />
-              <span>Mùa giải chuyên nghiệp</span>
-            </div>
-          </div>
         </div>
       </div>
 
