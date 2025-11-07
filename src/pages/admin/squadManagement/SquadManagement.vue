@@ -52,7 +52,9 @@ const ortherData = reactive({
 
 const fetchDoiHinh = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/doihinh");
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
+    );
     squads.value = res.data;
   } catch (err) {
     console.error("Lỗi fetch đội hình:", err);
@@ -61,7 +63,7 @@ const fetchDoiHinh = async () => {
 
 const formAction = {
   add: {
-    api: `http://localhost:5000/doihinh/`,
+    api: `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh/`,
     method: "post",
   },
 };

@@ -18,6 +18,7 @@ import orders from "@/pages/user/player/Donhang.vue";
 import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue";
 import donhang from "@/pages/admin/component/DonHangPage.vue";
 import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
+import ThongKe from "@/pages/admin/component/ThongKe.vue";
 
 import axios from "axios";
 import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
@@ -28,6 +29,7 @@ import TournamentDetail from "@/pages/admin/tournamentDetail/TournamentDetail.vu
 import Dashboard from "@/pages/admin/dashboard/Dashboard.vue";
 import SquadManagement from "@/pages/admin/squadManagement/SquadManagement.vue";
 import SquadDetail from "@/pages/admin/squadDetail/SquadDetail.vue";
+import Notifivation from "@/pages/user/notification/Notifivation.vue";
 const commonRouter = [
   {
     path: "/profile",
@@ -65,10 +67,15 @@ const userRouter = [
     meta: { requiresAuth: true, user: true },
   },
   { path: "/shop/:id", component: ProductDetail },
-  { path: "/cart", component: Cart},
+  { path: "/cart", component: Cart },
   { path: "/checkout", component: checkout },
   { path: "/orders", component: orders },
-
+  {
+    path: "/notifications",
+    component: Notifivation,
+    name: "Thông báo",
+    meta: { requiresAuth: true, user: true },
+  },
 ];
 const adminRouter = [
   {
@@ -163,9 +170,9 @@ const adminRouter = [
     icon: ["fas", "ticket-alt"], // faTicketAlt
   },
   {
-    path: "/admin/statistics",
+    path: "/admin/thongke",
     name: "Thống kê",
-    component: UserManagement,
+    component: ThongKe,
     meta: { admin: true },
     icon: ["fas", "chart-bar"], // faChartBar
   },
@@ -201,9 +208,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from) => {
   try {
-    const res = await axios.get("http://localhost:5000/nguoidung/me", {
-      withCredentials: true,
-    });
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/me`,
+      {
+        withCredentials: true,
+      }
+    );
     const user = res.data;
     const vaiTro = user.vaiTro;
 

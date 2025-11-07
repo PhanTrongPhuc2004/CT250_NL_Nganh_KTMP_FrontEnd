@@ -6,18 +6,35 @@ import Form from "@/components/common/form/Form.vue";
 import { useUserStore } from "@/stores/userStore";
 import Menu from "@/components/common/menu/Menu.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { useDropdownManager } from "@/composables/useDropdownManager"; // 👈 thêm
-import { watchEffect } from "vue";
+import { useDropdownManager } from "@/composables/useDropdownManager";
+import { ref, onMounted } from "vue"; // 👈 Thêm onMounted
 import { useFormStore } from "@/stores/formStore";
+import { getMe } from "@/utils";
+const API_BASE_URL = import.meta.env.VITE_API_BE_BASE_URL;
+const registerApiUrl = `${API_BASE_URL}/nguoidung`;
+const loginApiUrl = `${API_BASE_URL}/nguoidung/login`;
 const userStore = useUserStore();
 const formStore = useFormStore();
 const router = useRouter();
 const cx = classNames.bind(styles);
 
-// Sử dụng hook dropdown
+// State
+const userInfor = ref({});
 const { activeMenuId, toggleMenu } = useDropdownManager();
 
+// Lấy user info khi component mounted
+onMounted(async () => {
+  try {
+    userInfor.value = await getMe();
+    console.log("userInfor", userInfor.value);
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin user:", error);
+  }
+});
+
+// Routes và form fields
 const userRoutes = router.getRoutes().filter((r) => r.meta?.user);
+console.log("userRoutes", userRoutes);
 
 const registerFields = [
   { name: "hoVaTen", type: "text", label: "Họ và tên" },
@@ -25,10 +42,28 @@ const registerFields = [
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
 ];
+
 const loginFields = [
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
 ];
+
+// Computed: Filter routes dựa trên điều kiện
+const filteredRoutes = ref([]);
+
+// Watch để cập nhật routes khi userInfo thay đổi
+import { watchEffect } from "vue";
+
+watchEffect(() => {
+  filteredRoutes.value = userRoutes.filter((item) => {
+    // Nếu là route notifications, chỉ hiển thị khi user KHÔNG phải nguoihammo
+    if (item.path === "/notifications") {
+      return userInfor.value?.vaiTro !== "nguoihammo";
+    }
+    // Các route khác hiển thị bình thường
+    return true;
+  });
+});
 </script>
 
 <template>
@@ -49,11 +84,7 @@ const loginFields = [
         <button
           :class="cx('register-btn', 'btn', 'btn-primary')"
           type="button"
-          @click="
-            () => {
-              formStore.openForm('Đăng nhập', {});
-            }
-          "
+          @click="formStore.openForm('Đăng nhập', {})"
         >
           Đăng nhập
         </button>
@@ -61,11 +92,7 @@ const loginFields = [
         <button
           :class="cx('register-btn', 'btn', 'btn-primary')"
           type="button"
-          @click="
-            () => {
-              formStore.openForm('Đăng ký', {});
-            }
-          "
+          @click="formStore.openForm('Đăng ký', {})"
         >
           Đăng ký
         </button>
@@ -77,8 +104,9 @@ const loginFields = [
   <div :class="cx('header-wrapper')" v-else>
     <nav :class="cx('nav-wrapper')">
       <div :class="cx('nav-list')">
+        <!-- ✅ ĐÚNG: Sử dụng filteredRoutes -->
         <router-link
-          v-for="item in userRoutes"
+          v-for="item in filteredRoutes"
           :key="item.path"
           :to="item.path"
           :class="cx('nav-item')"
@@ -97,8 +125,8 @@ const loginFields = [
         <Menu
           v-show="activeMenuId === 'user-menu'"
           :menu-items="[
-            { name: 'Trang cá nhân', link: '/profile' },
-            { name: 'Đăng xuất', action: () => userStore.logout() },
+            { label: 'Trang cá nhân', link: '/profile' },
+            { label: 'Đăng xuất', action: () => userStore.logout() },
           ]"
           top="60px"
         />
@@ -111,24 +139,22 @@ const loginFields = [
     v-if="formStore.isCurrent('Đăng ký')"
     :inputFields="registerFields"
     method="POST"
-    api="http://localhost:5000/nguoidung"
+    :api="registerApiUrl"
     :form-name="'Đăng ký'"
     :orther-data="{ vaiTro: 'nguoihammo' }"
     @closed="formStore.closeForm"
-    @submitted="() => formStore.closeForm()"
+    @submitted="formStore.closeForm"
   />
 
   <!-- Modal Đăng nhập -->
-
   <Form
     v-if="formStore.isCurrent('Đăng nhập')"
-    formName="Đăng nhập"
     :inputFields="loginFields"
     method="POST"
-    api="http://localhost:5000/nguoidung/login"
+    :api="loginApiUrl"
     :form-name="'Đăng nhập'"
     @closed="formStore.closeForm"
-    @submitted="() => userStore.login()"
+    @submitted="userStore.login"
   />
 </template>
 

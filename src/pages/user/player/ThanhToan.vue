@@ -1,3 +1,4 @@
+
 <template>
   <div class="checkout-page">
     <h1>Thanh toán</h1>
@@ -14,34 +15,29 @@
 
       <h3>Tổng thanh toán: {{ totalAmount.toLocaleString() }}₫</h3>
 
-      <button
-        type="submit"
-        class="btn btn-success w-100"
-        :disabled="loading"
-      >
+      <button type="submit" class="btn btn-success w-100" :disabled="loading">
         <i v-if="!loading" class="bi bi-check-circle me-1"></i>
         <span v-if="!loading">Xác nhận thanh toán</span>
         <span v-else>
           <i class="bi bi-hourglass-split me-1"></i> Đang xử lý...
         </span>
       </button>
-
     </form>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import { useUserStore } from "../../../stores/userStore";
+
 
 export default {
   name: "CheckoutPage",
   data() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const tenDangNhap = user?.tenDangNhap || "guest";
     return {
-      tenDangNhap,
       order: { name: "", phone: "", address: "" },
-      cart: JSON.parse(localStorage.getItem(`cart_${tenDangNhap}`)) || [],
+      cart: [],
+      tenDangNhap: "guest",
       loading: false,
     };
   },
@@ -51,6 +47,37 @@ export default {
     },
   },
   mounted() {
+    const userStore = useUserStore();
+
+    // 1️⃣ Lấy user từ Pinia store
+    this.tenDangNhap = userStore.user?.tenDangNhap || "guest";
+
+    // 2️⃣ Merge giỏ hàng guest nếu vừa login
+    const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
+    const userCartKey = `cart_${this.tenDangNhap}`;
+    const userCart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+
+    if (guestCart.length > 0 && this.tenDangNhap !== "guest") {
+      // Nối guestCart vào userCart
+      const mergedCart = [...userCart];
+
+      guestCart.forEach((item) => {
+        const index = mergedCart.findIndex((i) => i.maSanPham === item.maSanPham);
+        if (index > -1) {
+          mergedCart[index].quantity += item.quantity;
+        } else {
+          mergedCart.push(item);
+        }
+      });
+
+      this.cart = mergedCart;
+      localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
+      localStorage.removeItem("cart_guest");
+    } else {
+      this.cart = userCart;
+    }
+
+    // 3️⃣ Chặn thanh toán nếu giỏ hàng trống
     if (!this.cart.length) {
       alert("Giỏ hàng trống! Quay lại giỏ hàng.");
       this.$router.push("/cart");
@@ -71,10 +98,13 @@ export default {
       };
 
       try {
-        // 🧩 Gửi dữ liệu lên backend (API Node/Express)
-        await axios.post("http://localhost:5000/donhang", newOrder);
+        // Gửi đơn hàng lên backend
+        await axios.post(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang`,
+          newOrder
+        );
 
-        // 🧹 Xóa giỏ hàng localStorage sau khi lưu thành công
+        // Xóa giỏ hàng sau khi thanh toán
         localStorage.removeItem(`cart_${this.tenDangNhap}`);
 
         alert("🎉 Đơn hàng của bạn đã được thanh toán và lưu thành công!");
@@ -89,6 +119,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .checkout-page {
@@ -176,4 +207,3 @@ export default {
   cursor: not-allowed;
 }
 </style>
-

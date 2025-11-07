@@ -5,17 +5,29 @@
     <div v-else-if="player" class="player-card">
       <!-- Ảnh và thông tin cơ bản -->
       <div class="player-header">
-          <img
-            :src="resolveImage(player.anhMinhHoa)"
-            alt="Ảnh cầu thủ"
-            class="player-avatar"
-          />
+        <img
+          :src="resolveImage(player.anhMinhHoa)"
+          alt="Ảnh cầu thủ"
+          class="player-avatar"
+        />
         <div class="player-basic">
           <h1>{{ player.hoVaTen }}</h1>
-          <p><i class="bi bi-person-badge"></i> <strong>Vị trí:</strong> {{ player.viTri || 'Chưa cập nhật' }}</p>
-          <p><i class="bi bi-flag"></i> <strong>Quốc tịch:</strong> {{ player.quocTich || 'Không rõ' }}</p>
-          <p><i class="bi bi-hash"></i> <strong>Số áo:</strong> {{ player.soAo || 'N/A' }}</p>
-          <p><i class="bi bi-building"></i> <strong>CLB cũ:</strong> {{ player.cauLacBoCu || 'Không có' }}</p>
+          <p>
+            <i class="bi bi-person-badge"></i> <strong>Vị trí:</strong>
+            {{ player.viTri || "Chưa cập nhật" }}
+          </p>
+          <p>
+            <i class="bi bi-flag"></i> <strong>Quốc tịch:</strong>
+            {{ player.quocTich || "Không rõ" }}
+          </p>
+          <p>
+            <i class="bi bi-hash"></i> <strong>Số áo:</strong>
+            {{ player.soAo || "N/A" }}
+          </p>
+          <p>
+            <i class="bi bi-building"></i> <strong>CLB cũ:</strong>
+            {{ player.cauLacBoCu || "Không có" }}
+          </p>
         </div>
       </div>
 
@@ -26,12 +38,21 @@
         </h4>
         <ul>
           <li><strong>Ngày sinh:</strong> {{ formatDate(player.namSinh) }}</li>
-          <li><strong>Chiều cao:</strong> {{ player.chieuCao ? player.chieuCao + ' cm' : 'Chưa có' }}</li>
-          <li><strong>Chân thuận:</strong> {{ player.chanThuan || 'Không rõ' }}</li>
+          <li>
+            <strong>Chiều cao:</strong>
+            {{ player.chieuCao ? player.chieuCao + " cm" : "Chưa có" }}
+          </li>
+          <li>
+            <strong>Chân thuận:</strong> {{ player.chanThuan || "Không rõ" }}
+          </li>
           <li><strong>Năm hành nghề:</strong> {{ player.namHanhNghe || 0 }}</li>
-          <li><strong>Ngày gia nhập:</strong> {{ formatDate(player.ngayGiaNhap) }}</li>
-          <li><strong>Email:</strong> {{ player.email || 'Không có' }}</li>
-          <li><strong>Số điện thoại:</strong> {{ player.sdt || 'Không có' }}</li>
+          <li>
+            <strong>Ngày gia nhập:</strong> {{ formatDate(player.ngayGiaNhap) }}
+          </li>
+          <li><strong>Email:</strong> {{ player.email || "Không có" }}</li>
+          <li>
+            <strong>Số điện thoại:</strong> {{ player.sdt || "Không có" }}
+          </li>
         </ul>
       </div>
 
@@ -41,19 +62,16 @@
           <i class="bi bi-arrow-left-circle me-2"></i> Quay lại danh sách
         </router-link>
       </div>
-
     </div>
 
-    <div v-else class="empty">
-      ⚠️ Không tìm thấy thông tin cầu thủ.
-    </div>
+    <div v-else class="empty">⚠️ Không tìm thấy thông tin cầu thủ.</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import axios from "axios";
 
 // --- Khai báo ---
 const route = useRoute();
@@ -62,9 +80,9 @@ const loading = ref(true);
 
 // ✅ Hàm xử lý ảnh linh hoạt
 const resolveImage = (anh) => {
-  if (!anh) return '/default-player.jpg';                  // ảnh mặc định nếu không có
-  if (anh.startsWith('http') || anh.startsWith('data:image')) return anh; // ảnh URL hoặc Base64
-  return `/${anh}`;                                   // ảnh từ public/data
+  if (!anh) return "/default-player.jpg"; // ảnh mặc định nếu không có
+  if (anh.startsWith("http") || anh.startsWith("data:image")) return anh; // ảnh URL hoặc Base64
+  return `/${anh}`; // ảnh từ public/data
 };
 
 // --- Hàm fetch chi tiết cầu thủ ---
@@ -72,10 +90,12 @@ const fetchPlayer = async () => {
   loading.value = true;
   try {
     const id = route.params.id;
-    const res = await axios.get(`http://localhost:5000/nguoidung/${id}`);
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${id}`
+    );
     player.value = res.data;
   } catch (err) {
-    console.error('Lỗi khi tải chi tiết cầu thủ:', err);
+    console.error("Lỗi khi tải chi tiết cầu thủ:", err);
   } finally {
     loading.value = false;
   }
@@ -83,15 +103,14 @@ const fetchPlayer = async () => {
 
 // --- Hàm format ngày ---
 const formatDate = (dateString) => {
-  if (!dateString) return 'Không rõ';
+  if (!dateString) return "Không rõ";
   const date = new Date(dateString);
-  return date.toLocaleDateString('vi-VN');
+  return date.toLocaleDateString("vi-VN");
 };
 
 // --- Lifecycle ---
 onMounted(fetchPlayer);
 </script>
-
 
 <style scoped>
 /* Toàn trang */
@@ -280,4 +299,3 @@ onMounted(fetchPlayer);
   }
 }
 </style>
-

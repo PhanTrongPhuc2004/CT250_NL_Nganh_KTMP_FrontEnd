@@ -1,9 +1,6 @@
 <template>
   <div class="container my-5">
     <div class="d-flex align-items-center justify-content-between mb-4">
-      <h2 class="fw-bold text-danger">
-        <i class="bi bi-bell-fill me-2"></i> Thông Báo Bóng Đá Mới Nhất
-      </h2>
       <!-- <button class="btn btn-outline-primary">
         <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
       </button> -->
@@ -24,7 +21,9 @@
           <div class="card-body d-flex flex-column">
             <h5 class="card-title fw-bold text-dark">{{ item.title }}</h5>
             <p class="card-text text-muted">{{ item.desc }}</p>
-            <div class="mt-auto d-flex justify-content-between align-items-center">
+            <div
+              class="mt-auto d-flex justify-content-between align-items-center"
+            >
               <a
                 :href="item.link"
                 target="_blank"
@@ -53,7 +52,7 @@ const thongBaoList = [
     link: "https://toquoc.vn/danh-sach-doi-tuyen-viet-nam-tham-du-aff-cup-vang-que-ngoc-hai-do-hung-dung-20241118162225447.htm",
     source: "toquoc.vn",
   },
-    {
+  {
     title: "U23 Việt Nam thắng Thái Lan 4-0 tại SEA Games",
     desc: "Các cầu thủ trẻ Việt Nam thi đấu bùng nổ và khiến người hâm mộ phấn khích.",
     image:
@@ -61,7 +60,7 @@ const thongBaoList = [
     link: "https://www.24h.com.vn/bong-da/u23-viet-nam-dai-thang-thai-lan-co-can-cong-phuong-van-lam-du-sea-games-c48a1038636.html",
     source: "Vietnamnet",
   },
-    {
+  {
     title: "Tuyển Việt Nam gặp lại ba “cố nhân” ở bảng B",
     desc: "Tuyển Việt Nam rơi vào bảng B vòng chung kết Futsal Asian Cup 2026 gặp toàn người quen.",
     image:
@@ -77,7 +76,7 @@ const thongBaoList = [
     link: "https://bongda.com.vn",
     source: "Bóng Đá",
   },
-    {
+  {
     title: "Chiến thắng ấn tượng của HLV Harry Kewell cùng Hà Nội FC",
     desc: "HLV Harry Kewell đã có những chia sẻ sau thắng lợi của Hà Nội FC trước PVF_CAND ở V-League mới đây.",
     image:
@@ -94,7 +93,6 @@ const thongBaoList = [
     source: "Thể Thao 247",
   },
 
-
   {
     title: "Real Madrid chính thức ký hợp đồng với Kylian Mbappé",
     desc: "Sau nhiều năm đồn đoán, Mbappé cuối cùng cũng cập bến Santiago Bernabéu.",
@@ -103,7 +101,6 @@ const thongBaoList = [
     link: "https://thethao247.vn/426-kylian-mbappe-ky-hop-dong-voi-real-madrid-d330102.html",
     source: "thethao247",
   },
-
 
   {
     title: "Bóng đá Việt Nam chạm trán đại diện Thái Lan ở giải đấu châu lục",
@@ -122,7 +119,6 @@ const thongBaoList = [
     link: "https://dantri.com.vn/the-thao/man-city-lap-ky-luc-vo-dich-4-lan-lien-tiep-tai-premier-league-20240519214220655.htm",
     source: "dantri",
   },
- 
 ];
 </script>
 
