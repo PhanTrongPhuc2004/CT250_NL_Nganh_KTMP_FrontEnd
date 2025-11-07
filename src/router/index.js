@@ -19,6 +19,7 @@ import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue";
 import donhang from "@/pages/admin/component/DonHangPage.vue";
 import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
 import ThongKe from "@/pages/admin/component/ThongKe.vue";
+import TinTucManage from "@/pages/admin/component/TinTucManage.vue";
 
 import axios from "axios";
 import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
@@ -143,8 +144,8 @@ const adminRouter = [
   },
   {
     path: "/admin/posts",
-    name: "Quản lý bài viết",
-    component: UserManagement,
+    name: "Quản lý tin tức",
+    component: TinTucManage,
     meta: { admin: true },
     icon: ["fas", "newspaper"], // faNewspaper
   },
