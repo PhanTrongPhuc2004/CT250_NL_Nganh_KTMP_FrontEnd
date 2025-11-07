@@ -167,7 +167,9 @@ export default {
     // Lấy danh sách
     async fetchItems() {
       try {
-        const res = await axios.get("http://localhost:5000/qualuuniem");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
+        );
         this.items = res.data;
         console.log(this.items);
       } catch (err) {
@@ -180,12 +182,15 @@ export default {
       try {
         if (this.isEditing) {
           await axios.put(
-            `http://localhost:5000/qualuuniem/${this.editId}`,
+            `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${this.editId}`,
             this.form
           );
           alert("Cập nhật thành công!");
         } else {
-          await axios.post("http://localhost:5000/qualuuniem", this.form);
+          await axios.post(
+            `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`,
+            this.form
+          );
           alert("Thêm mới thành công!");
         }
         this.resetForm();
@@ -221,7 +226,9 @@ export default {
     async deleteItem(id) {
       if (!confirm("Bạn có chắc muốn xóa quà lưu niệm này?")) return;
       try {
-        await axios.delete(`http://localhost:5000/qualuuniem/${id}`);
+        await axios.delete(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`
+        );
         alert("Xóa thành công!");
         this.fetchItems();
       } catch (err) {

@@ -1,6 +1,8 @@
 <template>
   <div class="coach-detail-page">
-    <div v-if="loading" class="loading">🧢 Đang tải dữ liệu huấn luyện viên...</div>
+    <div v-if="loading" class="loading">
+      🧢 Đang tải dữ liệu huấn luyện viên...
+    </div>
 
     <div v-else-if="coach" class="coach-card">
       <!-- Ảnh và thông tin cơ bản -->
@@ -12,10 +14,23 @@
         />
         <div class="coach-basic">
           <h1>{{ coach.hoVaTen }}</h1>
-          <p><i class="bi bi-flag"></i> <strong>Quốc tịch:</strong> {{ coach.quocTich || 'Không rõ' }}</p>
-          <p><i class="bi bi-building"></i> <strong>CLB cũ:</strong> {{ coach.cauLacBoCu || 'Không có' }}</p>
-          <p><i class="bi bi-calendar-check"></i> <strong>Năm hành nghề:</strong> {{ coach.namHanhNghe || 'Không rõ' }}</p>
-          <p><i class="bi bi-calendar-plus"></i> <strong>Ngày gia nhập:</strong> {{ formatDate(coach.ngayGiaNhap) }}</p>
+          <p>
+            <i class="bi bi-flag"></i> <strong>Quốc tịch:</strong>
+            {{ coach.quocTich || "Không rõ" }}
+          </p>
+          <p>
+            <i class="bi bi-building"></i> <strong>CLB cũ:</strong>
+            {{ coach.cauLacBoCu || "Không có" }}
+          </p>
+          <p>
+            <i class="bi bi-calendar-check"></i>
+            <strong>Năm hành nghề:</strong>
+            {{ coach.namHanhNghe || "Không rõ" }}
+          </p>
+          <p>
+            <i class="bi bi-calendar-plus"></i> <strong>Ngày gia nhập:</strong>
+            {{ formatDate(coach.ngayGiaNhap) }}
+          </p>
         </div>
       </div>
 
@@ -23,10 +38,10 @@
       <div class="coach-info">
         <h2>📋 Thông tin chi tiết</h2>
         <ul>
-          <li><strong>Năm sinh:</strong> {{ coach.namSinh || 'Không rõ' }}</li>
-          <li><strong>Email:</strong> {{ coach.email || 'Không có' }}</li>
-          <li><strong>Số điện thoại:</strong> {{ coach.sdt || 'Không có' }}</li>
-          <li><strong>Địa chỉ:</strong> {{ coach.diaChi || 'Không rõ' }}</li>
+          <li><strong>Năm sinh:</strong> {{ coach.namSinh || "Không rõ" }}</li>
+          <li><strong>Email:</strong> {{ coach.email || "Không có" }}</li>
+          <li><strong>Số điện thoại:</strong> {{ coach.sdt || "Không có" }}</li>
+          <li><strong>Địa chỉ:</strong> {{ coach.diaChi || "Không rõ" }}</li>
         </ul>
       </div>
 
@@ -38,16 +53,14 @@
       </div>
     </div>
 
-    <div v-else class="empty">
-      ⚠️ Không tìm thấy thông tin huấn luyện viên.
-    </div>
+    <div v-else class="empty">⚠️ Không tìm thấy thông tin huấn luyện viên.</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import axios from "axios";
 
 const route = useRoute();
 const coach = ref(null);
@@ -55,8 +68,8 @@ const loading = ref(true);
 
 // ✅ Xử lý ảnh linh hoạt
 const resolveImage = (anh) => {
-  if (!anh) return '/default-coach.jpg';
-  if (anh.startsWith('http') || anh.startsWith('data:image')) return anh;
+  if (!anh) return "/default-coach.jpg";
+  if (anh.startsWith("http") || anh.startsWith("data:image")) return anh;
   return `/${anh}`;
 };
 
@@ -65,10 +78,12 @@ const fetchCoach = async () => {
   loading.value = true;
   try {
     const id = route.params.id;
-    const res = await axios.get(`http://localhost:5000/nguoidung/${id}`);
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${id}`
+    );
     coach.value = res.data;
   } catch (err) {
-    console.error('Lỗi khi tải chi tiết huấn luyện viên:', err);
+    console.error("Lỗi khi tải chi tiết huấn luyện viên:", err);
   } finally {
     loading.value = false;
   }
@@ -76,9 +91,9 @@ const fetchCoach = async () => {
 
 // ✅ Format ngày
 const formatDate = (dateString) => {
-  if (!dateString) return 'Không rõ';
+  if (!dateString) return "Không rõ";
   const date = new Date(dateString);
-  return date.toLocaleDateString('vi-VN');
+  return date.toLocaleDateString("vi-VN");
 };
 
 onMounted(fetchCoach);

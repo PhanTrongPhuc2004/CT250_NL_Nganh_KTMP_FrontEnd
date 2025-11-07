@@ -8,8 +8,10 @@ import vueDevTools from "vite-plugin-vue-devtools";
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
+    host: true,
     port: 3000, // 🚀 đổi port ở đây
     open: true, // tự động mở trình duyệt (tuỳ chọn)
+    strictPort: true,
   },
   resolve: {
     alias: {

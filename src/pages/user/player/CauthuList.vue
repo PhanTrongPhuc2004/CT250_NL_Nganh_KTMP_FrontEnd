@@ -5,7 +5,8 @@
     </h1>
 
     <div v-if="loading" class="text-center text-secondary fs-5 py-5">
-      <div class="spinner-border text-primary me-2"></div> Đang tải dữ liệu...
+      <div class="spinner-border text-primary me-2"></div>
+      Đang tải dữ liệu...
     </div>
 
     <div v-else>
@@ -104,8 +105,14 @@ const fetchData = async () => {
   try {
     loading.value = true;
     const [playersRes, coachesRes] = await Promise.all([
-      axios.get("http://localhost:5000/nguoidung/vaitro?q=cauthu"),
-      axios.get("http://localhost:5000/nguoidung/vaitro?q=huanluyenvien"),
+      axios.get(
+        `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/vaitro?q=cauthu`
+      ),
+      axios.get(
+        `${
+          import.meta.env.VITE_API_BE_BASE_URL
+        }/nguoidung/vaitro?q=huanluyenvien`
+      ),
     ]);
     players.value = playersRes.data;
     coaches.value = coachesRes.data;

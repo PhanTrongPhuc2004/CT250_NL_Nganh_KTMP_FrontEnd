@@ -109,7 +109,7 @@ const form = reactive({
 const updateUser = async () => {
   try {
     const res = await axios.put(
-      `http://localhost:5000/nguoidung/${userStore.user._id}`,
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${userStore.user._id}`,
       form,
       { withCredentials: true }
     );

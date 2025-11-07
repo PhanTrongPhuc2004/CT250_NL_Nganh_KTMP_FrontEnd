@@ -83,9 +83,12 @@ onMounted(async () => {
 
 const handleSubmit = async () => {
   try {
-    const response = await axios.put("http://localhost:5000/nguoidung", {
-      data: props.items,
-    });
+    const response = await axios.put(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung`,
+      {
+        data: props.items,
+      }
+    );
     console.log(response);
   } catch (error) {
     console.error("❌ Lỗi khi cập nhật:", error);
