@@ -1,6 +1,7 @@
 <template>
   <div class="product-detail">
     <div class="detail-card" v-if="product">
+      
       <img
         :src="getImageUrl(product.anhMinhHoa)"
         alt="Ảnh sản phẩm"
@@ -23,11 +24,22 @@
           <i class="bi bi-cart-plus"></i>
           Thêm vào giỏ hàng
         </button>
+
+          <button 
+            class="btn btn-outline-primary" 
+            style="margin-top: 10px;" 
+            @click="$router.push('/shop')"
+          >
+            <i class="bi bi-arrow-left-circle me-1"></i> Tiếp tục mua hàng
+          </button>
+
+
       </div>
     </div>
 
     <div v-else class="loading">Đang tải thông tin sản phẩm...</div>
   </div>
+
 </template>
 
 <script>

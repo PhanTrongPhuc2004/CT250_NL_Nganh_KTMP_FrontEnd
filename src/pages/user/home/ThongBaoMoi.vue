@@ -7,6 +7,10 @@
     </div>
 
     <div class="row g-4">
+      <h1 class="text-danger fw-bold mb-4 title-heading">
+        <i class="bi bi-megaphone-fill me-2"></i>
+        Tin tức bóng đá mới nhất
+      </h1>
       <div
         v-for="(item, index) in thongBaoList"
         :key="index"

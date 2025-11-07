@@ -13,7 +13,7 @@
       <label>Địa chỉ giao hàng:</label>
       <textarea v-model="order.address" required></textarea>
 
-      <h3>Tổng thanh toán: {{ totalAmount.toLocaleString() }}₫</h3>
+      <h3>Tổng thanh toán: {{ totalAmount.toLocaleString() }} VND</h3>
 
       <button type="submit" class="btn btn-success w-100" :disabled="loading">
         <i v-if="!loading" class="bi bi-check-circle me-1"></i>

@@ -14,7 +14,7 @@
         <p><b>SĐT:</b> {{ order.phone }}</p>
         <p><b>Địa chỉ:</b> {{ order.address }}</p>
         <p><b>Ngày đặt:</b> {{ formatDate(order.date) }}</p>
-        <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }}₫</p>
+        <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }} VND</p>
 
         <details>
           <summary>📋 Chi tiết sản phẩm</summary>
@@ -37,7 +37,7 @@
                 "
               />
               {{ item.tenQuaLuuNiem }} × {{ item.quantity }} —
-              {{ (item.gia * item.quantity).toLocaleString() }}₫
+              {{ (item.gia * item.quantity).toLocaleString() }} VND
             </li>
           </ul>
         </details>
