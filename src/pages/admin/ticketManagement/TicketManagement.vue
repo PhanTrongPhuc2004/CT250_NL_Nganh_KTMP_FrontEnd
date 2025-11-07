@@ -1,4 +1,3 @@
-<!-- src/pages/admin/ticketManagement/TicketManagement.vue -->
 <template>
     <div class="container py-4">
         <!-- Tiêu đề -->
@@ -109,21 +108,20 @@
             <p class="mt-3">Vui lòng chọn trận đấu để xem cấu hình vé</p>
         </div>
 
-        <!-- Modal Form -->
-        <Form v-if="formStore.isCurrent(formName)" :key="`${formMode}-${formData._id || 'new'}`"
-            :input-fields="ticketConfigFields" :input-data="formData" :form-name="formName"
-            :api="`http://localhost:5000/cauhinhve${formMode === 'edit' ? '/id/' + formData._id : ''}`"
-            :method="formMode === 'add' ? 'POST' : 'PUT'" modal-id="ticketConfigModal" @success="fetchCauHinhVe"
-            @closed="formStore.closeForm" @submitted="formStore.closeForm" @updated="formStore.closeForm" />
+        <!-- Modal Form RIÊNG – KHÔNG DÙNG Form.vue cũ -->
+        <TicketForm v-if="formStore.isCurrent(formName)" :mode="formMode" :initial-data="formData"
+            :api="formMode === 'edit' ? `/cauhinhve/id/${formData._id}` : '/cauhinhve'"
+            :method="formMode === 'add' ? 'POST' : 'PUT'" @success="fetchCauHinhVe" @closed="formStore.closeForm" />
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import axios from "axios";
-import Form from "@/components/common/form/Form.vue";
+import { ref, onMounted } from "vue";
+import axios from "@/utils/axios";
+import Form from "@/components/common/form/TicketForm.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { useFormStore } from "@/stores/formStore";
+
 const formStore = useFormStore();
 
 // --- Dữ liệu
@@ -140,45 +138,34 @@ const formMode = ref("add");
 const formData = ref({});
 const formName = ref("");
 
-// --- Field cho Form
-const ticketConfigFields = [
-    {
-        label: "Loại vé", name: "loaiVe", type: "select", options: [
-            { value: "VIP", label: "VIP" },
-            { value: "Thường", label: "Thường" },
-            { value: "Khán đài A", label: "Khán đài A" },
-            { value: "Khán đài B", label: "Khán đài B" }
-        ]
-    },
-    { label: "Khu vực", name: "khuVuc", type: "text", placeholder: "VD: A, B, C..." },
-    { label: "Hàng ghế", name: "hangGhe", type: "text", placeholder: "VD: 1, 2, VIP..." },
-    { label: "Số ghế bắt đầu", name: "soGheBatDau", type: "number", min: 1 },
-    { label: "Số ghế kết thúc", name: "soGheKetThuc", type: "number", min: 1 },
-    { label: "Giá vé (VNĐ)", name: "giaVe", type: "number", min: 0, step: 10000 },
-];
-
 // --- API Calls
 const fetchGiaiDau = async () => {
-    const res = await axios.get("http://localhost:5000/giaidau/");
+    const res = await axios.get("/giaidau");
     giaiDauList.value = res.data;
 };
 
 const fetchMuaGiaiByGiaiDau = async () => {
     if (!selectedGiaiDau.value) return;
-    const res = await axios.get(`http://localhost:5000/muagiai/?maGiaiDau=${selectedGiaiDau.value}`);
+    const res = await axios.get(`/muagiai?maGiaiDau=${selectedGiaiDau.value}`);
     muaGiaiList.value = res.data;
 };
 
 const fetchTranDauByMuaGiai = async () => {
     if (!selectedMuaGiai.value) return;
-    const res = await axios.get(`http://localhost:5000/trandau/?maMuaGiai=${selectedMuaGiai.value}`);
+    const res = await axios.get(`/trandau?maMuaGiai=${selectedMuaGiai.value}`);
     tranDauList.value = res.data;
 };
 
 const fetchCauHinhVe = async () => {
     if (!selectedMatch.value) return;
-    const res = await axios.get(`http://localhost:5000/cauhinhve/trandau/${selectedMatch.value}`);
+    const res = await axios.get(`/cauhinhve/trandau/${selectedMatch.value}`);
     cauHinhVeList.value = res.data;
+};
+
+const deleteCauHinhVe = async (id) => {
+    if (!confirm("Xóa cấu hình vé này?")) return;
+    await axios.delete(`/cauhinhve/id/${id}`);
+    fetchCauHinhVe();
 };
 
 // --- Xử lý sự kiện
@@ -212,30 +199,24 @@ const formatCurrency = (value) => {
     }).format(value);
 };
 
-const deleteCauHinhVe = async (id) => {
-    if (!confirm("Xóa cấu hình vé này?")) return;
-    await axios.delete(`http://localhost:5000/cauhinhve/id/${id}`);
-    fetchCauHinhVe();
-};
-
 const handleOpenForm = (mode, config = null) => {
     formMode.value = mode;
-    formData.value = mode === "add" ? {
-        maTranDau: selectedMatch.value,
-        loaiVe: "Thường",
-        khuVuc: "",
-        hangGhe: "",
-        soGheBatDau: 1,
-        soGheKetThuc: 10,
-        giaVe: 100000,
-        tongSoGhe: 0,
-        soGheConLai: 0
-    } : { ...config };
 
-    // Tính tổng ghế tự động khi thêm/sửa
     if (mode === "add") {
-        formData.value.tongSoGhe = formData.value.soGheKetThuc - formData.value.soGheBatDau + 1;
-        formData.value.soGheConLai = formData.value.tongSoGhe;
+        formData.value = {
+            maTranDau: selectedMatch.value,
+            loaiVe: "Thường",
+            khuVuc: "",
+            hangGhe: "",
+            soGheBatDau: 1,
+            soGheKetThuc: 10,
+            giaVe: 100000,
+        };
+    } else {
+        formData.value = {
+            ...config,
+            _id: config._id,
+        };
     }
 
     formName.value = mode === "add" ? "Thêm cấu hình vé" : "Chỉnh sửa cấu hình vé";
