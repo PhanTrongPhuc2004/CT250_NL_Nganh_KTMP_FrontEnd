@@ -18,6 +18,7 @@ import orders from "@/pages/user/player/Donhang.vue";
 import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue";
 import donhang from "@/pages/admin/component/DonHangPage.vue";
 import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
+import ThongKe from "@/pages/admin/component/ThongKe.vue";
 
 import axios from "axios";
 import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
@@ -169,9 +170,9 @@ const adminRouter = [
     icon: ["fas", "ticket-alt"], // faTicketAlt
   },
   {
-    path: "/admin/statistics",
+    path: "/admin/thongke",
     name: "Thống kê",
-    component: UserManagement,
+    component: ThongKe,
     meta: { admin: true },
     icon: ["fas", "chart-bar"], // faChartBar
   },
