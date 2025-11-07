@@ -1,3 +1,4 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 // Import các component bạn muốn điều hướng
 import Home from "@/pages/user/home/Home.vue";
@@ -22,6 +23,7 @@ import qualuuniem from "@/pages/admin/component/QuaLuuNiemPage.vue";
 import donhang from "@/pages/admin/component/DonHangPage.vue";
 import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
 import ThongKe from "@/pages/admin/component/ThongKe.vue";
+import TinTucManage from "@/pages/admin/component/TinTucManage.vue";
 
 import axios from "axios";
 import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
@@ -149,7 +151,14 @@ const adminRouter = [
     name: "Quản lý mùa giải",
     component: SeasonDetail,
     meta: { admin: true, hidden: true },
-    icon: ["fas", "calendar-alt"],
+    icon: ["fas", "calendar-alt"], // faCalendarAlt
+  },
+  {
+    path: "/admin/posts",
+    name: "Quản lý tin tức",
+    component: TinTucManage,
+    meta: { admin: true },
+    icon: ["fas", "newspaper"], // faNewspaper
   },
   {
     path: "/admin/qualuuniem",

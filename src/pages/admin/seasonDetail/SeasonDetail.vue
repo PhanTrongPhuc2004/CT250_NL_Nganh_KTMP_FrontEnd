@@ -1,23 +1,34 @@
 <script setup>
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue"; // 🆕 Thêm computed
 import { useRoute, useRouter } from "vue-router";
 import Form from "@/components/common/form/Form.vue";
 import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import TournamentCard from "@/components/common/cards/tournamentCard/TournamentCard.vue";
+
 const route = useRoute();
 const router = useRouter();
 const seasonId = route.params.seasonId;
 console.log("seasonId", seasonId);
+
 const tournaments = ref([]);
 const showTournamentForm = ref(false);
 const showEditTournamentForm = ref(false);
 const currentEditTournament = ref(null);
-const editTournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${
-  currentEditTournament?._id
-}`;
+
+// 🆕 SỬA: Sử dụng computed để API URL luôn cập nhật
+const editTournamentApi = computed(() => {
+  if (currentEditTournament.value?._id) {
+    return `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${
+      currentEditTournament.value._id
+    }`;
+  }
+  return "";
+});
+
 const addTournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
+
 // Fields cho form thêm và chỉnh sửa
 const tournamentFields = [
   {
@@ -50,6 +61,7 @@ const tournamentMenuItems = [
   {
     label: "Xóa",
     action: (item) => deleteTournament(item),
+    class: "text-danger",
   },
 ];
 
@@ -63,14 +75,12 @@ const handleEditTournament = (item) => {
 // Hàm xử lý xem chi tiết
 const viewTournamentDetails = (item) => {
   console.log("Xem chi tiết giải đấu:", item);
-  // Điều hướng đến trang chi tiết giải đấu
   router.push(`/admin/compete/seasons/${seasonId}/tournaments/${item._id}`);
 };
 
 // Hàm xử lý quản lý trận đấu
 const manageTournamentMatches = (item) => {
   console.log("Quản lý trận đấu:", item);
-  // Điều hướng đến trang quản lý trận đấu
   router.push(`/tournament/${item._id}/matches`);
 };
 
@@ -83,7 +93,7 @@ const deleteTournament = async (item) => {
         `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${item._id}`
       );
       console.log("Đã xóa giải đấu thành công");
-      await fetchTournamentBySeason(seasonId); // Reload danh sách
+      await fetchTournamentBySeason(seasonId);
     } catch (error) {
       console.error("Lỗi khi xóa giải đấu:", error);
       alert("Có lỗi xảy ra khi xóa giải đấu!");
@@ -197,7 +207,7 @@ const goBack = () => {
   <Form
     form-name="Chỉnh sửa giải đấu"
     :input-fields="tournamentFields"
-    v-if="showEditTournamentForm"
+    v-if="showEditTournamentForm && currentEditTournament"
     :input-data="currentEditTournament"
     :api="editTournamentApi"
     method="PUT"
