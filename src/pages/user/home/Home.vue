@@ -1,3 +1,4 @@
+<!-- src/pages/user/home/Home.vue -->
 <script setup>
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
@@ -19,9 +20,14 @@ import MarqueeText from "vue-marquee-text-component";
 import ThongBaoMoi from "./ThongBaoMoi.vue";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 const handleBookSticket = () => {
-  alert("Chức năng đặt vé sẽ sớm được cập nhật!");
+  router.push("/ve");
 };
+
 const souvenirList = ref([]);
 const matchList = ref([]);
 const postList = ref([]);
