@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import axios from '@/utils/axios'; // DÙNG AXIOS đã được cấu hình bổ sung cookie
 
 export const useUserStore = defineStore("user", {
   state: () => ({
@@ -11,9 +11,7 @@ export const useUserStore = defineStore("user", {
     async checkAuth() {
       this.loading = true;
       try {
-        const res = await axios.get("http://localhost:5000/nguoidung/check", {
-          withCredentials: true,
-        });
+        const res = await axios.get("/nguoidung/check");
         this.user = res.data.user;
       } catch (err) {
         this.user = null;
@@ -25,13 +23,7 @@ export const useUserStore = defineStore("user", {
 
     async login(credentials) {
       try {
-        const res = await axios.post(
-          "http://localhost:5000/nguoidung/login",
-          credentials,
-          {
-            withCredentials: true,
-          }
-        );
+        await axios.post("/nguoidung/login", credentials);
         await this.checkAuth();
         return true;
       } catch (error) {
@@ -40,45 +32,19 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    // async logout() {
-    //   try {
-    //     await axios.post(
-    //       "http://localhost:5000/nguoidung/logout",
-    //       {},
-    //       { withCredentials: true }
-    //     );
-    //   } catch {}
-    //   this.user = null;
-    // },
-    // setUser(userData) {
-    //   this.user = userData;
-    //   localStorage.setItem("vaiTro", JSON.stringify(userData));
-    // },
-    setUser(userData) {
-      this.user = userData;
-      localStorage.setItem("user", JSON.stringify(userData)); // ✅ lưu user đúng tên
-    },
-
     async logout() {
       try {
-        await axios.post(
-          "http://localhost:5000/nguoidung/logout",
-          {},
-          { withCredentials: true }
-        );
+        await axios.post("/nguoidung/logout");
+        this.user = null;
         window.location.href = "/";
-      } catch {}
-      this.user = null;
+      } catch (err) {
+        console.error(err);
+      }
     },
-    setUser(userData) {
-      this.user = userData;
-      localStorage.setItem("vaiTro", JSON.stringify(userData));
-    },
+
     async fetchUser() {
       try {
-        const res = await axios.get("http://localhost:5000/nguoidung/me", {
-          withCredentials: true,
-        });
+        const res = await axios.get("/nguoidung/me");
         this.user = res.data;
       } catch (err) {
         this.user = null;

@@ -41,13 +41,13 @@ const createTickets = async () => {
             });
         }
 
-        // 2. LẤY THÔNG TIN TRẬN ĐẤU (nếu chưa có)
+        // 2. Lấy thông tin trận đấu
         if (!selectedMatch.value) await loadMatchInfo();
 
-        // 3. GỬI THÔNG BÁO CÔNG KHAI
+        // 3. GỬI THÔNG BÁO – DÙNG capDau
         await axios.post('http://localhost:5000/thongbao', {
             tieuDe: "Vé mới mở bán!",
-            noiDung: `Vé trận ${selectedMatch.value.doiNha.ten} vs ${selectedMatch.value.doiKhach.ten} đã mở bán! Giá từ ${form.value.giaVe.toLocaleString()}đ.`,
+            noiDung: `Vé trận ${selectedMatch.value.capDau[0]} vs ${selectedMatch.value.capDau[1]} đã mở bán! Giá từ ${form.value.giaVe.toLocaleString()}đ.`,
             isPublic: true
         }, { withCredentials: true });
 

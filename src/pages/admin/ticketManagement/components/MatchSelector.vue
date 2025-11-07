@@ -11,7 +11,7 @@ defineEmits(['select']);
             <select class="form-select" @change="$emit('select', JSON.parse($event.target.value))">
                 <option :value="null">--- Chọn trận đấu ---</option>
                 <option v-for="m in matches" :key="m.maTranDau" :value="JSON.stringify(m)">
-                    {{ m.doiNha.ten }} vs {{ m.doiKhach.ten }} - {{ new Date(m.ngayGio).toLocaleString('vi-VN') }}
+                    {{ m.capDau[0] }} vs {{ m.capDau[1] }} - {{ new Date(m.ngayBatDau).toLocaleString('vi-VN') }}
                 </option>
             </select>
         </div>
