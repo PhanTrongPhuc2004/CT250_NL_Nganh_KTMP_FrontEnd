@@ -1,5 +1,6 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from "vue-router";
+
 // Import các component bạn muốn điều hướng
 import Home from "@/pages/user/home/Home.vue";
 import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
@@ -7,7 +8,6 @@ import CauthuList from "@/pages/user/player/CauthuList.vue";
 import HuanLuyenVien from "@/pages/user/player/HuanLuyenVien.vue";
 
 import TicketPurchase from "@/pages/user/ticketPurchase/TicketPurchase.vue";
-
 
 import UserManagement from "@/pages/admin/userManagement/UserManagement.vue";
 import { useUserStore } from "@/stores/userStore";
@@ -36,6 +36,7 @@ import SquadManagement from "@/pages/admin/squadManagement/SquadManagement.vue";
 import SquadDetail from "@/pages/admin/squadDetail/SquadDetail.vue";
 import Notifivation from "@/pages/user/notification/Notifivation.vue";
 
+const TicketRevenueStats = () => import("@/pages/admin/ticketRevenue/TicketRevenueStats.vue");
 const TicketManagement = () => import("@/pages/admin/ticketManagement/TicketManagement.vue");
 
 const commonRouter = [
@@ -63,12 +64,11 @@ const userRouter = [
   { path: "/cauthu/:id", component: CauthuDetail },
   { path: "/huanluyenvien/:id", component: HuanLuyenVien },
 
-  // DÙNG TicketPurchase + YÊU CẦU ĐĂNG NHẬP
   {
     path: "/ve",
     name: "Mua Vé",
     component: TicketPurchase,
-    meta: { requiresAuth: true, user: true, role: "nguoihammo" }, // Chỉ người hâm mộ
+    meta: { requiresAuth: true, user: true, role: "nguoihammo" },
   },
 
   {
@@ -104,13 +104,13 @@ const adminRouter = [
     meta: { admin: true, hidden: true },
     icon: ["fas", "gauge"],
   },
-  {
-    path: "/admin/dashboard",
-    name: "Dashboard",
-    component: Dashboard,
-    meta: { admin: true },
-    icon: ["fas", "gauge"],
-  },
+  // {
+  //   path: "/admin/dashboard",
+  //   name: "Dashboard",
+  //   component: Dashboard,
+  //   meta: { admin: true },
+  //   icon: ["fas", "gauge"],
+  // },
   {
     path: "/admin/clubs",
     name: "Quản lý thông tin câu lạc bộ",
@@ -151,14 +151,14 @@ const adminRouter = [
     name: "Quản lý mùa giải",
     component: SeasonDetail,
     meta: { admin: true, hidden: true },
-    icon: ["fas", "calendar-alt"], // faCalendarAlt
+    icon: ["fas", "calendar-alt"],
   },
   {
     path: "/admin/posts",
     name: "Quản lý tin tức",
     component: TinTucManage,
     meta: { admin: true },
-    icon: ["fas", "newspaper"], // faNewspaper
+    icon: ["fas", "newspaper"],
   },
   {
     path: "/admin/qualuuniem",
@@ -174,8 +174,6 @@ const adminRouter = [
     meta: { admin: true },
     icon: ["fas", "box-open"],
   },
-
-  // SỬA: CHỈ 1 ROUTE /admin/tickets
   {
     path: "/admin/tickets",
     name: "Quản lý vé",
@@ -183,11 +181,17 @@ const adminRouter = [
     meta: { admin: true },
     icon: ["fas", "ticket-alt"],
   },
-
   {
     path: "/admin/thongke",
-    name: "Thống kê",
+    name: "Thống kê doanh thu quà lưu niệm",
     component: ThongKe,
+    meta: { admin: true },
+    icon: ["fas", "chart-bar"],
+  },
+  {
+    path: "/admin/ticket-revenue",
+    name: "Thống kê Doanh thu Vé",
+    component: TicketRevenueStats,
     meta: { admin: true },
     icon: ["fas", "chart-bar"],
   },
@@ -207,12 +211,15 @@ const adminRouter = [
   },
 ];
 
+// === TỔNG HỢP ROUTES ===
 const routes = [...userRouter, ...adminRouter, ...commonRouter];
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
+// === GUARD ===
 router.beforeEach(async (to, from) => {
   try {
     const res = await axios.get(
@@ -222,17 +229,14 @@ router.beforeEach(async (to, from) => {
     const user = res.data;
     const vaiTro = user.vaiTro;
 
-    // Nếu route chỉ dành cho admin
     if (to.meta?.admin && vaiTro !== "admin") {
       return { path: "/" };
     }
 
-    // Nếu route yêu cầu vai trò cụ thể
     if (to.meta?.role && vaiTro !== to.meta.role) {
       return { path: "/" };
     }
 
-    // Nếu admin cố vào trang user (trừ route chung)
     if (!to.meta?.admin && !to.meta?.common && vaiTro === "admin") {
       return { path: "/admin" };
     }
