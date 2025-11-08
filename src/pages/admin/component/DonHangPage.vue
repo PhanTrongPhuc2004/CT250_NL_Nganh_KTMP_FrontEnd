@@ -90,14 +90,14 @@
             class="confirm-btn"
             @click="xacNhan(order._id)"
           >
-            Xác nhận đơn
+            Chờ nhận đơn
           </button>
           <button
             v-else
             class="cancel-btn"
             @click="huyXacNhan(order._id)"
           >
-            Hủy xác nhận
+            Đã xác nhận
           </button>
         </div>
       </div>

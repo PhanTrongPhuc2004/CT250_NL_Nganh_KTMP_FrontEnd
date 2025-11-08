@@ -1,7 +1,13 @@
 <template>
   <div class="product-detail">
+
     <div class="detail-card" v-if="product">
-      
+          <!-- Nút Giỏ hàng góc phải trên -->
+      <!-- Nút Giỏ hàng góc phải trên -->
+      <button class="btn btn-primary cart-btn" @click="$router.push('/cart')">
+        <i class="bi bi-cart-fill me-1"></i> Giỏ hàng
+        <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
+      </button>
       <img
         :src="getImageUrl(product.anhMinhHoa)"
         alt="Ảnh sản phẩm"
@@ -51,9 +57,23 @@ export default {
     return {
       product: null,
       quantity: 1,
+      cart: [], // Lưu giỏ hàng hiện tại
     };
   },
+  computed: {
+    // Tính tổng số lượng sản phẩm trong giỏ để hiển thị badge
+    cartCount() {
+      return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+  },
   async mounted() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const username = user?.tenDangNhap || "guest";
+
+    // Load giỏ hàng hiện tại
+    this.cart = JSON.parse(localStorage.getItem(`cart_${username}`)) || [];
+
+    // Load thông tin sản phẩm
     const id = this.$route.params.id;
     try {
       const res = await axios.get(
@@ -65,11 +85,11 @@ export default {
     }
   },
   methods: {
-    // ✅ Hàm xử lý ảnh linh hoạt
+    // Hàm xử lý ảnh linh hoạt
     getImageUrl(path) {
-      if (!path) return "https://via.placeholder.com/200x180?text=No+Image"; // ảnh mặc định
+      if (!path) return "https://via.placeholder.com/200x180?text=No+Image"; 
       if (path.startsWith("http") || path.startsWith("data:image")) return path;
-      return `/${path}`; // ảnh từ public/data
+      return `/${path}`; 
     },
 
     muaNgay() {
@@ -78,31 +98,36 @@ export default {
       const cartKey = `cart_${username}`;
       const cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
-      const existing = cart.find((item) => item._id === this.product._id);
-
-      if (existing) {
-        existing.quantity += this.quantity;
-      } else {
-        cart.push({
-          _id: this.product._id,
-          tenQuaLuuNiem: this.product.tenQuaLuuNiem,
-          gia: this.product.gia,
-          anhMinhHoa: this.product.anhMinhHoa,
-          quantity: this.quantity,
-        });
-      }
+      const existing = cart.find(item => item._id === this.product._id);
+      if (existing) existing.quantity += this.quantity;
+      else cart.push({
+        _id: this.product._id,
+        tenQuaLuuNiem: this.product.tenQuaLuuNiem,
+        gia: this.product.gia,
+        anhMinhHoa: this.product.anhMinhHoa,
+        quantity: this.quantity,
+      });
 
       localStorage.setItem(cartKey, JSON.stringify(cart));
-
-      alert(
-        `✅ Đã thêm ${this.quantity} x ${this.product.tenQuaLuuNiem} vào giỏ hàng.`
-      );
+      this.cart = cart; // cập nhật badge
+      alert(`✅ Đã thêm ${this.quantity} x ${this.product.tenQuaLuuNiem} vào giỏ hàng.`);
     },
   },
 };
 </script>
 
 <style scoped>
+/* Nút Giỏ hàng góc phải trên */
+.cart-btn {
+  position: fixed;
+  top: 10px;
+  margin-bottom: 10px;
+  right: 30px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .product-detail {
   min-height: 100vh;
   background: linear-gradient(135deg, #dfe9f3, #ffffff);
@@ -118,7 +143,7 @@ export default {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
   border-radius: 20px;
-  padding: 40px;
+  padding: 50px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   width: 90%;
   max-width: 1000px;
@@ -206,4 +231,24 @@ h1 {
   border-radius: 5px;
   text-align: center;
 }
+/* Nút giỏ hàng góc phải trên */
+
+
+/* Badge số lượng */
+.cart-badge {
+  position: absolute;
+  top: -10px;   /* di chuyển lên trên nút */
+  left: -12px; /* di chuyển sang phải nút */
+  background-color: red; /* màu đỏ */
+  color: white;          /* chữ màu trắng */
+  font-weight: bold;
+  font-size: 0.85rem;    /* kích thước chữ nhỏ hơn */
+  padding: 3px 8px;      /* khoảng cách bên trong badge */
+  border-radius: 50%;    /* làm tròn badge */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;           /* luôn hiển thị trên icon */
+}
+
 </style>

@@ -38,24 +38,6 @@
           </p>
         </div>
 
-        <!-- Nút thao tác (demo đồng bộ) -->
-        <!-- <div class="status-buttons d-flex gap-2">
-          <button
-            class="btn btn-warning"
-            :disabled="order.status === 'Chờ xác nhận'"
-            @click="updateStatus(order._id, 'Chờ xác nhận')"
-          >
-            Chờ xác nhận
-          </button>
-          <button
-            class="btn btn-success"
-            :disabled="order.status === 'Đã xác nhận'"
-            @click="updateStatus(order._id, 'Đã xác nhận')"
-          >
-            Đã xác nhận
-          </button>
-        </div> -->
-
         <details class="mt-3">
           <summary>📋 Chi tiết sản phẩm</summary>
           <ul>
