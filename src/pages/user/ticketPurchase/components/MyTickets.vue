@@ -1,7 +1,7 @@
 <!-- src/pages/user/ticketPurchase/components/MyTickets.vue -->
 <template>
     <div class="ticket-card">
-        <!-- Header: Trận đấu -->
+        <!-- Header: Trận đấu (hiển thị MÃ đội) -->
         <div class="ticket-header">
             <div class="team-left">
                 <strong>{{ ticket.doiNha }}</strong>
@@ -13,9 +13,12 @@
         </div>
 
         <!-- Thời gian + sân -->
-        <div class="ticket-date">
+        <div class="ticket-date" v-if="ticket.ngayBatDau">
             <i class="bi bi-calendar-event"></i>
             {{ formatTime(ticket.ngayBatDau) }} • {{ ticket.sanDau }}
+        </div>
+        <div class="ticket-date text-muted" v-else>
+            <i class="bi bi-info-circle"></i> Chưa có thông tin trận đấu
         </div>
 
         <!-- Thông tin vé -->
@@ -40,7 +43,7 @@
 
         <!-- QR Code -->
         <div class="qr-section">
-            <img :src="ticket.qrCode" alt="QR Code" class="qr-img" />
+            <img :src="ticket.qrCode || fallbackQR" alt="QR Code" class="qr-img" @error="onQRError" />
             <p class="ma-ve">Mã: <strong>{{ ticket.maVe }}</strong></p>
         </div>
     </div>
@@ -49,13 +52,29 @@
 <script setup>
 defineProps({ ticket: Object });
 
-const formatCurrency = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
-const formatTime = (d) => new Date(d).toLocaleString('vi-VN', { weekday: 'short', hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }).replace(',', '');
+const fallbackQR = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgD9gP14AAAAASUVORK5CYIIA';
 
-const getLoaiVeBadge = (v) => v === 'VIP' ? 'badge bg-danger text-white' : v === 'Thuong' ? 'badge bg-primary text-white' : 'badge bg-warning text-dark';
+const formatCurrency = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
+const formatTime = (d) => new Date(d).toLocaleString('vi-VN', {
+    weekday: 'short', hour: '2-digit', minute: '2-digit',
+    day: 'numeric', month: 'short'
+}).replace(',', '');
+
+const onQRError = (e) => {
+    e.target.src = fallbackQR;
+};
+
+const getLoaiVeBadge = (v) => v === 'VIP' ? 'badge bg-danger text-white' :
+    v === 'Thuong' ? 'badge bg-primary text-white' :
+        'badge bg-warning text-dark';
 const formatLoaiVe = (v) => v === 'Thuong' ? 'Thường' : v === 'KhuyenMai' ? 'Khuyến mãi' : v;
-const getStatusBadge = (s) => s === 'da_thanh_toan' ? 'badge bg-success' : s === 'da_huy' ? 'badge bg-danger' : 'badge bg-warning';
-const formatStatus = (s) => ({ cho_thanh_toan: 'Chờ', da_thanh_toan: 'Đã thanh toán', da_su_dung: 'Đã dùng', da_huy: 'Đã hủy' }[s] || s);
+
+const getStatusBadge = (s) => s === 'da_thanh_toan' ? 'badge bg-success' :
+    s === 'da_huy' ? 'badge bg-danger' : 'badge bg-warning';
+const formatStatus = (s) => ({
+    cho_thanh_toan: 'Chờ', da_thanh_toan: 'Đã thanh toán',
+    da_su_dung: 'Đã dùng', da_huy: 'Đã hủy'
+}[s] || s);
 </script>
 
 <style scoped>

@@ -5,11 +5,9 @@
     </div>
 
     <!-- DÙNG COMPONENT CHUNG -->
-    <MatchSelector
-      :giaiDauList="giaiDauList" :muaGiaiList="muaGiaiList" :tranDauList="tranDauList"
+    <MatchSelector :giaiDauList="giaiDauList" :muaGiaiList="muaGiaiList" :tranDauList="tranDauList"
       :selectedGiaiDau="selectedGiaiDau" :selectedMuaGiai="selectedMuaGiai" :selectedMatch="selectedMatch"
-      @update:giaiDau="onGiaiDauChange" @update:muaGiai="onMuaGiaiChange" @update:match="onMatchChange"
-    />
+      @update:giaiDau="onGiaiDauChange" @update:muaGiai="onMuaGiaiChange" @update:match="onMatchChange" />
 
     <div v-if="selectedMatch && cauHinhVeList.length > 0" class="mt-4">
       <TicketList :cauHinhVeList="cauHinhVeList" @buy="openBuyModal" />
@@ -30,13 +28,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue"; // THÊM nextTick
 import axios from "@/utils/axios";
 import MatchSelector from "./components/MatchSelector.vue";
 import TicketList from "./components/TicketList.vue";
 import BuyTicketModal from "./components/BuyTicketModal.vue";
 
-// GIỮ NGUYÊN TẤT CẢ HÀM CŨ
+// --- DỮ LIỆU
 const giaiDauList = ref([]);
 const muaGiaiList = ref([]);
 const tranDauList = ref([]);
@@ -50,6 +48,7 @@ const selectedMatchInfo = ref(null);
 const showBuyModal = ref(false);
 const selectedConfig = ref(null);
 
+// --- API
 const fetchGiaiDau = async () => {
   const res = await axios.get("/giaidau");
   giaiDauList.value = res.data;
@@ -63,8 +62,20 @@ const fetchMuaGiaiByGiaiDau = async () => {
 
 const fetchTranDauByMuaGiai = async () => {
   if (!selectedMuaGiai.value) return;
-  const res = await axios.get(`/trandau?maMuaGiai=${selectedMuaGiai.value}`);
-  tranDauList.value = res.data;
+
+  // RESET + ĐỢI DOM
+  tranDauList.value = [];
+  selectedMatch.value = "";
+  await nextTick();
+
+  try {
+    // SỬA: DÙNG API CÓ SẴN
+    const res = await axios.get(`/muagiai/ma/${selectedMuaGiai.value}/trandau`);
+    tranDauList.value = res.data;
+  } catch (err) {
+    console.error("Lỗi lấy trận đấu:", err);
+    tranDauList.value = [];
+  }
 };
 
 const fetchCauHinhVe = async () => {
@@ -78,11 +89,12 @@ const fetchCauHinhVe = async () => {
     const match = tranDauList.value.find(t => t.maTranDau === selectedMatch.value);
     selectedMatchInfo.value = match;
   } catch (err) {
-    console.error(err);
+    console.error("Lỗi lấy cấu hình vé:", err);
     cauHinhVeList.value = [];
   }
 };
 
+// --- XỬ LÝ SỰ KIỆN
 const onGiaiDauChange = (val) => {
   selectedGiaiDau.value = val;
   selectedMuaGiai.value = "";
@@ -93,11 +105,12 @@ const onGiaiDauChange = (val) => {
   fetchMuaGiaiByGiaiDau();
 };
 
-const onMuaGiaiChange = (val) => {
+const onMuaGiaiChange = async (val) => {
   selectedMuaGiai.value = val;
   selectedMatch.value = "";
   tranDauList.value = [];
   cauHinhVeList.value = [];
+  await nextTick(); // ĐỢI DOM XÓA OPTION CŨ
   fetchTranDauByMuaGiai();
 };
 
@@ -118,10 +131,18 @@ const handleBuySuccess = () => {
   fetchCauHinhVe();
 };
 
+// --- LIFECYCLE
 onMounted(fetchGiaiDau);
 </script>
 
 <style scoped>
-.text-header { color: #8B2C31; font-weight: 700; }
-.empty-state i { color: #E02128; opacity: 0.6; }
+.text-header {
+  color: #8B2C31;
+  font-weight: 700;
+}
+
+.empty-state i {
+  color: #E02128;
+  opacity: 0.6;
+}
 </style>
