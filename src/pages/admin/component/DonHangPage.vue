@@ -2,98 +2,107 @@
   <div class="orders-admin-page">
     <h1>Quản lý Đơn hàng</h1>
 
-    <!-- Bộ lọc hiển thị -->
-    <div class="filter-container">
-      <select v-model="filterOption" class="filter-select">
-        <option value="all">📋 Tất cả đơn hàng</option>
-        <option value="waiting">🟡 Xác nhận đơn</option>
-        <option value="confirmed">✅ Đã xác nhận</option>
-      </select>
-    </div>
+    <!-- Bộ lọc và công cụ -->
+      <div class="toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
+        <!-- Bộ lọc trạng thái -->
+        <div class="filter-group">
+          <select v-model="filterOption" class="form-select">
+            <option value="all">
+              <i class="bi bi-list-task me-1"></i> Tất cả
+            </option>
+            <option value="waiting">
+              <i class="bi bi-hourglass-split me-1 text-warning"></i> Chờ xác nhận
+            </option>
+            <option value="confirmed">
+              <i class="bi bi-check-circle text-success me-1"></i> Đã xác nhận
+            </option>
+          </select>
+        </div>
 
-    <!-- Danh sách Chờ xác nhận -->
-    <section
-      v-if="filterOption === 'waiting' || filterOption === 'all'"
-      class="order-section"
-    >
-      <h2>🟡 Xác nhận đơn</h2>
+        <!-- Ô tìm kiếm -->
+        <div class="position-relative flex-grow-1" style="max-width: 320px">
+          <i
+            class="bi bi-search position-absolute top-50 start-0 translate-middle-y text-muted ms-2"
+          ></i>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Tìm theo mã hoặc tên người nhận..."
+            class="form-control ps-5"
+          />
+        </div>
 
-      <div v-if="waitingOrders.length" class="orders-list">
+        <!-- Sắp xếp -->
+        <div class="sort-group">
+          <select v-model="sortOption" class="form-select" style="max-width: 220px">
+            <option value="newest">
+              <i class="bi bi-clock-history me-1"></i> Ngày đặt mới nhất
+            </option>
+            <option value="oldest">
+              <i class="bi bi-calendar-week me-1"></i> Ngày đặt cũ nhất
+            </option>
+            <option value="totalAsc">
+              <i class="bi bi-sort-up me-1"></i> Tổng tiền tăng dần
+            </option>
+            <option value="totalDesc">
+              <i class="bi bi-sort-down me-1"></i> Tổng tiền giảm dần
+            </option>
+          </select>
+        </div>
+      </div>
+
+
+    <!-- Loading -->
+    <div v-if="loading" class="loading">⏳ Đang tải đơn hàng...</div>
+
+    <!-- Danh sách đơn hàng (sau khi lọc + sắp xếp) -->
+    <section v-else class="order-section">
+      <div v-if="filteredAndSortedOrders.length" class="orders-list">
         <div
-          v-for="order in waitingOrders"
+          v-for="order in filteredAndSortedOrders"
           :key="order._id"
-          class="order-card waiting-card"
+          class="order-card"
+          :class="order.status === 'Đã xác nhận' ? 'confirmed-card' : 'waiting-card'"
         >
-          <h3>🧾 Đơn hàng #{{ order._id }}</h3>
-          <p><b>Người nhận:</b> {{ order.tenDangNhap }}</p>
+          <h3>
+            🧾 Đơn hàng #{{ order._id.slice(-6).toUpperCase() }}
+          </h3>
+          <p><b>Tài khoản đặt hàng:</b> {{ order.tenDangNhap }}</p>
           <p><b>Người nhận:</b> {{ order.name }}</p>
           <p><b>Điện thoại:</b> {{ order.phone }}</p>
           <p><b>Địa chỉ:</b> {{ order.address }}</p>
+          <p><b>Ngày đặt:</b> {{ formatDate(order.createdAt) }}</p>
           <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }}₫</p>
 
           <div class="order-items">
             <p><b>Danh sách sản phẩm:</b></p>
             <ul>
               <li v-for="item in order.cart" :key="item.tenQuaLuuNiem">
-                <img
-                  v-if="item.anhMinhHoa"
-                  :src="getImageUrl(item.anhMinhHoa)"
-                />
+                <img v-if="item.anhMinhHoa" :src="getImageUrl(item.anhMinhHoa)" />
                 {{ item.tenQuaLuuNiem }} - {{ item.quantity }} x
                 {{ item.gia.toLocaleString() }}₫
               </li>
             </ul>
           </div>
 
-          <button class="confirm-btn" @click="xacNhan(order._id)">
-            ✅ Xác nhận đơn
+          <button
+            v-if="order.status === 'Chờ xác nhận'"
+            class="confirm-btn"
+            @click="xacNhan(order._id)"
+          >
+            Xác nhận đơn
+          </button>
+          <button
+            v-else
+            class="cancel-btn"
+            @click="huyXacNhan(order._id)"
+          >
+            Hủy xác nhận
           </button>
         </div>
       </div>
 
-      <p v-else>Không có đơn hàng cần xác nhận.</p>
-    </section>
-
-    <!-- Danh sách Đã xác nhận -->
-    <section
-      v-if="filterOption === 'confirmed' || filterOption === 'all'"
-      class="order-section"
-    >
-      <h2>✅ Đã xác nhận</h2>
-
-      <div v-if="confirmedOrders.length" class="orders-list">
-        <div
-          v-for="order in confirmedOrders"
-          :key="order._id"
-          class="order-card confirmed-card"
-        >
-          <h3>🧾 Đơn hàng #{{ order._id }}</h3>
-          <p><b>Người nhận:</b> {{ order.name }}</p>
-          <p><b>Điện thoại:</b> {{ order.phone }}</p>
-          <p><b>Địa chỉ:</b> {{ order.address }}</p>
-          <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }}₫</p>
-
-          <div class="order-items">
-            <p><b>Danh sách sản phẩm:</b></p>
-            <ul>
-              <li v-for="item in order.cart" :key="item.tenQuaLuuNiem">
-                <img
-                  v-if="item.anhMinhHoa"
-                  :src="getImageUrl(item.anhMinhHoa)"
-                />
-                {{ item.tenQuaLuuNiem }} - {{ item.quantity }} x
-                {{ item.gia.toLocaleString() }}₫
-              </li>
-            </ul>
-          </div>
-
-          <button class="cancel-btn" @click="huyXacNhan(order._id)">
-            🔁 Hủy xác nhận
-          </button>
-        </div>
-      </div>
-
-      <p v-else>Không có đơn hàng đã xác nhận.</p>
+      <p v-else>Không có đơn hàng phù hợp.</p>
     </section>
   </div>
 </template>
@@ -106,73 +115,107 @@ export default {
   data() {
     return {
       orders: [],
-      filterOption: "all", // 'all', 'waiting', 'confirmed'
+      filterOption: "all",
+      searchQuery: "",
+      sortOption: "newest",
+      loading: false,
     };
   },
   computed: {
-    waitingOrders() {
-      return this.orders.filter((o) => o.status === "Chờ xác nhận");
-    },
-    confirmedOrders() {
-      return this.orders.filter((o) => o.status === "Đã xác nhận");
+    filteredAndSortedOrders() {
+      let filtered = this.orders;
+
+      // Lọc theo trạng thái
+      if (this.filterOption === "waiting") {
+        filtered = filtered.filter((o) => o.status === "Chờ xác nhận");
+      } else if (this.filterOption === "confirmed") {
+        filtered = filtered.filter((o) => o.status === "Đã xác nhận");
+      }
+
+      // Lọc theo từ khóa tìm kiếm
+      if (this.searchQuery.trim() !== "") {
+        const query = this.searchQuery.trim().toLowerCase();
+        filtered = filtered.filter(
+          (o) =>
+            o._id.toLowerCase().includes(query) ||
+            (o.name && o.name.toLowerCase().includes(query))
+        );
+      }
+
+      // Sắp xếp
+      switch (this.sortOption) {
+        case "newest":
+          filtered = [...filtered].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          break;
+        case "oldest":
+          filtered = [...filtered].sort(
+            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+          );
+          break;
+        case "totalAsc":
+          filtered = [...filtered].sort((a, b) => a.total - b.total);
+          break;
+        case "totalDesc":
+          filtered = [...filtered].sort((a, b) => b.total - a.total);
+          break;
+      }
+
+      return filtered;
     },
   },
   methods: {
-    // ✅ Lấy danh sách đơn hàng từ backend thật
     async fetchOrders() {
+      this.loading = true;
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_API_BE_BASE_URL}/donhang`
         );
-        this.orders = res.data; // không thêm status giả
+        this.orders = res.data;
       } catch (err) {
         console.error("Lỗi tải đơn hàng:", err);
+      } finally {
+        this.loading = false;
       }
     },
 
-    // ✅ Xác nhận đơn hàng → gọi API PUT
     async xacNhan(id) {
       try {
-        const res = await axios.put(
+        await axios.put(
           `${import.meta.env.VITE_API_BE_BASE_URL}/donhang/${id}`,
-          {
-            status: "Đã xác nhận",
-          }
+          { status: "Đã xác nhận" }
         );
-        this.updateLocalStatus(id, res.data.status);
+        this.fetchOrders();
       } catch (err) {
         console.error("Lỗi khi xác nhận đơn:", err);
       }
     },
 
-    // ✅ Hủy xác nhận → gọi API PUT
     async huyXacNhan(id) {
       try {
-        const res = await axios.put(
+        await axios.put(
           `${import.meta.env.VITE_API_BE_BASE_URL}/donhang/${id}`,
-          {
-            status: "Chờ xác nhận",
-          }
+          { status: "Chờ xác nhận" }
         );
-        this.updateLocalStatus(id, res.data.status);
+        this.fetchOrders();
       } catch (err) {
         console.error("Lỗi khi hủy xác nhận:", err);
       }
     },
 
-    // ✅ Cập nhật trạng thái đơn hàng trong bộ nhớ
-    updateLocalStatus(id, newStatus) {
-      const order = this.orders.find((o) => o._id === id);
-      if (order) order.status = newStatus;
-    },
-
-    // ✅ Hàm xử lý hiển thị ảnh linh hoạt (giữ nguyên)
     getImageUrl(path) {
       if (!path || path.trim() === "") {
-        return "https://via.placeholder.com/100x100?text=No+Image"; // fallback
+        return "https://via.placeholder.com/100x100?text=No+Image";
       }
       if (path.startsWith("http") || path.startsWith("data:image")) return path;
-      return `/${path}`; // ảnh từ thư mục public
+      return `/${path}`;
+    },
+
+    formatDate(dateStr) {
+      if (!dateStr) return "—";
+      const date = new Date(dateStr);
+      return date.toLocaleString("vi-VN");
     },
   },
 
@@ -198,31 +241,35 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Bộ lọc hiển thị */
-.filter-container {
+/* Bộ công cụ */
+.toolbar {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 30px;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 10px;
+  margin-bottom: 30px;
 }
 
-.filter-container label {
-  font-weight: 600;
-  color: #333;
-}
-
-.filter-select {
+.filter-select,
+.sort-select,
+.search-input {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
   background-color: white;
   font-size: 1rem;
-  cursor: pointer;
   transition: 0.3s;
 }
-.filter-select:hover {
+
+.filter-select:hover,
+.sort-select:hover,
+.search-input:focus {
   border-color: #007bff;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 240px;
 }
 
 /* Các phần danh sách */
@@ -232,12 +279,6 @@ h1 {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 25px 30px;
   margin-bottom: 40px;
-}
-
-.order-section h2 {
-  font-size: 1.3rem;
-  margin-bottom: 20px;
-  color: #222;
 }
 
 .orders-list {
@@ -250,9 +291,8 @@ h1 {
   background: #ffffff;
   border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
   border: 1px solid #eee;
+  transition: all 0.3s ease;
 }
 
 .order-card:hover {
@@ -273,11 +313,6 @@ h1 {
   margin-bottom: 8px;
 }
 
-.order-card p {
-  margin: 4px 0;
-  font-size: 0.95rem;
-}
-
 .order-items {
   margin-top: 10px;
   background: #fafafa;
@@ -286,22 +321,11 @@ h1 {
   border: 1px solid #eee;
 }
 
-.order-items p {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.order-items ul {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-}
-
 .order-items li {
   display: flex;
   align-items: center;
-  font-size: 0.9rem;
   margin: 6px 0;
+  font-size: 0.9rem;
 }
 
 .order-items img {
@@ -313,14 +337,13 @@ h1 {
   border: 1px solid #ddd;
 }
 
-/* Nút hành động */
+/* Nút */
 .confirm-btn,
 .cancel-btn {
   border: none;
   padding: 10px 16px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.25s ease;
   font-weight: 600;
   color: white;
   margin-top: 14px;
@@ -341,11 +364,10 @@ h1 {
   background: linear-gradient(135deg, #c62828, #e53935);
 }
 
-/* Trạng thái rỗng */
-.order-section > p {
+.loading {
   text-align: center;
   font-style: italic;
-  color: #777;
-  padding: 15px 0;
+  color: #555;
+  padding: 20px;
 }
 </style>

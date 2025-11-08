@@ -9,6 +9,33 @@
         </button>
       </div>
 
+      <!-- Thanh tìm kiếm và sắp xếp -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div class="input-group w-50">
+          <span class="input-group-text bg-light">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="form-control"
+            placeholder="Tìm kiếm theo tiêu đề hoặc nguồn tin..."
+          />
+        </div>
+
+        <div class="input-group w-auto">
+          <span class="input-group-text bg-light">
+            <i class="bi bi-sort-alpha-down"></i>
+          </span>
+          <select v-model="sortOption" class="form-select">
+            <option value="newest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="title">Theo tiêu đề (A–Z)</option>
+          </select>
+        </div>
+      </div>
+
+
       <!-- Overlay -->
       <div v-if="showForm" class="modal-backdrop fade show"></div>
 
@@ -98,13 +125,13 @@
 
       <!-- Danh sách tin tức -->
       <div class="news-list mt-4">
-        <div v-if="items.length === 0" class="text-center text-muted py-5">
-          Chưa có tin tức nào.
+        <div v-if="filteredNews.length === 0" class="text-center text-muted py-5">
+          Không tìm thấy tin tức nào phù hợp.
         </div>
 
         <div v-else class="row g-4">
           <div
-            v-for="item in items"
+            v-for="item in filteredNews"
             :key="item._id"
             class="col-12 col-sm-6 col-lg-4"
           >
@@ -157,27 +184,38 @@
 import axios from "axios";
 export default {
   name: "AdminTintucPage",
-
   data() {
     return {
       items: [],
-      form: {
-        title: "",
-        desc: "",
-        image: "",
-        link: "",
-        source: "",
-      },
+      form: { title: "", desc: "", image: "", link: "", source: "" },
       isEditing: false,
       editId: null,
       showForm: false,
+      searchQuery: "",
+      sortOption: "newest",
     };
   },
-
   created() {
     this.fetchItems();
   },
+  computed: {
+    filteredNews() {
+      let result = this.items.filter(
+        (item) =>
+          item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          item.source.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
 
+      if (this.sortOption === "newest")
+        result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      else if (this.sortOption === "oldest")
+        result.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      else if (this.sortOption === "title")
+        result.sort((a, b) => a.title.localeCompare(b.title));
+
+      return result;
+    },
+  },
   methods: {
     async fetchItems() {
       try {
@@ -187,7 +225,6 @@ export default {
         console.error("Lỗi khi lấy danh sách tin tức:", err);
       }
     },
-
     async handleSubmit() {
       try {
         if (this.isEditing) {
@@ -197,10 +234,7 @@ export default {
           );
           alert("Cập nhật tin tức thành công!");
         } else {
-          await axios.post(
-            `${import.meta.env.VITE_API_BE_BASE_URL}/tintuc`,
-            this.form
-          );
+          await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/tintuc`, this.form);
           alert("Thêm tin tức thành công!");
         }
         this.resetForm();
@@ -210,25 +244,21 @@ export default {
         alert("Không thể lưu tin tức!");
       }
     },
-
     showAddForm() {
       this.showForm = true;
       this.isEditing = false;
       this.resetForm();
     },
-
     editItem(item) {
       this.showForm = true;
       this.isEditing = true;
       this.editId = item._id;
       this.form = { ...item };
     },
-
     cancelEdit() {
       this.showForm = false;
       this.resetForm();
     },
-
     async deleteItem(id) {
       if (!confirm("Bạn có chắc muốn xóa tin tức này?")) return;
       try {
@@ -239,19 +269,16 @@ export default {
         console.error("Lỗi khi xóa tin tức:", err);
       }
     },
-
     resetForm() {
       this.isEditing = false;
       this.editId = null;
       this.form = { title: "", desc: "", image: "", link: "", source: "" };
     },
-
     getImage(url) {
       if (!url) return "https://via.placeholder.com/300x200?text=No+Image";
       if (url.startsWith("http")) return url;
       return `/${url}`;
     },
-
     truncateText(text, length) {
       return text && text.length > length ? text.slice(0, length) + "..." : text;
     },
