@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import axios from "@/utils/axios";
 
 const props = defineProps({
@@ -11,22 +11,21 @@ const props = defineProps({
 
 const emit = defineEmits(["success", "closed"]);
 
-const formData = ref({ ...props.initialData });
+const formData = reactive({});
 const isSubmitting = ref(false);
 
 const loaiVeOptions = [
     { value: "VIP", label: "VIP" },
-    { value: "Thường", label: "Thường" },
-    { value: "Khán đài A", label: "Khán đài A" },
-    { value: "Khán đài B", label: "Khán đài B" },
+    { value: "Thuong", label: "Thường" },
+    { value: "KhuyenMai", label: "Khuyến mãi" },
 ];
 
 watch(
     () => props.initialData,
     (newData) => {
-        formData.value = { ...newData };
+        Object.assign(formData, newData || {});
     },
-    { deep: true }
+    { immediate: true, deep: true }
 );
 
 const submit = async () => {
@@ -34,7 +33,7 @@ const submit = async () => {
     isSubmitting.value = true;
 
     try {
-        const payload = { ...formData.value };
+        const payload = { ...formData };
         if (payload._id) delete payload._id;
 
         const res = await axios({
@@ -112,9 +111,7 @@ const handleClose = () => {
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="handleClose">
-                            Hủy
-                        </button>
+                        <button type="button" class="btn btn-secondary" @click="handleClose">Hủy</button>
                         <button type="submit" class="btn btn-danger" :disabled="isSubmitting">
                             {{ isSubmitting ? "Đang lưu..." : "Lưu" }}
                         </button>

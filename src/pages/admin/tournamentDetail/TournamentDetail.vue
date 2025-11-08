@@ -1,445 +1,283 @@
 <script setup>
 import axios from "axios";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref, computed } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { matchFields } from "@/utils/constanst";
-import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
+import SeasonCard from "@/components/common/cards/seasonCard/SeasonCard.vue";
 
 const route = useRoute();
-const showMatchForm = ref(false);
+const router = useRouter();
 const tournamentId = route.params.tournamentId;
-const squad = ref([]);
-const matches = ref([]);
-const showEditForm = ref(false);
-const currentEditMatch = ref(null);
-const showUpdateResultForm = ref(false);
-const currentUpdateMatch = ref(null);
+
+// --- STATE ---
+const tournamentInfo = ref({});
+const seasons = ref([]);
+const showSeasonForm = ref(false);
+const showEditSeasonForm = ref(false);
+const currentEditSeason = ref(null);
 const loading = ref(false);
 const errorMessage = ref("");
 
-// 🆕 SỬA: Sử dụng computed để API URL luôn cập nhật
-const updateMatchApi = computed(() => {
-  if (currentEditMatch.value?._id) {
-    return `${import.meta.env.VITE_API_BE_BASE_URL}/trandau/${
-      currentEditMatch.value._id
-    }`;
-  }
-  return "";
-});
+// --- API ENDPOINTS ---
+const API_BASE = import.meta.env.VITE_API_BE_BASE_URL;
+const tournamentApi = `${API_BASE}/giaidau`;
+const seasonApi = `${API_BASE}/muagiai`;
 
-const addMatchApi = computed(
-  () => `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`
-);
-const updateResultApi = computed(
-  () => `${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau`
-);
-
-// 🆕 Computed để kiểm tra dữ liệu
-const hasMatches = computed(() => matches.value.length > 0);
-const isLoading = computed(() => loading.value && matches.value.length === 0);
-
-// Fields cho form cập nhật kết quả
-const updateResultMatchFields = [
+// --- FORM FIELDS ---
+const seasonFields = [
   {
-    name: "tiSo",
+    name: "tenMuaGiai",
+    label: "Tên mùa giải",
     type: "text",
-    label: "Tỉ số chung",
-    placeholder: "VD: 2-1 (Đội nhà - Đội khách)",
     required: true,
+    placeholder: "VD: Mùa giải 2024-2025",
   },
-  {
-    type: "divider",
-    label: "Thống kê đội nhà",
-  },
-  {
-    name: "doiNha_tiLeKiemSoatBong",
-    type: "number",
-    label: "Tỉ lệ kiểm soát bóng (%)",
-    placeholder: "VD: 60",
-    min: 0,
-    max: 100,
-  },
-  {
-    name: "doiNha_soDuongChuyen",
-    type: "number",
-    label: "Số đường chuyển",
-    placeholder: "VD: 450",
-    min: 0,
-  },
-  {
-    name: "doiNha_soPhaPhamLoi",
-    type: "number",
-    label: "Số pha phạm lỗi",
-    placeholder: "VD: 15",
-    min: 0,
-  },
-  {
-    name: "doiNha_soTheVang",
-    type: "number",
-    label: "Số thẻ vàng",
-    placeholder: "VD: 3",
-    min: 0,
-  },
-  {
-    name: "doiNha_soTheDo",
-    type: "number",
-    label: "Số thẻ đỏ",
-    placeholder: "VD: 0",
-    min: 0,
-  },
-  {
-    name: "doiNha_soCauThu",
-    type: "number",
-    label: "Số cầu thủ",
-    placeholder: "VD: 11",
-    min: 0,
-    max: 11,
-  },
-  {
-    type: "divider",
-    label: "Thống kê đội khách",
-  },
-  {
-    name: "doiKhach_tiLeKiemSoatBong",
-    type: "number",
-    label: "Tỉ lệ kiểm soát bóng (%)",
-    placeholder: "VD: 40",
-    min: 0,
-    max: 100,
-  },
-  {
-    name: "doiKhach_soDuongChuyen",
-    type: "number",
-    label: "Số đường chuyển",
-    placeholder: "VD: 320",
-    min: 0,
-  },
-  {
-    name: "doiKhach_soPhaPhamLoi",
-    type: "number",
-    label: "Số pha phạm lỗi",
-    placeholder: "VD: 12",
-    min: 0,
-  },
-  {
-    name: "doiKhach_soTheVang",
-    type: "number",
-    label: "Số thẻ vàng",
-    placeholder: "VD: 2",
-    min: 0,
-  },
-  {
-    name: "doiKhach_soTheDo",
-    type: "number",
-    label: "Số thẻ đỏ",
-    placeholder: "VD: 1",
-    min: 0,
-  },
-  {
-    name: "doiKhach_soCauThu",
-    type: "number",
-    label: "Số cầu thủ",
-    placeholder: "VD: 11",
-    min: 0,
-    max: 11,
-  },
+  { name: "ngayBatDau", label: "Ngày bắt đầu", type: "date", required: true },
+  { name: "ngayKetThuc", label: "Ngày kết thúc", type: "date", required: true },
 ];
 
-const menuItems = [
-  {
-    label: "Chỉnh sửa",
-    action: (item) => {
-      console.log("Chỉnh sửa", item);
-      handleEditMatch(item);
-    },
-  },
-  {
-    label: "Cập nhật kết quả",
-    action: (item) => {
-      console.log("Cập nhật kết quả", item);
-      handleUpdateResult(item);
-    },
-  },
-  {
-    label: "Xóa",
-    action: (item) => {
-      console.log("Xóa", item);
-      handleDeleteMatch(item);
-    },
-    class: "text-danger",
-  },
-];
+// --- COMPUTED ---
+const hasSeasons = computed(() => seasons.value.length > 0);
+const isLoading = computed(() => loading.value && !seasons.value.length);
 
-const fetchMatchByTournamentId = async (tournamentId) => {
+// --- FETCH FUNCTIONS ---
+const fetchTournamentInfo = async () => {
+  try {
+    const { data } = await axios.get(`${tournamentApi}/id/${tournamentId}`, {
+      withCredentials: true,
+    });
+    tournamentInfo.value = data;
+  } catch {
+    errorMessage.value = "Không thể tải thông tin giải đấu. Vui lòng thử lại!";
+  }
+};
+
+const fetchSeasonsByTournament = async () => {
   loading.value = true;
   errorMessage.value = "";
 
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau/${tournamentId}/trandau`
-    );
-    matches.value = response.data;
-    console.log("Matches data:", matches.value);
-  } catch (error) {
-    console.error("Error fetching match list:", error);
-    errorMessage.value = "Không thể tải danh sách trận đấu. Vui lòng thử lại!";
+    const maGiaiDau = tournamentInfo.value.maGiaiDau;
+    if (!maGiaiDau) {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return fetchSeasonsByTournament();
+    }
+
+    const { data } = await axios.get(`${seasonApi}?maGiaiDau=${maGiaiDau}`, {
+      withCredentials: true,
+    });
+    seasons.value = data;
+  } catch {
+    try {
+      const { data } = await axios.get(seasonApi, { withCredentials: true });
+      seasons.value = data.filter(
+        (s) => s.maGiaiDau === tournamentInfo.value.maGiaiDau
+      );
+    } catch {
+      errorMessage.value =
+        "Không thể tải danh sách mùa giải. Vui lòng thử lại!";
+    }
   } finally {
     loading.value = false;
   }
 };
 
-const fetchSquad = async () => {
+// --- ACTIONS ---
+const openSeasonForm = () => (showSeasonForm.value = true);
+const closeSeasonForm = () => (showSeasonForm.value = false);
+
+const handleEditSeason = (item) => {
+  currentEditSeason.value = {
+    ...item,
+    ngayBatDau: formatDateForInput(item.ngayBatDau),
+    ngayKetThuc: formatDateForInput(item.ngayKetThuc),
+  };
+  showEditSeasonForm.value = true;
+};
+
+const closeEditSeasonForm = () => {
+  showEditSeasonForm.value = false;
+  currentEditSeason.value = null;
+};
+
+const viewSeasonDetails = (item) => {
+  router.push(`/admin/compete/tournament/${tournamentId}/season/${item._id}`);
+};
+
+const deleteSeason = async (item) => {
+  if (!confirm(`Bạn có chắc muốn xóa mùa giải "${item.tenMuaGiai}"?`)) return;
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
-    );
-    let data = response.data;
-
-    if (data) {
-      data = data.map((item) => ({
-        _id: item._id,
-        name: item.doiHinh,
-        cauLacBoId: item.cauLacBoId,
-      }));
-    }
-    return data;
-  } catch (error) {
-    console.error("Lỗi khi tải danh sách đội hình:", error);
-    return [];
+    await axios.delete(`${seasonApi}/id/${item._id}`, {
+      withCredentials: true,
+    });
+    await fetchSeasonsByTournament();
+  } catch {
+    errorMessage.value = "Không thể xóa mùa giải. Vui lòng thử lại!";
   }
 };
 
-// Hàm xử lý chỉnh sửa
-const handleEditMatch = (match) => {
-  console.log("Mở form chỉnh sửa trận đấu:", match);
-  currentEditMatch.value = match;
-  showEditForm.value = true;
-  errorMessage.value = "";
+// --- FORM HANDLERS ---
+const handleSeasonSubmitted = () => {
+  fetchSeasonsByTournament();
+  closeSeasonForm();
 };
 
-// Hàm xử lý cập nhật kết quả
-const handleUpdateResult = (match) => {
-  console.log("Mở form cập nhật kết quả:", match);
-  currentUpdateMatch.value = match;
-  showUpdateResultForm.value = true;
-  errorMessage.value = "";
+const handleEditSeasonSubmitted = () => {
+  fetchSeasonsByTournament();
+  closeEditSeasonForm();
 };
 
-// Hàm xử lý xóa
-const handleDeleteMatch = async (match) => {
-  if (!match?._id) {
-    console.error("Không có ID trận đấu để xóa");
-    return;
+const handleSeasonError = () => {
+  errorMessage.value = "Có lỗi xảy ra. Vui lòng thử lại!";
+};
+
+// --- HELPERS ---
+const validateSeasonDates = (formData) => {
+  const start = new Date(formData.ngayBatDau);
+  const end = new Date(formData.ngayKetThuc);
+
+  if (end < start) {
+    alert("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
+    return false;
   }
 
-  if (
-    confirm(
-      `Bạn có chắc muốn xóa trận đấu ${match.doiNha} vs ${match.doiKhach}?`
-    )
-  ) {
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BE_BASE_URL}/trandau/${match._id}`
-      );
-      console.log("Đã xóa trận đấu thành công");
-      await fetchMatchByTournamentId(tournamentId);
-    } catch (error) {
-      console.error("Lỗi khi xóa trận đấu:", error);
-      errorMessage.value = "Không thể xóa trận đấu. Vui lòng thử lại!";
-    }
-  }
+  return { ...formData, maGiaiDau: tournamentInfo.value.maGiaiDau };
 };
 
-// Hàm xử lý sau khi submit form chỉnh sửa
-const handleEditSubmitted = () => {
-  fetchMatchByTournamentId(tournamentId);
-  closeEditForm();
-};
+const formatDateForInput = (date) =>
+  date ? new Date(date).toISOString().split("T")[0] : "";
+const formatDateForDisplay = (date) =>
+  date ? new Date(date).toLocaleDateString("vi-VN") : "Chưa cập nhật";
 
-// Hàm xử lý lỗi form chỉnh sửa
-const handleEditError = (error) => {
-  console.error("Lỗi khi chỉnh sửa trận đấu:", error);
-  errorMessage.value = "Không thể chỉnh sửa trận đấu. Vui lòng thử lại!";
-};
+const goBack = () => window.history.back();
 
-// Hàm xử lý sau khi submit form cập nhật kết quả
-const handleUpdateResultSubmitted = () => {
-  fetchMatchByTournamentId(tournamentId);
-  closeUpdateResultForm();
-};
-
-// Hàm xử lý lỗi form cập nhật kết quả
-const handleUpdateResultError = (error) => {
-  console.error("Lỗi khi cập nhật kết quả:", error);
-  errorMessage.value = "Không thể cập nhật kết quả. Vui lòng thử lại!";
-};
-
-// Hàm đóng form chỉnh sửa
-const closeEditForm = () => {
-  showEditForm.value = false;
-  currentEditMatch.value = null;
-  errorMessage.value = "";
-};
-
-// Hàm đóng form cập nhật kết quả
-const closeUpdateResultForm = () => {
-  showUpdateResultForm.value = false;
-  currentUpdateMatch.value = null;
-  errorMessage.value = "";
-};
-
-// Hàm đóng form thêm trận đấu
-const closeAddMatchForm = () => {
-  showMatchForm.value = false;
-  errorMessage.value = "";
-};
-
-// Hàm xử lý lỗi thêm trận đấu
-const handleAddMatchError = (error) => {
-  console.error("Lỗi khi thêm trận đấu:", error);
-  errorMessage.value = "Không thể thêm trận đấu. Vui lòng thử lại!";
-};
-
+// --- LIFECYCLE ---
 onMounted(async () => {
-  squad.value = (await fetchSquad()) || [];
-  await fetchMatchByTournamentId(tournamentId);
+  await Promise.all([fetchTournamentInfo(), fetchSeasonsByTournament()]);
 });
 
-const goBack = () => {
-  window.history.back();
-};
-
-// Hàm xử lý trước khi gửi dữ liệu cập nhật kết quả
-const transformUpdateResultData = (formData) => {
-  const transformedData = {
-    tiSo: formData.tiSo,
-    thongKe: {
-      doiNha: {
-        tiLeKiemSoatBong: formData.doiNha_tiLeKiemSoatBong || 0,
-        soDuongChuyen: formData.doiNha_soDuongChuyen || 0,
-        soPhaPhamLoi: formData.doiNha_soPhaPhamLoi || 0,
-        soTheVang: formData.doiNha_soTheVang || 0,
-        soTheDo: formData.doiNha_soTheDo || 0,
-        soCauThu: formData.doiNha_soCauThu || 0,
-      },
-      doiKhach: {
-        tiLeKiemSoatBong: formData.doiKhach_tiLeKiemSoatBong || 0,
-        soDuongChuyen: formData.doiKhach_soDuongChuyen || 0,
-        soPhaPhamLoi: formData.doiKhach_soPhaPhamLoi || 0,
-        soTheVang: formData.doiKhach_soTheVang || 0,
-        soTheDo: formData.doiKhach_soTheDo || 0,
-        soCauThu: formData.doiKhach_soCauThu || 0,
-      },
-    },
-  };
-
-  return transformedData;
-};
+// --- MENU ITEMS ---
+const seasonMenuItems = [
+  { label: "Chỉnh sửa", action: handleEditSeason },
+  { label: "Xem chi tiết", action: viewSeasonDetails },
+  { label: "Xóa", action: deleteSeason, class: "text-danger" },
+];
 </script>
 
 <template>
   <div>
+    <!-- Header -->
     <div class="d-flex align-items-center justify-content-between">
-      <h2
-        class="m-0 d-flex align-items-center"
-        style="color: var(--primary-color)"
-      >
+      <h2 class="m-0 d-flex align-items-center text-primary">
         <FontAwesomeIcon
           icon="fa-solid fa-angle-left"
-          @click="goBack()"
-          class="me-2"
-          style="cursor: pointer"
+          @click="goBack"
+          class="me-2 cursor-pointer"
         />
-        <span class="m-0">Chi tiết giải đấu</span>
+        <span>Chi tiết giải đấu</span>
       </h2>
-      <button class="btn btn-primary" @click="showMatchForm = true">
+      <button class="btn btn-primary" @click="openSeasonForm">
         <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
-        Thêm trận đấu
+        Thêm mùa giải
       </button>
     </div>
 
-    <div class="border-top pt-3 border-secondary-subtle mt-3">
-      <h4 class="text-secondary mb-3">Danh sách trận đấu</h4>
+    <!-- Thông tin giải đấu -->
+    <div class="border-top pt-3 mt-3">
+      <h4 class="text-secondary mb-3">Thông tin giải đấu</h4>
+      <div class="card">
+        <div class="card-body row">
+          <div class="col-md-6">
+            <h5 class="card-title text-primary">
+              {{ tournamentInfo.tenGiaiDau || "Đang tải..." }}
+            </h5>
+            <p>
+              <strong>Mã giải đấu:</strong>
+              {{ tournamentInfo.maGiaiDau || "Chưa cập nhật" }}
+            </p>
+            <p>
+              <strong>Năm thành lập:</strong>
+              {{ tournamentInfo.namThanhLap || "Chưa cập nhật" }}
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p>
+              <strong>Mô tả:</strong>
+              {{ tournamentInfo.moTa || "Chưa có mô tả" }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <!-- Error message -->
+    <!-- Danh sách mùa giải -->
+    <div class="border-top pt-3 mt-3">
+      <h4 class="text-secondary mb-3">Danh sách mùa giải</h4>
+
       <div v-if="errorMessage" class="alert alert-danger">
         {{ errorMessage }}
       </div>
 
-      <!-- Loading state -->
       <div v-if="isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+          <span class="visually-hidden">Đang tải...</span>
         </div>
-        <p class="text-muted mt-2">Đang tải danh sách trận đấu...</p>
+        <p class="text-muted mt-2">Đang tải danh sách mùa giải...</p>
       </div>
 
-      <!-- Matches list -->
-      <div v-else-if="hasMatches" class="row g-3">
+      <div v-else-if="hasSeasons" class="row g-3">
         <div
-          v-for="match in matches"
-          :key="match._id"
-          class="col-12 col-sm-6 col-md-3"
+          v-for="season in seasons"
+          :key="season._id"
+          class="col-12 col-sm-6 col-md-4 col-lg-3"
         >
-          <MatchCard :item="match" :menu-items="menuItems" />
+          <SeasonCard
+            :item="{
+              ...season,
+              namBatDau: formatDateForDisplay(season.ngayBatDau),
+              namKetThuc: formatDateForDisplay(season.ngayKetThuc),
+            }"
+            :menu-items="seasonMenuItems"
+          />
         </div>
       </div>
 
-      <!-- Empty state -->
       <div v-else class="text-center py-5">
-        <p class="text-muted">Chưa có trận đấu nào trong giải đấu này.</p>
-        <button class="btn btn-primary" @click="showMatchForm = true">
+        <p class="text-muted">Chưa có mùa giải nào trong giải đấu này.</p>
+        <button class="btn btn-primary" @click="openSeasonForm">
           <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
-          Thêm trận đấu đầu tiên
+          Thêm mùa giải đầu tiên
         </button>
       </div>
     </div>
 
-    <!-- Form thêm trận đấu mới -->
+    <!-- Form -->
     <Form
-      v-if="showMatchForm"
-      :input-fields="matchFields"
-      form-name="Thêm trận đấu mới"
-      :api="addMatchApi"
+      v-if="showSeasonForm"
+      form-name="Thêm mùa giải mới"
+      :input-fields="seasonFields"
+      :api="seasonApi"
       method="POST"
-      :orther-data="{ giaiDauId: tournamentId }"
-      @submitted="
-        () => {
-          fetchMatchByTournamentId(tournamentId);
-          showMatchForm = false;
-        }
-      "
-      @error="handleAddMatchError"
-      @closed="closeAddMatchForm"
+      :orther-data="{ maGiaiDau: tournamentInfo.maGiaiDau }"
+      :transform-data="validateSeasonDates"
+      @submitted="handleSeasonSubmitted"
+      @error="handleSeasonError"
+      @closed="closeSeasonForm"
     />
 
-    <!-- Form chỉnh sửa trận đấu -->
     <Form
-      v-if="showEditForm && currentEditMatch"
-      :input-fields="matchFields"
-      form-name="Chỉnh sửa trận đấu"
-      :input-data="currentEditMatch"
-      :api="updateMatchApi"
+      v-if="showEditSeasonForm && currentEditSeason"
+      form-name="Chỉnh sửa mùa giải"
+      :input-fields="seasonFields"
+      :input-data="currentEditSeason"
+      :api="`${seasonApi}/id/${currentEditSeason._id}`"
       method="PUT"
-      @submitted="handleEditSubmitted"
-      @error="handleEditError"
-      @closed="closeEditForm"
-    />
-
-    <!-- Form cập nhật kết quả -->
-    <Form
-      v-if="showUpdateResultForm && currentUpdateMatch"
-      :input-fields="updateResultMatchFields"
-      form-name="Cập nhật kết quả trận đấu"
-      :input-data="currentUpdateMatch"
-      :api="updateResultApi"
-      method="PUT"
-      :transform-data="transformUpdateResultData"
-      @submitted="handleUpdateResultSubmitted"
-      @error="handleUpdateResultError"
-      @closed="closeUpdateResultForm"
+      :orther-data="{ maGiaiDau: tournamentInfo.maGiaiDau }"
+      :transform-data="validateSeasonDates"
+      @submitted="handleEditSeasonSubmitted"
+      @error="handleSeasonError"
+      @closed="closeEditSeasonForm"
     />
   </div>
 </template>
@@ -449,14 +287,23 @@ h2 {
   font-size: 1.8rem;
   font-weight: 600;
 }
-
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
 }
-
 .btn-primary:hover {
   background-color: var(--primary-dark-color);
   border-color: var(--primary-dark-color);
+}
+.card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+}
+.card-title {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

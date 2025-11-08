@@ -42,7 +42,7 @@ export const playerFields = [
   { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
   { name: "namSinh", type: "date", label: "Năm sinh" },
   {
-    name: "doiHinhId",
+    name: "maDoiHinh",
     type: "select",
     label: "Đội hình",
     children: await fetchSquad(),
@@ -62,7 +62,7 @@ export const huanLuyenVienFields = [
   { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
   { name: "anhMinhHoa", type: "text", label: "Ảnh minh họa" },
   {
-    name: "doiHinhId",
+    name: "maDoiHinh",
     type: "select",
     label: "Đội hình",
     children: await fetchSquad(),
@@ -120,22 +120,55 @@ export const souvenirFields = [
     type: "text",
   },
 ];
-
+// utils/constanst.js
 export const matchFields = [
-  { name: "doiNha", type: "text", label: "Đội nhà" },
-  { name: "doiKhach", type: "text", label: "Đội khách" },
-
-  { name: "diaDiem", type: "text", label: "Địa điểm" },
-  { name: "ngayDienRa", type: "date", label: "Ngày diễn ra" },
-  { name: "thoiGianDienRa", type: "time", label: "Thời gian diễn ra" },
   {
-    name: "doiHinhId",
+    name: "diaDiem",
+    type: "text",
+    label: "Địa điểm",
+    placeholder: "Nhập địa điểm tổ chức",
+    required: true,
+  },
+  {
+    name: "ngayBatDau",
+    type: "date",
+    label: "Ngày diễn ra",
+    required: true,
+  },
+  {
+    name: "thoiGian",
+    type: "time",
+    label: "Thời gian bắt đầu",
+    required: true,
+  },
+  {
+    name: "doiNha",
+    type: "text",
+    label: "Đội nhà",
+    required: true,
+  },
+  {
+    name: "doiKhach",
+    type: "text",
+    label: "Đội khách",
+    required: true,
+  },
+  {
+    name: "maDoiHinh",
     type: "select",
-    label: "Chọn đội hình",
+    label: "Đội hình ra sân",
+    required: true,
     children: await fetchSquad(),
   },
 ];
-
+// @/utils/constanst.js
 export const squadFields = [
-  { name: "doiHinh", type: "text", label: "Tên đội hình" },
+  {
+    name: "tenDoiHinh",
+    label: "Tên đội hình",
+    type: "text",
+    placeholder: "Nhập tên đội hình",
+    required: true,
+  },
+  // KHÔNG có field maDoiHinh ở đây
 ];

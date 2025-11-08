@@ -1,3 +1,4 @@
+<!-- src/pages/admin/ticketManagement/components/TicketList.vue -->
 <script setup>
 import { ref } from 'vue';
 import axios from 'axios';
