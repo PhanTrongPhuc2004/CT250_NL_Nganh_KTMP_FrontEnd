@@ -38,10 +38,15 @@ import Notifivation from "@/pages/user/notification/Notifivation.vue";
 import ClubTeamManagement from "@/pages/admin/clubTeamManagement/ClubTeamManagement.vue";
 import ClubTeamDetail from "@/pages/admin/clubTeamDetail/ClubTeamDetail.vue";
 
+
 const TicketRevenueStats = () =>
   import("@/pages/admin/ticketRevenue/TicketRevenueStats.vue");
 const TicketManagement = () =>
   import("@/pages/admin/ticketManagement/TicketManagement.vue");
+const TraingManagement = () =>
+  import("@/pages/user/trainingManagement/TrainingManagement.vue");
+const MyTickets = () =>
+  import("@/pages/user/ticketPurchase/MyTickets.vue");
 
 const commonRouter = [
   {
@@ -66,7 +71,15 @@ const userRouter = [
     meta: { requiresAuth: false, user: true },
   },
   { path: "/cauthu/:id", component: CauthuDetail },
-  { path: "/huanluyenvien/:id", component: HuanLuyenVien },
+  { path: "/huanluyenvien/:id", component: HuanLuyenVien 
+
+  },
+  {
+    path: "/training",
+    name: "Lịch Tập Luyện",
+    component: TraingManagement,
+    meta: { requiresAuth: true, user: true },
+  },
 
   {
     path: "/ve",
@@ -78,7 +91,7 @@ const userRouter = [
   {
     path: "/ve-cua-toi",
     name: "Vé Của Tôi",
-    component: () => import("@/pages/user/ticketPurchase/MyTickets.vue"),
+    component: MyTickets,
     meta: { requiresAuth: true, user: true, role: "nguoihammo" },
   },
 
