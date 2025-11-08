@@ -88,6 +88,7 @@ const initFormData = () => {
 };
 
 onMounted(async () => {
+  console.log("input field o form", props.inputFields);
   initFormData();
 });
 
@@ -126,7 +127,10 @@ const handleSubmit = async () => {
 
     if ("_id" in payload) delete payload._id;
     const url = props.api;
-
+    if (payload.anhMinhHoa) {
+      const img = await uploadToCloudinary(payload.anhMinhHoa);
+      payload.anhMinhHoa = img;
+    }
     console.log("🔄 Đang gửi form...", {
       url,
       method: props.method,
@@ -152,7 +156,7 @@ const handleSubmit = async () => {
       console.log("📤 Trigger refresh squads từ store");
       formStore.triggerRefreshSquads();
     }
-
+    if (props.formName == "Đăng nhập") window.location.reload();
     console.log("✅ Store đã được cập nhật");
     handleClose();
   } catch (error) {
@@ -174,6 +178,7 @@ const handleClose = () => {
 // ================= GET CHILDREN =================
 const getChildren = (field) => {
   if (!field.children) return [];
+  console.log("chifdren o form ", field.children);
   return field.children.value !== undefined
     ? field.children.value
     : field.children;

@@ -37,11 +37,11 @@ export const fetchSquad = async () => {
       `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
     );
     let data = response.data;
-
+    console.log("doi hinh fetch duoc o constant", data);
     if (data) {
       data = data.map((item) => ({
-        _id: item._id,
-        name: item.doiHinh, // đổi field doiHinh -> name
+        _id: item.maDoiHinh,
+        name: item.tenDoiHinh, // đổi field doiHinh -> name
         cauLacBoId: item.cauLacBoId,
       }));
     }

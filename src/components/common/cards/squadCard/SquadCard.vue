@@ -40,7 +40,6 @@ const defaultMenuItems = [
   {
     label: "Xóa",
     action: (item) => console.log("Xóa đội hình:", item),
-    class: "text-danger", // Thêm class để highlight item nguy hiểm
   },
 ];
 
@@ -60,7 +59,7 @@ const shouldShowMenu = computed(() => {
 });
 
 const formattedData = computed(() => ({
-  squadName: props.item.doiHinh || "Đội hình chưa có tên",
+  squadName: props.item.tenDoiHinh || "Đội hình chưa có tên",
   clubId: props.item.cauLacBoId || "",
 }));
 
@@ -117,20 +116,6 @@ onUnmounted(() => {
                 class="text-primary me-2"
               />
               <span>Đội hình thi đấu chính thức</span>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <FontAwesomeIcon
-                :icon="['fas', 'users']"
-                class="text-success me-2"
-              />
-              <span>Sẵn sàng thi đấu</span>
-            </div>
-            <div class="d-flex align-items-center">
-              <FontAwesomeIcon
-                :icon="['fas', 'trophy']"
-                class="text-warning me-2"
-              />
-              <span>Đội hình cạnh tranh</span>
             </div>
           </div>
         </div>

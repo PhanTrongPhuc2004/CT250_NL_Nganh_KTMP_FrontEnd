@@ -30,6 +30,8 @@ import Dashboard from "@/pages/admin/dashboard/Dashboard.vue";
 import SquadManagement from "@/pages/admin/squadManagement/SquadManagement.vue";
 import SquadDetail from "@/pages/admin/squadDetail/SquadDetail.vue";
 import Notifivation from "@/pages/user/notification/Notifivation.vue";
+import ClubTeamManagement from "@/pages/admin/clubTeamManagement/ClubTeamManagement.vue";
+import ClubTeamDetail from "@/pages/admin/clubTeamDetail/ClubTeamDetail.vue";
 const commonRouter = [
   {
     path: "/profile",
@@ -121,21 +123,35 @@ const adminRouter = [
     icon: ["fas", "trophy"], // faTrophy
   },
   {
-    path: "/admin/squad",
-    name: "Quản lý đội hình",
-    component: SquadManagement,
+    path: "/admin/clubteam",
+    name: "Quản lý đào tạo",
+    component: ClubTeamManagement,
     meta: { admin: true },
     icon: ["fas", "users"], // faUsers
   },
   {
-    path: "/admin/squad/:squadId",
+    path: "/admin/clubteam/:clubTeamId",
+    name: "Quản lý chi tiết đội",
+    component: ClubTeamDetail,
+    meta: { admin: true, hidden: true },
+    icon: ["fas", "users"], // faUsers
+  },
+  {
+    path: "/admin/clubteam/:clubTeamId/squad/:squadId",
     name: "Quản lý chi tiết đội hình",
     component: SquadDetail,
     meta: { admin: true, hidden: true },
     icon: ["fas", "user-group"],
   },
   {
-    path: "/admin/compete/seasons/:seasonId",
+    path: "/admin/compete/tournament/:tournamentId",
+    name: "Quản lý giải đấu",
+    component: TournamentDetail,
+    meta: { admin: true, hidden: true },
+    icon: ["fas", "calendar-alt"], // faCalendarAlt
+  },
+  {
+    path: "/admin/compete/tournament/:tournamentId/season/:seasonId",
     name: "Quản lý mùa giải",
     component: SeasonDetail,
     meta: { admin: true, hidden: true },
@@ -175,13 +191,6 @@ const adminRouter = [
     component: ThongKe,
     meta: { admin: true },
     icon: ["fas", "chart-bar"], // faChartBar
-  },
-  {
-    path: "/admin/compete/seasons/:id/tournaments/:tournamentId",
-    name: "Quản lý giải đấu",
-    component: TournamentDetail,
-    meta: { admin: true, hidden: true },
-    icon: ["fas", "medal"],
   },
   {
     path: "/admin/hopdong",

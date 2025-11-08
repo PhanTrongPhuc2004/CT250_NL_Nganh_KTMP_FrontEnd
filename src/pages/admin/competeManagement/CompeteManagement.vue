@@ -4,176 +4,182 @@ import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./competeManagement.module.scss";
 import Form from "@/components/common/form/Form.vue";
-import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
-import { useFormStore } from "@/stores/formStore";
-import SeasonCard from "@/components/common/cards/seasonCard/SeasonCard.vue";
 import { useRouter } from "vue-router";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-const formStore = useFormStore();
+import TournamentCard from "@/components/common/cards/tournamentCard/TournamentCard.vue";
+
 const router = useRouter();
 const cx = classNames.bind(styles);
 
 // --- STATE ---
-const seasonList = ref([]);
-const competitions = ref([]);
-const currentSeason = ref(null);
-const showSeasonForm = ref(false);
-const showEditSeasonForm = ref(false);
-const currentEditSeason = ref(null);
+const tournaments = ref([]);
+const showTournamentForm = ref(false);
+const showEditTournamentForm = ref(false);
+const currentEditTournament = ref(null);
+const loading = ref(false);
+const errorMessage = ref("");
 
 // API endpoints
-const seasonApi = `${import.meta.env.VITE_API_BE_BASE_URL}/muagiai`;
-const competitionApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
+const tournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
 
 // --- FORM FIELDS ---
-const seasonFields = [
+const tournamentFields = [
   {
-    name: "namBatDau",
-    label: "Năm bắt đầu",
-    type: "number",
+    name: "tenGiaiDau",
+    label: "Tên giải đấu",
+    type: "text",
     required: true,
+    placeholder: "Nhập tên giải đấu",
+  },
+  {
+    name: "namThanhLap",
+    label: "Năm thành lập",
+    type: "number",
+    required: false, // 🆕 Không bắt buộc
     placeholder: "VD: 2024",
-    min: 2000,
+    min: 1900,
     max: 2030,
   },
   {
-    name: "namKetThuc",
-    label: "Năm kết thúc",
-    type: "number",
-    required: true,
-    placeholder: "VD: 2025",
-    min: 2000,
-    max: 2030,
+    name: "moTa",
+    label: "Mô tả",
+    type: "textarea",
+    placeholder: "Nhập mô tả giải đấu",
   },
-];
-
-const competitionFields = [
-  { name: "tenGiaiDau", label: "Tên giải đấu", type: "text" },
-  { name: "moTa", label: "Mô tả", type: "textarea" },
 ];
 
 // --- FETCH FUNCTIONS ---
-const fetchSeasons = async () => {
-  try {
-    const res = await axios.get(seasonApi);
-    seasonList.value = res.data;
-  } catch (error) {
-    console.error("Lỗi khi tải danh sách mùa giải:", error);
-  }
-};
+const fetchTournaments = async () => {
+  loading.value = true;
+  errorMessage.value = "";
 
-const fetchCompetitions = async (seasonId) => {
   try {
-    const res = await axios.get(`${competitionApi}?seasonId=${seasonId}`);
-    competitions.value = res.data;
+    const res = await axios.get(tournamentApi, {
+      withCredentials: true,
+    });
+    tournaments.value = res.data;
   } catch (error) {
     console.error("Lỗi khi tải danh sách giải đấu:", error);
+    errorMessage.value = "Không thể tải danh sách giải đấu. Vui lòng thử lại!";
+  } finally {
+    loading.value = false;
   }
 };
 
-// --- SEASON MENU ACTIONS ---
-const seasonMenuItems = [
+// --- TOURNAMENT MENU ACTIONS ---
+const tournamentMenuItems = [
   {
     label: "Chỉnh sửa",
-    action: (item) => handleEditSeason(item),
+    action: (item) => handleEditTournament(item),
   },
   {
     label: "Xem chi tiết",
-    action: (item) => viewSeasonDetails(item),
-  },
-  {
-    label: "Quản lý giải đấu",
-    action: (item) => manageSeasonTournaments(item),
+    action: (item) => viewTournamentDetails(item),
   },
   {
     label: "Xóa",
-    action: (item) => deleteSeason(item),
+    action: (item) => deleteTournament(item),
+    class: "text-danger",
   },
 ];
 
-// Hàm mở form thêm mùa giải
-const openSeasonForm = () => {
-  showSeasonForm.value = true;
+// Hàm mở form thêm giải đấu
+const openTournamentForm = () => {
+  showTournamentForm.value = true;
+  errorMessage.value = "";
 };
 
-// Hàm xử lý chỉnh sửa mùa giải
-const handleEditSeason = (item) => {
-  console.log("Mở form chỉnh sửa mùa giải:", item);
-  currentEditSeason.value = item;
-  showEditSeasonForm.value = true;
+// Hàm xử lý chỉnh sửa giải đấu
+const handleEditTournament = (item) => {
+  console.log("Mở form chỉnh sửa giải đấu:", item);
+  currentEditTournament.value = item;
+  showEditTournamentForm.value = true;
+  errorMessage.value = "";
 };
 
-// Hàm xử lý xem chi tiết mùa giải
-const viewSeasonDetails = (item) => {
-  console.log("Xem chi tiết mùa giải:", item);
-  // Điều hướng đến trang chi tiết mùa giải
-  router.push(`/admin/compete/seasons/${item._id}`);
-};
+// Hàm xử lý xem chi tiết giải đấu
+// Hàm xử lý xem chi tiết giải đấu
+const viewTournamentDetails = (item) => {
+  console.log("Xem chi tiết giải đấu:", item);
 
-// Hàm xử lý quản lý giải đấu
-const manageSeasonTournaments = (item) => {
-  console.log("Quản lý giải đấu:", item);
-  // Điều hướng đến trang quản lý giải đấu
-  router.push(`/admin/compete/seasons/${item._id}/tournaments`);
-};
+  // Debug: kiểm tra router và routes
+  console.log("Router available:", router);
+  console.log("Current routes:", router.getRoutes());
 
-// Hàm xử lý xóa mùa giải
-const deleteSeason = async (item) => {
-  console.log("Xóa mùa giải:", item);
-  const seasonName = `${item.namBatDau}-${item.namKetThuc}`;
-  if (confirm(`Bạn có chắc muốn xóa mùa giải "${seasonName}"?`)) {
-    try {
-      await axios.delete(`${seasonApi}/${item._id}`);
-      console.log("Đã xóa mùa giải thành công");
-      await fetchSeasons(); // Reload danh sách
-    } catch (error) {
-      console.error("Lỗi khi xóa mùa giải:", error);
-      alert("Có lỗi xảy ra khi xóa mùa giải!");
-    }
+  try {
+    // Điều hướng đến trang chi tiết giải đấu
+    router.push(`/admin/compete/tournament/${item._id}`).catch((err) => {
+      console.error("Lỗi điều hướng:", err);
+      alert("Không thể điều hướng đến trang chi tiết giải đấu");
+    });
+  } catch (error) {
+    console.error("Lỗi khi điều hướng:", error);
   }
 };
 
-// Hàm đóng form thêm mùa giải
-const closeSeasonForm = () => {
-  showSeasonForm.value = false;
-};
-
-// Hàm đóng form chỉnh sửa mùa giải
-const closeEditSeasonForm = () => {
-  showEditSeasonForm.value = false;
-  currentEditSeason.value = null;
-};
-
-// Hàm xử lý sau khi submit form thêm mùa giải
-const handleSeasonSubmitted = () => {
-  fetchSeasons();
-  closeSeasonForm();
-};
-
-// Hàm xử lý sau khi submit form chỉnh sửa mùa giải
-const handleEditSeasonSubmitted = () => {
-  fetchSeasons();
-  closeEditSeasonForm();
-};
-
-// Validation: Kiểm tra năm kết thúc phải >= năm bắt đầu
-const validateSeasonYears = (formData) => {
-  if (parseInt(formData.namKetThuc) < parseInt(formData.namBatDau)) {
-    alert("Năm kết thúc phải lớn hơn hoặc bằng năm bắt đầu!");
-    return false;
+// Hàm xử lý xóa giải đấu
+const deleteTournament = async (item) => {
+  const tournamentName = item.tenGiaiDau;
+  if (!confirm(`Bạn có chắc muốn xóa giải đấu "${tournamentName}"?`)) {
+    return;
   }
-  return true;
+
+  try {
+    await axios.delete(`${tournamentApi}/ma/${item.maGiaiDau}`, {
+      withCredentials: true,
+    });
+    console.log("Đã xóa giải đấu thành công");
+    await fetchTournaments();
+  } catch (error) {
+    console.error("Lỗi khi xóa giải đấu:", error);
+    errorMessage.value = "Không thể xóa giải đấu. Vui lòng thử lại!";
+  }
 };
+
+// Hàm đóng form thêm giải đấu
+const closeTournamentForm = () => {
+  showTournamentForm.value = false;
+  errorMessage.value = "";
+};
+
+// Hàm đóng form chỉnh sửa giải đấu
+const closeEditTournamentForm = () => {
+  showEditTournamentForm.value = false;
+  currentEditTournament.value = null;
+  errorMessage.value = "";
+};
+
+// Hàm xử lý sau khi submit form thêm giải đấu
+const handleTournamentSubmitted = () => {
+  fetchTournaments();
+  closeTournamentForm();
+};
+
+// Hàm xử lý sau khi submit form chỉnh sửa giải đấu
+const handleEditTournamentSubmitted = () => {
+  fetchTournaments();
+  closeEditTournamentForm();
+};
+
+// Hàm xử lý lỗi
+const handleTournamentError = (error) => {
+  console.error("Lỗi khi xử lý giải đấu:", error);
+  errorMessage.value = "Có lỗi xảy ra. Vui lòng thử lại!";
+};
+
 const goBack = () => {
   window.history.back();
 };
-onMounted(fetchSeasons);
+
+onMounted(() => {
+  fetchTournaments();
+});
 </script>
 
 <template>
-  <div :class="cx('')">
+  <div :class="cx('wrapper')">
     <!-- Header -->
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between align-items-center">
       <h2
         class="m-0 d-flex align-items-center"
         style="color: var(--primary-color)"
@@ -184,61 +190,78 @@ onMounted(fetchSeasons);
           class="me-2"
           style="cursor: pointer"
         />
-        <span class="m-0">Danh sách mùa giải</span>
+        <span class="m-0">Quản lý giải đấu</span>
       </h2>
-      <button type="button" class="btn btn-primary" @click="openSeasonForm">
-        <i class="fas fa-plus me-2"></i>
-        Tạo mùa giải
+      <button type="button" class="btn btn-primary" @click="openTournamentForm">
+        <FontAwesomeIcon icon="fa-solid fa-plus" class="me-2" />
+        Thêm giải đấu
       </button>
     </div>
 
-    <!-- Season list -->
-    <div :class="cx('season-list', 'mt-4')">
-      <h4 class="text-secondary mb-3">Danh sách mùa giải</h4>
+    <!-- Tournaments Section -->
+    <div class="border-top pt-3 border-secondary-subtle mt-3">
+      <h4 class="text-secondary mb-3">Danh sách giải đấu</h4>
 
-      <div class="row g-3">
+      <!-- Error message -->
+      <div v-if="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Loading state -->
+      <div v-if="loading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Đang tải...</span>
+        </div>
+        <p class="text-muted mt-2">Đang tải danh sách giải đấu...</p>
+      </div>
+
+      <!-- Tournaments list -->
+      <div v-else-if="tournaments.length > 0" class="row g-3">
         <div
-          v-for="season in seasonList"
-          :key="season._id"
+          v-for="tournament in tournaments"
+          :key="tournament._id"
           class="col-12 col-sm-6 col-md-4 col-lg-3"
         >
-          <SeasonCard :item="season" :menu-items="seasonMenuItems" />
+          <TournamentCard
+            :item="tournament"
+            :menu-items="tournamentMenuItems"
+          />
         </div>
+      </div>
 
-        <!-- Hiển thị khi không có mùa giải nào -->
-        <div v-if="seasonList.length === 0" class="col-12 text-center py-5">
-          <p class="text-muted">Chưa có mùa giải nào.</p>
-          <button class="btn btn-primary" @click="openSeasonForm">
-            <i class="fas fa-plus me-2"></i>
-            Tạo mùa giải đầu tiên
-          </button>
-        </div>
+      <!-- Empty state -->
+      <div v-else class="col-12 text-center py-5">
+        <p class="text-muted">Chưa có giải đấu nào.</p>
+        <button class="btn btn-primary" @click="openTournamentForm">
+          <FontAwesomeIcon icon="fa-solid fa-plus" class="me-2" />
+          Thêm giải đấu đầu tiên
+        </button>
       </div>
     </div>
 
-    <!-- Form thêm mùa giải mới -->
+    <!-- Form thêm giải đấu mới -->
     <Form
-      v-if="showSeasonForm"
-      form-name="Thêm mùa giải mới"
-      :input-fields="seasonFields"
-      :api="seasonApi"
+      v-if="showTournamentForm"
+      form-name="Thêm giải đấu mới"
+      :input-fields="tournamentFields"
+      :api="tournamentApi"
       method="POST"
-      :transform-data="validateSeasonYears"
-      @submitted="handleSeasonSubmitted"
-      @closed="closeSeasonForm"
+      @submitted="handleTournamentSubmitted"
+      @error="handleTournamentError"
+      @closed="closeTournamentForm"
     />
 
-    <!-- Form chỉnh sửa mùa giải -->
+    <!-- Form chỉnh sửa giải đấu -->
     <Form
-      v-if="showEditSeasonForm"
-      form-name="Chỉnh sửa mùa giải"
-      :input-fields="seasonFields"
-      :input-data="currentEditSeason"
-      :api="`${seasonApi}/${currentEditSeason?._id}`"
+      v-if="showEditTournamentForm && currentEditTournament"
+      form-name="Chỉnh sửa giải đấu"
+      :input-fields="tournamentFields"
+      :input-data="currentEditTournament"
+      :api="`${tournamentApi}/id/${currentEditTournament._id}`"
       method="PUT"
-      :transform-data="validateSeasonYears"
-      @submitted="handleEditSeasonSubmitted"
-      @closed="closeEditSeasonForm"
+      @submitted="handleEditTournamentSubmitted"
+      @error="handleTournamentError"
+      @closed="closeEditTournamentForm"
     />
   </div>
 </template>
@@ -248,28 +271,12 @@ onMounted(fetchSeasons);
   padding: 1rem;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.season-list {
-  border-top: 1px solid #dee2e6;
-  padding-top: 1.5rem;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .header {
+  .d-flex.justify-content-between {
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
-  }
-
-  .header h2 {
-    margin-bottom: 0;
   }
 }
 </style>
