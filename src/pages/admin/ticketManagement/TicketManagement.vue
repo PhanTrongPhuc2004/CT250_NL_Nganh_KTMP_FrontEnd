@@ -117,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue"; // THÊM nextTick
 import axios from "@/utils/axios";
 import TicketForm from "@/components/common/form/TicketForm.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -141,7 +141,7 @@ const formName = ref("");
 
 // --- Sắp xếp
 const sortKey = ref("");
-const sortOrder = ref(1); // 1: tăng, -1: giảm
+const sortOrder = ref(1);
 
 const sortBy = (key) => {
     if (sortKey.value === key) {
@@ -214,15 +214,32 @@ const fetchMuaGiaiByGiaiDau = async () => {
 
 const fetchTranDauByMuaGiai = async () => {
     if (!selectedMuaGiai.value) return;
-    const res = await axios.get(`/trandau?maMuaGiai=${selectedMuaGiai.value}`);
-    tranDauList.value = res.data;
+
+    tranDauList.value = [];
+    selectedMatch.value = "";
+    await nextTick();
+
+    try {
+        const res = await axios.get(`/muagiai/ma/${selectedMuaGiai.value}/trandau`);
+        tranDauList.value = res.data;
+    } catch (err) {
+        console.error("Lỗi lấy trận đấu:", err);
+        tranDauList.value = [];
+    }
+};
+
+const onMuaGiaiChange = async () => {
+    selectedMatch.value = "";
+    tranDauList.value = [];
+    cauHinhVeList.value = [];
+    await nextTick();
+    fetchTranDauByMuaGiai();
 };
 
 const fetchCauHinhVe = async () => {
     if (!selectedMatch.value) return;
     const res = await axios.get(`/cauhinhve/trandau/${selectedMatch.value}`);
 
-    // CẬP NHẬT LẠI tongSoGhe DỰA TRÊN soGheBatDau - soGheKetThuc
     cauHinhVeList.value = res.data.map(config => {
         const tongMoi = config.soGheKetThuc - config.soGheBatDau + 1;
         return {
@@ -239,20 +256,14 @@ const deleteCauHinhVe = async (id) => {
 };
 
 // --- Xử lý sự kiện
-const onGiaiDauChange = () => {
+const onGiaiDauChange = async () => {
     selectedMuaGiai.value = "";
     selectedMatch.value = "";
     muaGiaiList.value = [];
     tranDauList.value = [];
     cauHinhVeList.value = [];
+    await nextTick();
     fetchMuaGiaiByGiaiDau();
-};
-
-const onMuaGiaiChange = () => {
-    selectedMatch.value = "";
-    tranDauList.value = [];
-    cauHinhVeList.value = [];
-    fetchTranDauByMuaGiai();
 };
 
 const getMatchName = (td) => {
