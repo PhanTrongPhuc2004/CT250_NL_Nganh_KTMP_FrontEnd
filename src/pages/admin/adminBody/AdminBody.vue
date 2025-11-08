@@ -13,7 +13,8 @@ const adminMenuItems = [
   { label: "Quản lý vé thi đấu", to: "/admin/tickets" },
   { label: "Quản lý quà lưu niệm", to: "/admin/qualuuniem" },
   { label: "Quản lý giải đấu", to: "/admin/tournaments" },
-  { label: "Thống kê", to: "/admin/statistics" },
+  { label: "Thống kê doanh thu Quà lưu niệm", to: "/admin/thongke" },
+  { label: "Thống kê doanh thu Vé", to: "/admin/ticket-revenue" },
 ];
 </script>
 

@@ -160,6 +160,7 @@ const handleSubmit = async () => {
     console.error("❌ Lỗi khi submit form:", error);
     const errorMsg =
       error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
+      // console.log("🚨 Hiển thị alert lỗi:", error);
     alert(errorMsg);
     emit("error", error);
   } finally {
