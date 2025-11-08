@@ -1,3 +1,4 @@
+<!-- /src/components/common/form/Form.vue -->
 <script setup>
 import { onMounted, reactive, watch, ref } from "vue";
 import axios from "axios";
@@ -163,6 +164,7 @@ const handleSubmit = async () => {
     console.error("❌ Lỗi khi submit form:", error);
     const errorMsg =
       error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
+      // console.log("🚨 Hiển thị alert lỗi:", error);
     alert(errorMsg);
     emit("error", error);
   } finally {
