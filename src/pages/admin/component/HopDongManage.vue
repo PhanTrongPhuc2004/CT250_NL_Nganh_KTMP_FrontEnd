@@ -48,31 +48,82 @@
 
     <p v-else>Không có hợp đồng nào.</p>
 
-    <!-- Chi tiết -->
+    <!-- Chi tiết hợp đồng (hiển thị như hợp đồng thật) -->
     <div v-if="selectedHopDong && !isEditing && !isCreating" class="modal">
-      <div class="modal-content">
-        <h2>Chi tiết hợp đồng {{ selectedHopDong.maHopDong }}</h2>
-        <p><b>Tên cầu thủ:</b> {{ selectedHopDong.tenCauThu }}</p>
-        <p><b>Quốc tịch:</b> {{ selectedHopDong.quocTichCauThu }}</p>
-        <p><b>Vị trí:</b> {{ selectedHopDong.viTriCauThu }}</p>
-        <p><b>CLB thuê:</b> {{ selectedHopDong.tenCLBThue }}</p>
-        <p>
-          <b>CLB chủ quản:</b> {{ selectedHopDong.tenCLBChuQuan || "Không có" }}
-        </p>
-        <p>
-          <b>Thời hạn:</b> {{ formatDate(selectedHopDong.ngayBatDau) }} →
-          {{ formatDate(selectedHopDong.ngayKetThuc) }}
-        </p>
-        <p><b>Phí thuê:</b> {{ formatMoney(selectedHopDong.phiThue) }}</p>
-        <p><b>Lương:</b> {{ formatMoney(selectedHopDong.luongCauThu) }}</p>
-        <p><b>Tiền thưởng:</b> {{ formatMoney(selectedHopDong.tienThuong) }}</p>
-        <p><b>Điều khoản:</b> {{ selectedHopDong.dieuKhoan }}</p>
-        <p><b>Người đại diện:</b> {{ selectedHopDong.nguoiDaiDien }}</p>
-        <p><b>Trạng thái:</b> {{ selectedHopDong.trangThai }}</p>
+      <div class="modal-content contract-detail" id="printArea">
+        <div class="contract-header">
+          <!-- <img src="/public/logo-club.png" alt="Logo CLB" class="club-logo" /> -->
+          <div class="contract-title">
+            <h2>HỢP ĐỒNG CHO THUÊ CẦU THỦ</h2>
+            <p>Số: {{ selectedHopDong.maHopDong }}</p>
+          </div>
+        </div>
 
-        <button class="btn-close" @click="selectedHopDong = null">Đóng</button>
+        <div class="contract-body">
+          <p><b>Căn cứ:</b> Bộ luật Dân sự và các quy định hiện hành về lao động, thể thao chuyên nghiệp.</p>
+          <p><b>Hôm nay, ngày {{ new Date().toLocaleDateString("vi-VN") }}, chúng tôi gồm:</b></p>
+
+          <h3>BÊN A: CLB CHỦ QUẢN</h3>
+          <p><b>Tên CLB:</b> {{ selectedHopDong.tenCLBChuQuan || "Không có" }}</p>
+          <p><b>Người đại diện:</b> {{ selectedHopDong.nguoiDaiDien }}</p>
+
+          <h3>BÊN B: CLB THUÊ</h3>
+          <p><b>Tên CLB:</b> {{ selectedHopDong.tenCLBThue }}</p>
+
+          <h3>THÔNG TIN CẦU THỦ</h3>
+          <p><b>Họ và tên:</b> {{ selectedHopDong.tenCauThu }}</p>
+          <p><b>Quốc tịch:</b> {{ selectedHopDong.quocTichCauThu }}</p>
+          <p><b>Vị trí thi đấu:</b> {{ selectedHopDong.viTriCauThu }}</p>
+
+          <h3>ĐIỀU KHOẢN HỢP ĐỒNG</h3>
+          <ul>
+            <li>Thời hạn hợp đồng: từ
+              <b>{{ formatDate(selectedHopDong.ngayBatDau) }}</b>
+              đến
+              <b>{{ formatDate(selectedHopDong.ngayKetThuc) }}</b>
+            </li>
+            <li>Phí thuê cầu thủ: <b>{{ formatMoney(selectedHopDong.phiThue) }}</b></li>
+            <li>Lương cầu thủ (mỗi tháng): <b>{{ formatMoney(selectedHopDong.luongCauThu) }}</b></li>
+            <li>Tiền thưởng (nếu có): <b>{{ formatMoney(selectedHopDong.tienThuong) }}</b></li>
+            <li>Các điều khoản khác: {{ selectedHopDong.dieuKhoan || "—" }}</li>
+          </ul>
+
+          <p><b>Trạng thái hợp đồng:</b> {{ selectedHopDong.trangThai }}</p>
+
+          <p style="margin-top:20px;">Hợp đồng này được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản.</p>
+        </div>
+
+        <div class="contract-footer">
+          <div class="sign-section">
+            <div>
+              <b>ĐẠI DIỆN BÊN A</b><br />
+              (Ký, ghi rõ họ tên)
+              <div class="sign-placeholder"></div>
+            </div>
+            <div>
+              <b>ĐẠI DIỆN BÊN B</b><br />
+              (Ký, ghi rõ họ tên)
+              <div class="sign-placeholder"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="btn-group">
+          <button class="btn-print" @click="inHopDong">🖨 In hợp đồng</button>
+          <button class="btn-close" @click="selectedHopDong = null">✖ Đóng</button>
+        </div> -->
+        <div class="actions no-print">
+        <button @click="inHopDong" class="btn btn-primary">
+          <i class="bi bi-printer"></i> In hợp đồng
+        </button>
+        <button @click="selectedHopDong = null" class="btn btn-secondary">
+          <i class="bi bi-arrow-left-circle me-1"></i> Quay lại
+        </button>
+        </div>
+
       </div>
     </div>
+
 
     <!-- Form tạo / sửa -->
     <div v-if="isEditing || isCreating" class="modal">
@@ -133,6 +184,7 @@ export default {
     await this.fetchHopDongs();
   },
   methods: {
+    
     async fetchHopDongs() {
       try {
         const res = await axios.get(
@@ -145,6 +197,135 @@ export default {
         this.loading = false;
       }
     },
+    inHopDong() {
+      const printContent = document.getElementById("printArea").innerHTML;
+      const win = window.open("", "", "width=900,height=700");
+
+      win.document.write(`
+        <html>
+          <head>
+            <title>----------</title>
+            <style>
+              body {
+                font-family: 'Times New Roman', serif;
+                padding: 40px 60px;
+                line-height: 1.3;
+              }
+
+              h2, h3 {
+                text-align: center;
+                margin: 0;
+              }
+
+              p, li {
+                font-size: 15px;
+                line-height: 1.5;
+                text-align: justify;
+                margin: 5px 0;
+              }
+
+              ul {
+                list-style-type: none;
+                padding-left: 0;
+              }
+
+              .quoc-hieu {
+                text-align: center;
+                font-weight: bold;
+                text-transform: uppercase;
+                font-size: 16px;
+              }
+
+              .tieu-ngu {
+                text-align: center;
+                font-weight: bold;
+                font-size: 15px;
+                margin-top: 4px;
+              }
+
+              .gach-chan {
+                width: 240px;
+                height: 1px;
+                background-color: #000;
+                margin: 4px auto 20px auto;
+              }
+
+              .ngay-thang {
+                text-align: right;       /* 🔹 căn phải */
+                font-style: italic;
+                font-size: 14px;
+                margin-bottom: 20px;
+                margin-right: 40px;      /* 🔹 đẩy vào trong một chút cho đẹp */
+              }
+
+              .contract-title {
+                text-align: center;
+                margin: 20px 0 25px 0;
+                font-weight: bold;
+                font-size: 18px;
+                text-transform: uppercase;
+              }
+
+              .sign-section {
+                display: flex;
+                justify-content: space-around;
+                margin-top: 60px;
+                text-align: center;
+              }
+
+              .sign-block {
+                width: 45%;
+              }
+
+              .sign-block p {
+                text-align: center;
+                line-height: 1.4;
+              }
+
+              .sign-placeholder {
+                margin: 30px 0 5px 0;
+              }
+
+              /* Dòng chấm để ký tên */
+              .dots {
+                letter-spacing: 3px;
+              }
+
+              /* Ẩn nút in/xóa khi in */
+              @media print {
+                .no-print {
+                  display: none !important;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <!-- Quốc hiệu - tiêu ngữ -->
+            <div class="quoc-hieu">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+            <div class="tieu-ngu">Độc lập - Tự do - Hạnh phúc</div>
+            <div class="gach-chan"></div>
+
+            <!-- Ngày tháng năm -->
+            <div class="ngay-thang">
+              ......., ngày ...... tháng ...... năm 20......
+            </div>
+
+            ${printContent}
+
+            <!-- Khu vực ký tên -->
+
+          </body>
+        </html>
+      `);
+
+      win.document.close();
+      win.print();
+    }
+
+,
+
+
+
     xemChiTiet(hd) {
       this.selectedHopDong = hd;
     },
@@ -269,7 +450,15 @@ h1 {
   text-align: center;
   margin-bottom: 30px;
 }
-
+h3{
+  margin-top: 10px;
+}
+p{
+  margin-bottom: 0.5rem;
+}
+li{
+  margin-bottom: 0.5rem;
+}
 .actions {
   text-align: right;
   margin-bottom: 15px;
@@ -431,4 +620,66 @@ h1 {
 .btn-close:hover {
   background: linear-gradient(135deg, #ff1e2d, #d12f2f);
 }
+.contract-detail {
+  font-family: "Times New Roman", serif;
+  background: #fff;
+  color: #000;
+  line-height: 1.6;
+  padding: 20px 40px;
+}
+
+.contract-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.club-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.contract-title h2 {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.contract-body h3 {
+  margin-top: 20px;
+  color: #2c3e50;
+  text-transform: uppercase;
+  font-size: 16px;
+}
+
+.sign-section {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40px;
+  text-align: center;
+}
+
+.sign-placeholder {
+  height: 80px;
+  border-bottom: 1px dotted #333;
+  width: 200px;
+  margin: 10px auto;
+}
+
+.btn-print {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 10px;
+}
+.btn-print:hover {
+  transform: translateY(-2px);
+}
+
 </style>
