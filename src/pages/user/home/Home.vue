@@ -1,3 +1,4 @@
+<!-- src/pages/user/home/Home.vue -->
 <script setup>
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
@@ -19,9 +20,14 @@ import MarqueeText from "vue-marquee-text-component";
 import ThongBaoMoi from "./ThongBaoMoi.vue";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 const handleBookSticket = () => {
-  alert("Chức năng đặt vé sẽ sớm được cập nhật!");
+  router.push("/ve");
 };
+
 const souvenirList = ref([]);
 const matchList = ref([]);
 const postList = ref([]);
@@ -39,7 +45,10 @@ const marqueeText = ref("");
 onMounted(async () => {
   //fetch infor club
   const clubResponse = await axios.get(
-    "${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/"
+    `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`,
+    {
+      withCredentials: true,
+    }
   );
   clubInfo.value = clubResponse.data;
 
@@ -49,12 +58,18 @@ onMounted(async () => {
 
   // await fetchSouvenirList();
   const souvenirListResponse = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
+    `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`,
+    {
+      withCredentials: true,
+    }
   );
   souvenirList.value = souvenirListResponse.data;
   // await fetchMatchList();
   const matchListResponse = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`
+    `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`,
+    {
+      withCredentials: true,
+    }
   );
   matchList.value = matchListResponse.data;
   // await fetchPlayerList();
@@ -119,9 +134,25 @@ onMounted(async () => {
       <div>
         <h1>Tran dau gan day</h1>
         <div class="d-flex flex-wrap gap-3 flex-row w-100">
-          <div class="col-md-3" v-for="(match, index) in matchList.slice(0, 3)">
-            <MatchCard :item="match" />
-          </div>
+          <swiper
+            :modules="[Autoplay, Navigation, Pagination]"
+            :slides-per-view="3"
+            :space-between="20"
+            :autoplay="{ delay: 2000, disableOnInteraction: false }"
+            :loop="true"
+            :navigation="true"
+            :pagination="{ clickable: true }"
+            class="playerSlice"
+          >
+            <swiper-slide
+              v-for="(match, index) in matchList.slice(0, 10)"
+              :key="index"
+            >
+              <div class="">
+                <MatchCard :item="match" />
+              </div>
+            </swiper-slide>
+          </swiper>
         </div>
       </div>
 
@@ -136,7 +167,7 @@ onMounted(async () => {
         class="playerSlice"
       >
         <swiper-slide v-for="(player, index) in playerList" :key="index">
-          <PlayerCard :item="player" type="player" />
+          <PlayerCard :item="player" />
         </swiper-slide>
       </swiper>
 
@@ -148,9 +179,7 @@ onMounted(async () => {
         :loop="true"
         class="souvenirSlice"
       >
-        <swiper-slide v-for="(item, index) in souvenirList" :key="index">
-          <PlayerCard :item="item" type="souvenir" />
-        </swiper-slide>
+        <!--bỏ các quà lưu niệm vào đây-->
       </swiper>
     </div>
   </div>

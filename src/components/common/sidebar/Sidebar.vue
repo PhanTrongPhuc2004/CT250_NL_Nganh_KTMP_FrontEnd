@@ -47,7 +47,7 @@
             v-if="item.icon"
             :icon="item.icon"
             class="fs-5"
-            style="width: 22px"
+            style="width: 15px"
           />
 
           <span class="fw-semibold">{{ item.name }}</span>

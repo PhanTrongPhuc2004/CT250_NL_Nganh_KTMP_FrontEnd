@@ -103,6 +103,7 @@ import axios from "axios";
 import Form from "@/components/common/form/Form.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { useFormStore } from "@/stores/formStore";
+import { computed } from "vue";
 const formStore = useFormStore();
 import {
   adminFields,
@@ -117,9 +118,20 @@ const formData = ref({});
 const formNameAddUser = ref("");
 const formNameEditUser = ref("");
 const squad = ref([]);
-const api = `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung${
-  formMode === "add" ? "" : "/" + formData._id
-}`;
+const api = computed(() => {
+  const baseUrl = `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung`;
+
+  if (formMode.value === "add") {
+    return baseUrl;
+  } else {
+    // Kiểm tra xem có _id không
+    if (!formData.value._id) {
+      console.error("❌ Không có ID người dùng để chỉnh sửa");
+      throw new Error("Không có ID người dùng. Vui lòng thử lại!");
+    }
+    return `${baseUrl}/${formData.value._id}`;
+  }
+});
 const viTriOptions = [
   { name: "Tiền đạo" },
   { name: "Tiền vệ" },

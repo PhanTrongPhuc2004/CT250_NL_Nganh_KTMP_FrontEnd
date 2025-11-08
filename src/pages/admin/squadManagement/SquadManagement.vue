@@ -10,20 +10,17 @@
     <div class="pt-3 mt-4 border-top">
       <h4 class="text-secondary mb-3">Danh sách đội hình</h4>
 
-      <!-- Loading state -->
       <div v-if="loading" class="text-center">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Đang tải...</span>
         </div>
       </div>
 
-      <!-- Empty state -->
       <div v-else-if="squads.length === 0" class="text-center text-muted py-4">
         <p>Chưa có đội hình nào. Hãy thêm đội hình đầu tiên!</p>
       </div>
 
-      <!-- Danh sách đội hình -->
-      <div v-else class="">
+      <div v-else>
         <div class="d-flex flex-wrap gap-3">
           <SquadCard
             :item="squad"
@@ -34,7 +31,6 @@
         </div>
       </div>
 
-      <!-- TRONG SQUAD MANAGEMENT TEMPLATE -->
       <Form
         v-if="formStore.isCurrent('Thêm đội hình')"
         :input-fields="squadFields"
@@ -73,19 +69,15 @@ import { fetchClubInfo } from "@/utils";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import SquadCard from "@/components/common/cards/squadCard/SquadCard.vue";
 import { useRouter } from "vue-router";
-const router = useRouter();
 
-// Reactive data
+const router = useRouter();
 const clubInfo = ref([]);
 const squads = ref([]);
 const loading = ref(false);
 const errorMessage = ref("");
-const selectedSquad = ref(null); // Đội hình được chọn để chỉnh sửa
-
-// Stores
+const selectedSquad = ref(null);
 const formStore = useFormStore();
 
-// Constants
 const squadFields = [
   {
     name: "doiHinh",
@@ -126,18 +118,15 @@ const squadMenuItems = [
     class: "text-danger",
   },
 ];
-// THÊM: Method xử lý đóng form
+
 const handleFormClosed = () => {
   formStore.closeForm();
   selectedSquad.value = null;
   errorMessage.value = "";
 };
-// Computed
-const cauLacBoId = computed(() => {
-  return clubInfo.value?.[0]?._id || null;
-});
 
-// Methods
+const cauLacBoId = computed(() => clubInfo.value?.[0]?._id || null);
+
 const handleOpenForm = () => {
   errorMessage.value = "";
   selectedSquad.value = null;
@@ -147,7 +136,6 @@ const handleOpenForm = () => {
 const fetchDoiHinh = async () => {
   loading.value = true;
   errorMessage.value = "";
-
   try {
     const response = await axios.get(
       `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`
@@ -160,27 +148,18 @@ const fetchDoiHinh = async () => {
     loading.value = false;
   }
 };
-// TRONG SQUAD MANAGEMENT COMPONENT
-const handleFormSuccess = (responseData) => {
-  console.log("🎯 handleFormSuccess được gọi với data:", responseData);
 
-  // Refresh danh sách sau khi thêm thành công
+const handleFormSuccess = (responseData) => {
   fetchDoiHinh();
   errorMessage.value = "";
   formStore.closeForm();
-
-  console.log("🔄 Đã gọi fetchDoiHinh()");
 };
 
 const handleEditSuccess = (responseData) => {
-  console.log("🎯 handleEditSuccess được gọi với data:", responseData);
-
   fetchDoiHinh();
   errorMessage.value = "";
   selectedSquad.value = null;
   formStore.closeForm();
-
-  console.log("🔄 Đã gọi fetchDoiHinh()");
 };
 
 const handleFormError = (error) => {
@@ -191,7 +170,6 @@ const handleFormError = (error) => {
 };
 
 const handleEditSquad = (item) => {
-  console.log("Chỉnh sửa đội hình:", item);
   selectedSquad.value = item;
   errorMessage.value = "";
   formStore.openForm("Chỉnh sửa đội hình");
@@ -205,27 +183,13 @@ const handleEditError = (error) => {
 };
 
 const viewSquadDetails = (item) => {
-  console.log("Xem chi tiết đội hình:", item);
-  router.push(`/admin/squad/${item._id}`);
-  // TODO: Implement view details functionality
+  router.push(`/admin/clubteam/${item._id}`);
 };
 
-const manageSquadPlayers = (item) => {
-  console.log("Quản lý cầu thủ:", item);
-  // TODO: Implement manage players functionality
-};
-
-//handle delete squad
 const handleDeleteSquad = async (item) => {
   try {
-    if (!confirm(`Bạn có chắc muốn xóa đội hình "${item.doiHinh}"?`)) {
-      return;
-    }
-
-    const response = await axios.delete(formAction.delete.api(item._id));
-    console.log("Xóa thành công:", response.data);
-
-    // Refresh danh sách sau khi xóa
+    if (!confirm(`Bạn có chắc muốn xóa đội hình "${item.doiHinh}"?`)) return;
+    await axios.delete(formAction.delete.api(item._id));
     await fetchDoiHinh();
   } catch (error) {
     console.error("Lỗi khi xóa đội hình:", error);
@@ -233,7 +197,6 @@ const handleDeleteSquad = async (item) => {
   }
 };
 
-// Lifecycle
 onMounted(async () => {
   try {
     clubInfo.value = await fetchClubInfo();

@@ -1,3 +1,4 @@
+<!-- src/pages/admin/ticketManagement/TicketManagement.vue -->
 <template>
     <div class="container py-4">
         <!-- Tiêu đề -->
@@ -9,7 +10,7 @@
             </button>
         </div>
 
-        <!-- Bộ lọc: Giải đấu → Mùa giải → Trận đấu -->
+        <!-- Bộ lọc -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <div class="row g-3">
@@ -22,7 +23,6 @@
                             </option>
                         </select>
                     </div>
-
                     <div class="col-md-4">
                         <label class="form-label fw-medium text-muted small">Mùa giải</label>
                         <select class="form-select form-select-sm" v-model="selectedMuaGiai" @change="onMuaGiaiChange"
@@ -33,7 +33,6 @@
                             </option>
                         </select>
                     </div>
-
                     <div class="col-md-4">
                         <label class="form-label fw-medium text-muted small">Trận đấu</label>
                         <select class="form-select form-select-sm" v-model="selectedMatch" @change="fetchCauHinhVe"
@@ -55,31 +54,33 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 40px">#</th>
-                            <th>Loại vé</th>
-                            <th>Khu vực</th>
-                            <th>Hàng ghế</th>
+                            <th @click="sortBy('loaiVe')" class="sortable">Loại vé <i :class="sortIcon('loaiVe')"></i>
+                            </th>
+                            <th @click="sortBy('khuVuc')" class="sortable">Khu vực <i :class="sortIcon('khuVuc')"></i>
+                            </th>
+                            <th @click="sortBy('hangGhe')" class="sortable">Hàng ghế <i
+                                    :class="sortIcon('hangGhe')"></i></th>
                             <th>Số ghế</th>
-                            <th>Giá vé</th>
-                            <th class="text-center">Còn lại</th>
+                            <th @click="sortBy('giaVe')" class="sortable">Giá vé <i :class="sortIcon('giaVe')"></i></th>
+                            <th @click="sortBy('soGheConLai')" class="text-center sortable">Còn lại <i
+                                    :class="sortIcon('soGheConLai')"></i></th>
                             <th class="text-center" style="width: 120px">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(config, index) in cauHinhVeList" :key="config._id">
+                        <tr v-for="(config, index) in sortedCauHinhVeList" :key="config._id">
                             <td class="text-center text-muted">{{ index + 1 }}</td>
                             <td>
-                                <span class="badge bg-primary small px-2 py-1">
-                                    {{ config.loaiVe }}
+                                <span :class="getLoaiVeBadgeClass(config.loaiVe)">
+                                    {{ formatLoaiVe(config.loaiVe) }}
                                 </span>
                             </td>
                             <td>{{ config.khuVuc }}</td>
                             <td>{{ config.hangGhe }}</td>
                             <td>{{ config.soGheBatDau }} - {{ config.soGheKetThuc }}</td>
-                            <td class="fw-semibold text-success">
-                                {{ formatCurrency(config.giaVe) }}
-                            </td>
+                            <td class="fw-semibold text-success">{{ formatCurrency(config.giaVe) }}</td>
                             <td class="text-center">
-                                <span class="badge" :class="config.soGheConLai > 0 ? 'bg-success' : 'bg-danger'">
+                                <span :class="getConLaiBadgeClass(config.soGheConLai, config.tongSoGhe)">
                                     {{ config.soGheConLai }} / {{ config.tongSoGhe }}
                                 </span>
                             </td>
@@ -108,7 +109,7 @@
             <p class="mt-3">Vui lòng chọn trận đấu để xem cấu hình vé</p>
         </div>
 
-        <!-- Modal Form RIÊNG – KHÔNG DÙNG Form.vue cũ -->
+        <!-- Form -->
         <TicketForm v-if="formStore.isCurrent(formName)" :mode="formMode" :initial-data="formData"
             :api="formMode === 'edit' ? `/cauhinhve/id/${formData._id}` : '/cauhinhve'"
             :method="formMode === 'add' ? 'POST' : 'PUT'" @success="fetchCauHinhVe" @closed="formStore.closeForm" />
@@ -116,9 +117,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import axios from "@/utils/axios";
-import Form from "@/components/common/form/TicketForm.vue";
+import TicketForm from "@/components/common/form/TicketForm.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { useFormStore } from "@/stores/formStore";
 
@@ -137,6 +138,67 @@ const selectedMatch = ref("");
 const formMode = ref("add");
 const formData = ref({});
 const formName = ref("");
+
+// --- Sắp xếp
+const sortKey = ref("");
+const sortOrder = ref(1); // 1: tăng, -1: giảm
+
+const sortBy = (key) => {
+    if (sortKey.value === key) {
+        sortOrder.value = -sortOrder.value;
+    } else {
+        sortKey.value = key;
+        sortOrder.value = 1;
+    }
+};
+
+const sortIcon = (key) => {
+    if (sortKey.value !== key) return "bi bi-dash";
+    return sortOrder.value === 1 ? "bi bi-arrow-up" : "bi bi-arrow-down";
+};
+
+const sortedCauHinhVeList = computed(() => {
+    if (!sortKey.value) return cauHinhVeList.value;
+
+    return [...cauHinhVeList.value].sort((a, b) => {
+        let valA = a[sortKey.value];
+        let valB = b[sortKey.value];
+
+        if (sortKey.value === "giaVe" || sortKey.value === "soGheConLai") {
+            valA = Number(valA);
+            valB = Number(valB);
+        }
+
+        if (valA < valB) return -1 * sortOrder.value;
+        if (valA > valB) return 1 * sortOrder.value;
+        return 0;
+    });
+});
+
+// --- Đổi màu badge
+const getLoaiVeBadgeClass = (loaiVe) => {
+    switch (loaiVe) {
+        case "VIP": return "badge bg-danger text-white small px-2 py-1";
+        case "Thuong": return "badge bg-primary small px-2 py-1";
+        case "KhuyenMai": return "badge bg-warning text-dark small px-2 py-1";
+        default: return "badge bg-secondary small px-2 py-1";
+    }
+};
+
+const formatLoaiVe = (loaiVe) => {
+    switch (loaiVe) {
+        case "Thuong": return "Thường";
+        case "KhuyenMai": return "Khuyến mãi";
+        default: return loaiVe;
+    }
+};
+
+const getConLaiBadgeClass = (conLai, tong) => {
+    const percent = tong > 0 ? (conLai / tong) * 100 : 0;
+    if (conLai === 0) return "badge bg-danger";
+    if (percent < 30) return "badge bg-warning";
+    return "badge bg-success";
+};
 
 // --- API Calls
 const fetchGiaiDau = async () => {
@@ -159,7 +221,15 @@ const fetchTranDauByMuaGiai = async () => {
 const fetchCauHinhVe = async () => {
     if (!selectedMatch.value) return;
     const res = await axios.get(`/cauhinhve/trandau/${selectedMatch.value}`);
-    cauHinhVeList.value = res.data;
+
+    // CẬP NHẬT LẠI tongSoGhe DỰA TRÊN soGheBatDau - soGheKetThuc
+    cauHinhVeList.value = res.data.map(config => {
+        const tongMoi = config.soGheKetThuc - config.soGheBatDau + 1;
+        return {
+            ...config,
+            tongSoGhe: tongMoi,
+        };
+    });
 };
 
 const deleteCauHinhVe = async (id) => {
@@ -193,10 +263,7 @@ const getMatchName = (td) => {
 };
 
 const formatCurrency = (value) => {
-    return new Intl.NumberFormat("vi-VN", {
-        style: "currency",
-        currency: "VND",
-    }).format(value);
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
 };
 
 const handleOpenForm = (mode, config = null) => {
@@ -205,7 +272,7 @@ const handleOpenForm = (mode, config = null) => {
     if (mode === "add") {
         formData.value = {
             maTranDau: selectedMatch.value,
-            loaiVe: "Thường",
+            loaiVe: "Thuong",
             khuVuc: "",
             hangGhe: "",
             soGheBatDau: 1,
@@ -213,10 +280,7 @@ const handleOpenForm = (mode, config = null) => {
             giaVe: 100000,
         };
     } else {
-        formData.value = {
-            ...config,
-            _id: config._id,
-        };
+        formData.value = { ...config, _id: config._id };
     }
 
     formName.value = mode === "add" ? "Thêm cấu hình vé" : "Chỉnh sửa cấu hình vé";
@@ -245,5 +309,20 @@ button.btn {
 
 .badge {
     font-size: 0.75rem;
+}
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable i {
+    font-size: 0.8rem;
+    margin-left: 4px;
+    opacity: 0.5;
+}
+
+.sortable:hover i {
+    opacity: 1;
 }
 </style>
