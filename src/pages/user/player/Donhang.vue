@@ -1,6 +1,9 @@
 <template>
   <div class="orders-page">
-    <h1>Đơn hàng của bạn</h1>
+    <h1 class="orders-title mb-4">
+      <i class="bi bi-box-seam-fill me-2"></i> Đơn hàng của bạn
+    </h1>
+
 
     <div v-if="loading" class="loading">⏳ Đang tải dữ liệu...</div>
 
@@ -142,6 +145,19 @@ export default {
 </script>
 
 <style scoped>
+.orders-title {
+  color: #8B2C31;            /* màu đỏ rượu vang sang trọng */
+  font-weight: bold;
+  font-size: 40px;
+  text-shadow: 1px 1px 2px rgba(139, 44, 49, 0.2);
+}
+
+.orders-title i {
+  color: #8B2C31;            /* đồng bộ màu với tiêu đề */
+  font-size: 2.2rem;
+  vertical-align: middle;
+}
+
 .orders-page {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
   color: #2c3e50;
