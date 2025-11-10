@@ -50,16 +50,29 @@
             <strong>Ngày gia nhập:</strong> {{ formatDate(player.ngayGiaNhap) }}
           </li>
           <li><strong>Email:</strong> {{ player.email || "Không có" }}</li>
-          <li>
+          <!-- <li>
             <strong>Số điện thoại:</strong> {{ player.sdt || "Không có" }}
-          </li>
+          </li> -->
         </ul>
+        <!-- Phần giới thiệu chung -->
+        <div class="player-intro card mb-4 shadow-sm">
+          <h3 class="intro-title">
+            <i class="bi bi-trophy-fill me-2"></i>
+            Tinh thần chiến đấu của đội bóng
+          </h3>
+          <p class="intro-text">
+            Mỗi cầu thủ đều mang trong mình niềm đam mê bất tận với trái bóng. 
+            Với sự quyết tâm chiến thắng, lòng nhiệt huyết và tinh thần đồng đội, 
+            họ luôn nỗ lực hết mình để mang về chiến thắng cho đội bóng và cổ vũ tinh thần người hâm mộ.
+          </p>
+        </div>
+
       </div>
 
       <!-- Nút quay lại -->
       <div class="text-center mt-4">
         <router-link to="/cauthu" class="btn btn-primary btn-lg shadow-sm px-4">
-          <i class="bi bi-arrow-left-circle me-2"></i> Quay lại danh sách
+          <i class="bi bi-arrow-left-circle me-2"></i> Quay lại dánh sach
         </router-link>
       </div>
     </div>
@@ -113,49 +126,43 @@ onMounted(fetchPlayer);
 </script>
 
 <style scoped>
-/* Toàn trang */
+/* ===== Toàn trang ===== */
 .player-detail-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
   min-height: 100vh;
-  /* background: linear-gradient(135deg, #872c8d, #5a1741, #a11c1c); */
+  background: linear-gradient(135deg, #8B2C31, #5a1f22, #a11c1c);
   background-size: 200% 200%;
-  animation: gradientMove 8s ease infinite;
+  animation: gradientMove 10s ease infinite;
   color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Hiệu ứng chuyển màu nền nhẹ */
 @keyframes gradientMove {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* Card chính */
+/* ===== Card chính ===== */
 .player-card {
   background: rgba(255, 255, 255, 0.97);
   border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
   max-width: 880px;
   width: 100%;
   padding: 35px;
   animation: fadeIn 0.6s ease-in-out;
 }
 
-/* Header (ảnh + info cơ bản) */
+/* ===== Header ===== */
 .player-header {
   display: flex;
   align-items: center;
   gap: 30px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid #8B2C31;
   padding-bottom: 25px;
 }
 
@@ -164,29 +171,30 @@ onMounted(fetchPlayer);
   height: 200px;
   border-radius: 50%;
   object-fit: cover;
-  border: 5px solid #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-  background-color: #f3f4f6;
-  transition: transform 0.3s ease;
+  border: 5px solid #8B2C31;
+  box-shadow: 0 0 20px rgba(139,44,49,0.5);
+  background-color: #fefefe;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .player-avatar:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(139,44,49,0.7);
 }
 
-/* Thông tin cơ bản */
+/* ===== Thông tin cơ bản ===== */
 .player-basic h1 {
-  font-size: 2.2rem;
-  color: #1e3a8a;
+  font-size: 2.4rem;
+  color: #8B2C31;
   margin-bottom: 12px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .player-basic p {
   margin: 6px 0;
-  color: #374151;
+  color: #4b2a2a;
   font-size: 1rem;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .player-basic strong {
@@ -194,24 +202,24 @@ onMounted(fetchPlayer);
 }
 
 .player-basic i {
-  color: #2563eb;
+  color: #8B2C31;
   margin-right: 6px;
 }
 
-/* Thông tin chi tiết */
+/* ===== Thông tin chi tiết ===== */
 .player-info {
   margin-top: 30px;
-  background: linear-gradient(180deg, #f9fafb, #eef2ff);
+  background: linear-gradient(180deg, #fff0f0, #fff5f5);
   border-radius: 15px;
-  padding: 20px 25px;
-  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+  padding: 25px 30px;
+  box-shadow: inset 0 0 8px rgba(139,44,49,0.1);
 }
 
-.player-info h2 {
-  color: #1e3a8a;
-  margin-bottom: 18px;
-  font-size: 1.5rem;
-  font-weight: 600;
+.player-info h4 {
+  color: #8B2C31;
+  margin-bottom: 20px;
+  font-size: 1.6rem;
+  font-weight: 700;
 }
 
 .player-info ul {
@@ -221,64 +229,59 @@ onMounted(fetchPlayer);
 }
 
 .player-info li {
-  padding: 10px 0;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(139,44,49,0.2);
   font-size: 1rem;
-  color: #111827;
+  color: #4b2a2a;
+  display: flex;
+  align-items: center;
 }
 
 .player-info li:last-child {
   border-bottom: none;
 }
 
-/* Nút quay lại */
-.back-btn {
-  margin-top: 35px;
-  text-align: center;
+.player-info li i {
+  color: #8B2C31;
+  margin-right: 10px;
 }
 
+/* ===== Nút quay lại ===== */
 .btn-back {
-  background-color: #2563eb;
+  background-color: #8B2C31;
   color: white;
   padding: 12px 26px;
   border-radius: 30px;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 700;
   font-size: 1rem;
   letter-spacing: 0.3px;
-  transition: all 0.3s;
-  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(139,44,49,0.4);
 }
 
 .btn-back:hover {
-  background-color: #1e40af;
+  background-color: #611d23;
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+  box-shadow: 0 6px 16px rgba(139,44,49,0.6);
 }
 
-/* Trạng thái tải và trống */
-.loading,
-.empty {
+/* ===== Trạng thái tải và trống ===== */
+.loading, .empty {
   margin-top: 60px;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #fff;
   text-align: center;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-/* Hiệu ứng xuất hiện */
+/* ===== Animation fadeIn ===== */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
   .player-header {
     flex-direction: column;
@@ -291,11 +294,53 @@ onMounted(fetchPlayer);
   }
 
   .player-basic h1 {
-    font-size: 1.7rem;
+    font-size: 1.9rem;
   }
 
   .player-info {
-    padding: 18px;
+    padding: 20px;
   }
 }
+/* ===== Phần giới thiệu chung ===== */
+.player-intro {
+  width: 100%;
+  max-width: 880px;
+  background: linear-gradient(135deg, rgba(139,44,49,0.1), rgba(139,44,49,0.05));
+  border-left: 6px solid #8B2C31;
+  border-radius: 15px;
+  padding: 20px 25px;
+  box-shadow: 0 4px 15px rgba(139,44,49,0.2);
+  animation: fadeIn 0.8s ease-in-out;
+  margin-bottom: 30px;
+}
+
+.player-intro .intro-title {
+  color: #8B2C31;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.player-intro .intro-title i {
+  color: #8B2C31;
+}
+
+.player-intro .intro-text {
+  font-size: 1rem;
+  color: #4b2a2a;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .player-intro .intro-title {
+    font-size: 1.4rem;
+  }
+  .player-intro .intro-text {
+    font-size: 0.95rem;
+  }
+}
+
 </style>

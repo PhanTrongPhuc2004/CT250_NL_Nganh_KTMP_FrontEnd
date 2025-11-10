@@ -2,13 +2,16 @@
   <div class="qua-luu-niem-page">
     <div class="container-fluid py-4">
       <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <h1 class="mb-0">Quản lý Quà Lưu Niệm</h1>
+          <h1 class="mb-4 text-primary fw-bold d-flex align-items-center justify-content-center">
+            <i class="bi bi-gift-fill me-2"></i>
+            Quản lý Quà Lưu Niệm
+          </h1>
           <div class="d-flex gap-2 flex-wrap">
             <button
               class="btn btn-outline-primary d-flex align-items-center"
               @click="$router.push('/admin/qualuuniem/donhang')"
             >
-              <i class="bi bi-receipt me-1"></i> Đơn hàng
+             <i class="bi bi-journal-bookmark-fill"> </i> Đơn hàng
             </button>
 
             <button
@@ -314,6 +317,10 @@ export default {
 </script>
 
 <style scoped>
+.text-primary {
+  color: #8B2C31 !important; /* đỏ rượu vang nhẹ */
+}
+
 .qua-luu-niem-page {
   min-height: 100vh;
   background: #f8f9fa;

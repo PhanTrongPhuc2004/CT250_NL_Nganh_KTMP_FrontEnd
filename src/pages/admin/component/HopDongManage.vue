@@ -1,9 +1,16 @@
 <template>
   <div class="contracts-page">
-    <h1>Danh sách Hợp Đồng Cầu Thủ</h1>
+    <h1>
+      <i class="bi bi-file-earmark-text me-2"></i>
+      Danh sách Hợp Đồng Cầu Thủ
+    </h1>
+
 
     <div class="actions">
-      <button class="btn-add" @click="moFormTaoMoi">Tạo hợp đồng mới</button>
+      <button class="btn btn-primary btn-add" @click="moFormTaoMoi">
+        <i class="bi bi-plus-circle me-1"></i> Tạo hợp đồng mới
+      </button>
+
     </div>
 
     <div v-if="loading" class="loading">⏳ Đang tải dữ liệu...</div>
@@ -35,11 +42,18 @@
             <td :class="statusClass(hd.trangThai)">{{ hd.trangThai }}</td>
             <td>{{ hd.nguoiDaiDien }}</td>
             <td>
-              <button class="btn-detail" @click="xemChiTiet(hd)">Xem</button>
-              <button class="btn-edit" @click="moFormSua(hd)">Sửa</button>
-              <button class="btn-delete" @click="xoaHopDong(hd._id)">
-                Xóa
+              <button class="btn btn-info btn-detail" @click="xemChiTiet(hd)">
+                <i class="bi bi-eye me-1"></i> Xem
               </button>
+
+              <button class="btn btn-warning btn-edit" @click="moFormSua(hd)">
+                <i class="bi bi-pencil-square me-1"></i> Sửa
+              </button>
+
+              <button class="btn btn-danger btn-delete" @click="xoaHopDong(hd._id)">
+                <i class="bi bi-trash3 me-1"></i> Xóa
+              </button>
+
             </td>
           </tr>
         </tbody>
@@ -108,10 +122,6 @@
           </div>
         </div>
 
-        <!-- <div class="btn-group">
-          <button class="btn-print" @click="inHopDong">🖨 In hợp đồng</button>
-          <button class="btn-close" @click="selectedHopDong = null">✖ Đóng</button>
-        </div> -->
         <div class="actions no-print">
         <button @click="inHopDong" class="btn btn-primary">
           <i class="bi bi-printer"></i> In hợp đồng
@@ -440,16 +450,30 @@ export default {
 
 <style scoped>
 .contracts-page {
-  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  background: whitesmoke;
   color: #2c3e50;
   padding: 40px;
   min-height: 100vh;
 }
 
 h1 {
-  text-align: center;
   margin-bottom: 30px;
 }
+h1 {
+  text-align: center;
+  color: #8B2C31; /* xanh Bootstrap */
+  margin-bottom: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h1 i {
+  color: #8B2C31;
+  font-size: 2rem;
+}
+
 h3{
   margin-top: 10px;
 }
