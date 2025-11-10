@@ -1,9 +1,41 @@
-
 <template>
   <div class="checkout-page">
     <h1>Thanh toán</h1>
 
-    <form @submit.prevent="confirmOrder" class="checkout-form">
+    <!-- 🛍 Danh sách sản phẩm -->
+    <div v-if="cart.length" class="cart-summary">
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Hình ảnh</th>
+            <th>Tên sản phẩm</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Tổng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in cart" :key="item.maSanPham">
+            <td>
+              <img
+                :src="item.anhMinhHoa?.startsWith('http') ? item.anhMinhHoa : `/${item.anhMinhHoa}`"
+                alt="Ảnh sản phẩm"
+                class="checkout-item-img"
+              />
+            </td>
+            <td>{{ item.tenQuaLuuNiem }}</td>
+            <td>{{ item.gia.toLocaleString() }} VND</td>
+            <td>{{ item.soLuong }}</td>
+            <td>{{ (item.gia * item.soLuong).toLocaleString() }} VND</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p v-else>Không có sản phẩm nào để thanh toán.</p>
+
+    <!-- 🧾 Form thanh toán -->
+    <form v-if="cart.length" @submit.prevent="confirmOrder" class="checkout-form">
       <label>Họ và tên người nhận:</label>
       <input type="text" v-model="order.name" required />
 
@@ -30,7 +62,6 @@
 import axios from "axios";
 import { useUserStore } from "../../../stores/userStore";
 
-
 export default {
   name: "CheckoutPage",
   data() {
@@ -43,41 +74,33 @@ export default {
   },
   computed: {
     totalAmount() {
-      return this.cart.reduce((sum, item) => sum + item.gia * item.quantity, 0);
+      return this.cart.reduce(
+        (sum, item) => sum + Number(item.gia) * Number(item.soLuong),
+        0
+      );
     },
   },
   mounted() {
     const userStore = useUserStore();
-
-    // 1️⃣ Lấy user từ Pinia store
     this.tenDangNhap = userStore.user?.tenDangNhap || "guest";
 
-    // 2️⃣ Merge giỏ hàng guest nếu vừa login
-    const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
     const userCartKey = `cart_${this.tenDangNhap}`;
-    const userCart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+    let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
 
-    if (guestCart.length > 0 && this.tenDangNhap !== "guest") {
-      // Nối guestCart vào userCart
-      const mergedCart = [...userCart];
-
-      guestCart.forEach((item) => {
-        const index = mergedCart.findIndex((i) => i.maSanPham === item.maSanPham);
-        if (index > -1) {
-          mergedCart[index].quantity += item.quantity;
-        } else {
-          mergedCart.push(item);
-        }
-      });
-
-      this.cart = mergedCart;
-      localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
-      localStorage.removeItem("cart_guest");
-    } else {
-      this.cart = userCart;
+    if (!cart.length) {
+      const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
+      if (guestCart.length) cart = guestCart;
     }
 
-    // 3️⃣ Chặn thanh toán nếu giỏ hàng trống
+    // Chuẩn hóa giỏ hàng: dùng soLuong thống nhất
+    this.cart = cart.map((item) => ({
+      maSanPham: item.maSanPham,
+      tenQuaLuuNiem: item.tenQuaLuuNiem,
+      gia: Number(item.gia) || 0,
+      soLuong: Number(item.soLuong ?? item.quantity ?? 1),
+      anhMinhHoa: item.anhMinhHoa || "",
+    }));
+
     if (!this.cart.length) {
       alert("Giỏ hàng trống! Quay lại giỏ hàng.");
       this.$router.push("/cart");
@@ -98,14 +121,13 @@ export default {
       };
 
       try {
-        // Gửi đơn hàng lên backend
         await axios.post(
           `${import.meta.env.VITE_API_BE_BASE_URL}/donhang`,
           newOrder
         );
 
-        // Xóa giỏ hàng sau khi thanh toán
         localStorage.removeItem(`cart_${this.tenDangNhap}`);
+        localStorage.removeItem("cart_guest");
 
         alert("🎉 Đơn hàng của bạn đã được thanh toán và lưu thành công!");
         this.$router.push("/orders");
@@ -126,7 +148,7 @@ export default {
   background: linear-gradient(135deg, #f0f2f5, #e4ebf1);
   color: #333;
   font-family: "Poppins", sans-serif;
-  padding: 60px 20px;
+  padding: 40px 20px 80px;
   min-height: 100vh;
 }
 
@@ -136,6 +158,39 @@ export default {
   font-weight: 700;
   color: #2e3b55;
   margin-bottom: 30px;
+}
+
+/* Bảng hiển thị sản phẩm */
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.cart-table th {
+  background: #4e73df;
+  color: white;
+  padding: 14px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.cart-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.checkout-item-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .checkout-form {
@@ -163,7 +218,6 @@ export default {
   border: 1px solid #ccc;
   font-size: 1rem;
   outline: none;
-  transition: 0.2s ease;
   background: #fafafa;
 }
 
@@ -184,26 +238,5 @@ export default {
   color: #2e3b55;
   font-weight: 700;
   margin-top: 10px;
-}
-
-.confirm-btn {
-  background: linear-gradient(90deg, #4e73df, #1cc88a);
-  color: white;
-  font-weight: 600;
-  padding: 14px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  transition: 0.25s ease;
-}
-
-.confirm-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.confirm-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>
