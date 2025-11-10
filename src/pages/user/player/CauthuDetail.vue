@@ -248,7 +248,7 @@ onMounted(fetchPlayer);
 
 /* ===== Nút quay lại ===== */
 .btn-back {
-  background-color: #8B2C31;
+  background-color: #8B2C31 !;
   color: white;
   padding: 12px 26px;
   border-radius: 30px;
