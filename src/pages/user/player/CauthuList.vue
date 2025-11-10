@@ -127,6 +127,9 @@ onMounted(fetchData);
 </script>
 
 <style scoped>
+h1{
+  color: #8B2C31 !important;
+}
 .player-list-page {
   background: linear-gradient(120deg, #f8fafc, #e8f0ff);
   border-radius: 12px;

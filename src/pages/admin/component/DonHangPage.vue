@@ -1,6 +1,9 @@
 <template>
   <div class="orders-admin-page">
-    <h1>Quản lý Đơn hàng</h1>
+      <h1 class="mb-4 text-primary fw-bold d-flex align-items-center ">
+        <i class="bi bi-box"></i>
+        Quản lý Đơn hàng
+      </h1>
 
     <!-- Bộ lọc và công cụ -->
       <div class="toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
@@ -226,6 +229,7 @@ export default {
 </script>
 
 <style scoped>
+
 .orders-admin-page {
   padding: 40px;
   background: #f3f4f6;
@@ -235,9 +239,9 @@ export default {
 }
 
 h1 {
-  font-size: 2rem;
+  color: #8B2C31 !important; /* đỏ rượu vang */
+  font-size: 40px;
   font-weight: 700;
-  color: #222;
   margin-bottom: 20px;
 }
 
