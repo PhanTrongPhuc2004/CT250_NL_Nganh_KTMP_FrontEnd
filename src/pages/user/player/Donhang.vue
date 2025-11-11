@@ -96,7 +96,7 @@
             class="btn btn-danger btn-sm"
             @click="deleteOrder(order._id)"
           >
-            <i class="bi bi-trash3 me-1"></i> Xóa đơn hàng
+            <i class="bi bi-trash3 me-1"></i> Hủy đơn hàng
           </button>
         </div>
 

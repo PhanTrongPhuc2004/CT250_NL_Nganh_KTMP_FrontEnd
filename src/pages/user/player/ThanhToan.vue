@@ -112,10 +112,18 @@ export default {
 
       this.loading = true;
 
+      // 🔧 Chuẩn hóa lại mảng cart đúng key 'quantity'
+      const normalizedCart = this.cart.map(item => ({
+        tenQuaLuuNiem: item.tenQuaLuuNiem,
+        gia: item.gia,
+        quantity: Number(item.soLuong), // ✅ đổi sang quantity
+        anhMinhHoa: item.anhMinhHoa
+      }));
+
       const newOrder = {
         tenDangNhap: this.tenDangNhap,
         ...this.order,
-        cart: this.cart,
+        cart: normalizedCart, // ✅ dùng cart đã chuẩn hóa
         total: this.totalAmount,
         date: new Date(),
       };
@@ -137,7 +145,8 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
+    }
+    ,
   },
 };
 </script>
