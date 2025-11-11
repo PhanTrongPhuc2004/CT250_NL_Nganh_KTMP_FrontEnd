@@ -72,7 +72,7 @@
       <!-- Nút quay lại -->
       <div class="text-center mt-4">
         <router-link to="/cauthu" class="btn btn-primary btn-lg shadow-sm px-4">
-          <i class="bi bi-arrow-left-circle me-2"></i> Quay lại dánh sach
+          <i class="bi bi-arrow-left-circle me-2"></i> Quay lại danh sách
         </router-link>
       </div>
     </div>
