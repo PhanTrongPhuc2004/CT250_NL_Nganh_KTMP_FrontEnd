@@ -82,7 +82,7 @@ export default {
             datasets: [{
               label: "Doanh thu (₫)",
               data: values,
-              backgroundColor: "rgba(139, 44, 49, 0.6)"
+              backgroundColor: "#1982C4"
             }]
           },
           options: {
@@ -113,7 +113,7 @@ export default {
             datasets: [{
               label: "Doanh thu (₫)",
               data: revenueData,
-              backgroundColor: "rgba(139, 44, 49, 0.7)"
+              backgroundColor: "#1982C4"
             }]
           },
           options: {

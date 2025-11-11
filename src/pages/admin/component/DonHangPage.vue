@@ -74,16 +74,16 @@
           <p><b>Người nhận:</b> {{ order.name }}</p>
           <p><b>Điện thoại:</b> {{ order.phone }}</p>
           <p><b>Địa chỉ:</b> {{ order.address }}</p>
-          <p><b>Ngày đặt:</b> {{ formatDate(order.createdAt) }}</p>
-          <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }}₫</p>
+          <p><b>Ngày đặt:</b> {{ formatDate(order.date) }}</p>
+          <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }} VND</p>
 
           <div class="order-items">
             <p><b>Danh sách sản phẩm:</b></p>
             <ul>
               <li v-for="item in order.cart" :key="item.tenQuaLuuNiem">
                 <img v-if="item.anhMinhHoa" :src="getImageUrl(item.anhMinhHoa)" />
-                {{ item.tenQuaLuuNiem }} - {{ item.quantity }} x
-                {{ item.gia.toLocaleString() }}₫
+                {{ item.tenQuaLuuNiem }}:  {{ item.quantity }} x
+                {{ item.gia.toLocaleString() }} VND
               </li>
             </ul>
           </div>
@@ -149,21 +149,25 @@ export default {
       switch (this.sortOption) {
         case "newest":
           filtered = [...filtered].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            (a, b) => new Date(b.date) - new Date(a.date)
           );
           break;
+
         case "oldest":
           filtered = [...filtered].sort(
-            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+            (a, b) => new Date(a.date) - new Date(b.date)
           );
           break;
+
         case "totalAsc":
           filtered = [...filtered].sort((a, b) => a.total - b.total);
           break;
+
         case "totalDesc":
           filtered = [...filtered].sort((a, b) => b.total - a.total);
           break;
       }
+
 
       return filtered;
     },
@@ -214,11 +218,25 @@ export default {
       if (path.startsWith("http") || path.startsWith("data:image")) return path;
       return `/${path}`;
     },
-
     formatDate(dateStr) {
+      // Không có dữ liệu -> hiển thị "—"
       if (!dateStr) return "—";
+
       const date = new Date(dateStr);
-      return date.toLocaleString("vi-VN");
+
+      // Nếu dữ liệu không hợp lệ -> hiển thị "—"
+      if (isNaN(date)) return "—";
+
+      // Trả về chuỗi ngày/giờ kiểu Việt Nam
+      return date.toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     },
   },
 
