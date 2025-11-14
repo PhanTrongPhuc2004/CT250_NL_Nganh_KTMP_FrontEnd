@@ -1,6 +1,9 @@
 <template>
   <div class="orders-admin-page">
-    <h1>Quản lý Đơn hàng</h1>
+      <h1 class="mb-4 text-primary fw-bold d-flex align-items-center ">
+        <i class="bi bi-box"></i>
+        Quản lý Đơn hàng
+      </h1>
 
     <!-- Bộ lọc và công cụ -->
       <div class="toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
@@ -71,16 +74,16 @@
           <p><b>Người nhận:</b> {{ order.name }}</p>
           <p><b>Điện thoại:</b> {{ order.phone }}</p>
           <p><b>Địa chỉ:</b> {{ order.address }}</p>
-          <p><b>Ngày đặt:</b> {{ formatDate(order.createdAt) }}</p>
-          <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }}₫</p>
+          <p><b>Ngày đặt:</b> {{ formatDate(order.date) }}</p>
+          <p><b>Tổng tiền:</b> {{ order.total.toLocaleString() }} VND</p>
 
           <div class="order-items">
             <p><b>Danh sách sản phẩm:</b></p>
             <ul>
               <li v-for="item in order.cart" :key="item.tenQuaLuuNiem">
                 <img v-if="item.anhMinhHoa" :src="getImageUrl(item.anhMinhHoa)" />
-                {{ item.tenQuaLuuNiem }} - {{ item.quantity }} x
-                {{ item.gia.toLocaleString() }}₫
+                {{ item.tenQuaLuuNiem }}:  {{ item.quantity }} x
+                {{ item.gia.toLocaleString() }} VND
               </li>
             </ul>
           </div>
@@ -90,14 +93,14 @@
             class="confirm-btn"
             @click="xacNhan(order._id)"
           >
-            Xác nhận đơn
+            Chờ nhận đơn
           </button>
           <button
             v-else
             class="cancel-btn"
             @click="huyXacNhan(order._id)"
           >
-            Hủy xác nhận
+            Đã xác nhận
           </button>
         </div>
       </div>
@@ -146,21 +149,25 @@ export default {
       switch (this.sortOption) {
         case "newest":
           filtered = [...filtered].sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            (a, b) => new Date(b.date) - new Date(a.date)
           );
           break;
+
         case "oldest":
           filtered = [...filtered].sort(
-            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+            (a, b) => new Date(a.date) - new Date(b.date)
           );
           break;
+
         case "totalAsc":
           filtered = [...filtered].sort((a, b) => a.total - b.total);
           break;
+
         case "totalDesc":
           filtered = [...filtered].sort((a, b) => b.total - a.total);
           break;
       }
+
 
       return filtered;
     },
@@ -211,11 +218,25 @@ export default {
       if (path.startsWith("http") || path.startsWith("data:image")) return path;
       return `/${path}`;
     },
-
     formatDate(dateStr) {
+      // Không có dữ liệu -> hiển thị "—"
       if (!dateStr) return "—";
+
       const date = new Date(dateStr);
-      return date.toLocaleString("vi-VN");
+
+      // Nếu dữ liệu không hợp lệ -> hiển thị "—"
+      if (isNaN(date)) return "—";
+
+      // Trả về chuỗi ngày/giờ kiểu Việt Nam
+      return date.toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     },
   },
 
@@ -226,6 +247,7 @@ export default {
 </script>
 
 <style scoped>
+
 .orders-admin-page {
   padding: 40px;
   background: #f3f4f6;
@@ -235,9 +257,9 @@ export default {
 }
 
 h1 {
-  font-size: 2rem;
+  color: #8B2C31 !important; /* đỏ rượu vang */
+  font-size: 40px;
   font-weight: 700;
-  color: #222;
   margin-bottom: 20px;
 }
 

@@ -3,7 +3,10 @@
     <div class="container-fluid py-4">
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">Quản lý Tin Tức</h1>
+            <h1 class="mb-4 text-primary fw-bold d-flex align-items-center justify-content-center">
+              <i class="bi bi-newspaper me-2"></i>
+              Quản lý Tin Tức
+            </h1>
         <button v-if="!showForm" class="btn btn-primary" @click="showAddForm">
           + Thêm mới
         </button>
@@ -287,6 +290,10 @@ export default {
 </script>
 
 <style scoped>
+.text-primary{
+  color: #8B2C31 !important;
+  font-weight: 700;
+}
 .tintuc-page {
   background: #f8f9fa;
   min-height: 100vh;
