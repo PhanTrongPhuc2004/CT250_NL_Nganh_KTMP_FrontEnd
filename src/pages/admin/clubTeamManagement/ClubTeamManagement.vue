@@ -180,7 +180,6 @@ const fetchClubTeam = async () => {
   try {
     const response = await axios.get(teamApi, { withCredentials: true });
     teams.value = response.data;
-    console.log("✅ Teams loaded:", teams.value);
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách đội bóng:", error);
     errorMessage.value = "Không thể tải danh sách đội bóng. Vui lòng thử lại!";
@@ -191,8 +190,6 @@ const fetchClubTeam = async () => {
 
 // --- MENU ACTION HANDLER (THÊM MỚI) ---
 const handleMenuAction = ({ action, item }) => {
-  console.log(`🎯 Menu action: ${action} for team:`, item);
-
   switch (action) {
     case "edit":
       handleEditTeam(item);
@@ -210,22 +207,17 @@ const handleMenuAction = ({ action, item }) => {
 
 // --- ACTION HANDLERS ---
 const handleEditTeam = (team) => {
-  console.log("🛠️ Mở form chỉnh sửa đội bóng:", team);
-  console.log("📝 showEditTeamForm trước:", showEditTeamForm.value);
   currentEditTeam.value = team;
   showEditTeamForm.value = true;
-  console.log("📝 showEditTeamForm sau:", showEditTeamForm.value);
   errorMessage.value = "";
 };
 
 const handleViewTeam = (team) => {
-  console.log("👀 Xem chi tiết đội bóng:", team);
   router.push(`/admin/clubteam/${team._id}`);
 };
 
 const handleDeleteTeam = async (team) => {
   if (!team?._id) {
-    console.error("❌ Không có ID đội bóng để xóa");
     return;
   }
 
@@ -234,7 +226,6 @@ const handleDeleteTeam = async (team) => {
       await axios.delete(`${teamApi}/id/${team._id}`, {
         withCredentials: true,
       });
-      console.log("✅ Đã xóa đội bóng thành công");
       await fetchClubTeam();
     } catch (error) {
       console.error("❌ Lỗi khi xóa đội bóng:", error);
@@ -282,7 +273,6 @@ const transformTeamData = (formData) => {
     sanNha: formData.sanNha,
     logoUrl: formData.logoUrl || "",
   };
-  console.log("📦 Transformed team data:", transformedData);
   return transformedData;
 };
 

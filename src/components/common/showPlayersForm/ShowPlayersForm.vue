@@ -216,7 +216,6 @@ const isValidSquad = (squadId) => {
 // Fetch all players from club
 const fetchAllPlayers = async () => {
   try {
-    console.log("🔄 Đang tải danh sách cầu thủ...");
     const response = await axios.get(
       `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu`,
       { withCredentials: true }
@@ -229,12 +228,6 @@ const fetchAllPlayers = async () => {
 
     // Store original data for change detection
     originalData.value = JSON.parse(JSON.stringify(allPlayers.value));
-
-    console.log(
-      "✅ Đã tải danh sách cầu thủ:",
-      allPlayers.value.length,
-      "cầu thủ"
-    );
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách cầu thủ:", error);
     alert("Không thể tải danh sách cầu thủ. Vui lòng thử lại!");
@@ -244,18 +237,12 @@ const fetchAllPlayers = async () => {
 // Fetch all squads
 const fetchSquads = async () => {
   try {
-    console.log("🔄 Đang tải danh sách đội hình...");
     const response = await axios.get(
       `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`,
       { withCredentials: true }
     );
 
     squads.value = response.data;
-    console.log(
-      "✅ Đã tải danh sách đội hình:",
-      squads.value.length,
-      "đội hình"
-    );
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách đội hình:", error);
     alert("Không thể tải danh sách đội hình. Vui lòng thử lại!");
@@ -282,8 +269,6 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    console.log("🔄 Đang cập nhật đội hình cho cầu thủ...");
-
     // Prepare data for API - include all players with their squad assignments
     const playersToUpdate = allPlayers.value.map((player) => ({
       _id: player._id,
@@ -292,8 +277,6 @@ const handleSubmit = async () => {
       soAo: player.soAo,
     }));
 
-    console.log("📦 Dữ liệu gửi lên API:", playersToUpdate);
-
     for (const player of playersToUpdate) {
       try {
         const response = await axios.patch(
@@ -301,7 +284,6 @@ const handleSubmit = async () => {
           { maDoiHinh: player.maDoiHinh },
           { withCredentials: true }
         );
-        console.log("✅ Cập nhật thành công:", response.data);
       } catch (error) {
         console.error("❌ Lỗi cập nhật cầu thủ:", player._id, error);
       }

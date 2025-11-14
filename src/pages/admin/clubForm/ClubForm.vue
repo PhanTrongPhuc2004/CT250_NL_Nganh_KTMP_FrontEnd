@@ -219,7 +219,6 @@ const updateSponsors = () => {
 };
 
 const handleSubmit = () => {
-  console.log("Form data:", form.value);
   alert("Club information saved successfully!");
 };
 </script>

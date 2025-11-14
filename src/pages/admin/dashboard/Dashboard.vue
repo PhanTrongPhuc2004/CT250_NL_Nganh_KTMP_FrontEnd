@@ -40,9 +40,7 @@ const showLoading = () => {
 };
 
 // Hàm khi người dùng cancel loading
-const onCancel = () => {
-  console.log("Loading đã bị hủy");
-};
+const onCancel = () => {};
 </script>
 
 <style scoped>

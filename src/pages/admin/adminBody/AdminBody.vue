@@ -3,7 +3,7 @@ import Sidebar from "@/components/common/sidebar/Sidebar.vue";
 
 import classNames from "classnames/bind";
 import styles from "./adminBody.module.scss";
-import { adminRouter } from "@/router/index.js";
+import { adminRoutes } from "@/router";
 const cx = classNames.bind(styles);
 const adminMenuItems = [
   { label: "Quản lý người dùng", to: "/admin/users" },
@@ -20,7 +20,7 @@ const adminMenuItems = [
 
 <template>
   <div :class="cx('dashboard-wrapper')">
-    <Sidebar :items="adminRouter" />
+    <Sidebar :items="adminRoutes" />
     <div class="col-md-10 p-4" :class="cx('main')">
       <RouterView class="col-md-12" />
     </div>

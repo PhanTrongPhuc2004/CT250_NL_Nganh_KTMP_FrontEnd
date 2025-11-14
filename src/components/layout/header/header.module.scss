@@ -1,11 +1,15 @@
 .header-wrapper {
   width: 100%;
   background-color: var(--header-color);
+  height: var(--header-height);
   color: white;
   padding: 12px 24px;
   display: flex;
+  position: fixed;
+  z-index: 100;
   align-items: center;
   justify-content: space-between;
+  top: 0;
 }
 
 .nav-wrapper {

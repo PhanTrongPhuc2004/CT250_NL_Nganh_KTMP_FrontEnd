@@ -3,7 +3,6 @@ import Header from "../header/Header.vue";
 import Footer from "../footer/Footer.vue";
 import AdminBody from "@/pages/admin/adminBody/AdminBody.vue";
 import AdminHeader from "../adminHeader/AdminHeader.vue";
-import { useUserStore } from "@/stores/userStore";
 import { watch } from "vue";
 import { toRaw } from "vue";
 const props = defineProps({
@@ -25,20 +24,8 @@ watch(
   <div v-if="props.user">
     <!-- Fan -->
     <div
-      v-if="toRaw(props.user).vaiTro?.toLowerCase() === 'nguoihammo'"
-      class="default-layout"
-    >
-      <Header />
-      <main class="content">
-        <slot />
-      </main>
-      <Footer />
-    </div>
-
-    <!-- cauthu & huanluyenvien -->
-    <div
       v-if="
-        ['cauthu', 'huanluyenvien'].includes(
+        ['nguoihammo', 'cauthu', 'huanluyenvien'].includes(
           toRaw(props.user).vaiTro?.toLowerCase()
         )
       "
@@ -64,7 +51,15 @@ watch(
   <!-- Nếu chưa có user thì hiển thị layout mặc định -->
   <div v-else class="default-layout">
     <Header />
-    <main class="content"></main>
+    <main class="content">
+      <slot />
+    </main>
     <Footer />
   </div>
 </template>
+
+<style scoped>
+.content {
+  margin-top: var(--header-height);
+}
+</style>

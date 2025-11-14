@@ -19,7 +19,7 @@ import axios from "axios";
 import MarqueeText from "vue-marquee-text-component";
 import ThongBaoMoi from "./ThongBaoMoi.vue";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
-
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -33,10 +33,40 @@ const matchList = ref([]);
 const postList = ref([]);
 const playerList = ref([]);
 const clubInfo = ref({});
-const tranDau = {
-  capDau: ["Manchester United", "Chelsea"],
-  diaDiem: "Sân Old Trafford",
-  thoiGianDienRa: "20:00, 15/08/2024",
+const tranDau = computed(() => {
+  if (matchList.value.length > 0) {
+    const firstMatch = matchList.value[0];
+    return {
+      capDau: [firstMatch.doiNha, firstMatch.doiKhach],
+      diaDiem: firstMatch.diaDiem,
+      thoiGianDienRa: firstMatch.thoiGianDienRa,
+    };
+  }
+  return {
+    capDau: ["Đang tải...", "Đang tải..."],
+    diaDiem: "Đang tải...",
+    thoiGianDienRa: "Đang tải...",
+  };
+});
+
+//get tran dau dau tien
+
+const fetchMatchList = async () => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/trandau/`,
+      {
+        withCredentials: true,
+      }
+    );
+    matchList.value = response.data;
+    console.log(
+      "danh sachs tran dau--------------------------",
+      matchList.value
+    );
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // Tạo text dài để chạy liên tục
@@ -80,6 +110,8 @@ onMounted(async () => {
     }
   );
   playerList.value = response.data;
+
+  await fetchMatchList();
 });
 </script>
 

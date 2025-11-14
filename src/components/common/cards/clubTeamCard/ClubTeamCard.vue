@@ -105,7 +105,6 @@ const shouldShowMenu = computed(() => {
 
 // Methods
 const toggleMenu = (id) => {
-  console.log("Toggle menu for:", id);
   activeMenuId.value = activeMenuId.value === id ? null : id;
 };
 
@@ -114,7 +113,6 @@ const isMenuOpen = (id) => {
 };
 
 const handleMenuItemClick = (action, item) => {
-  console.log("Menu item clicked:", action, item);
   activeMenuId.value = null; // Close menu
   emit("menu-action", { action, item });
 };
@@ -134,7 +132,6 @@ const handleClickOutside = (event) => {
 };
 
 onMounted(() => {
-  console.log("ClubTeamCard mounted with menuItems:", props.menuItems);
   document.addEventListener("click", handleClickOutside);
 });
 </script>

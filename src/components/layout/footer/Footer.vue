@@ -11,7 +11,6 @@ onMounted(async () => {
     );
     // API trả về mảng, lấy phần tử đầu tiên
     clubInfo.value = response.data[0] || {};
-    console.log("clubInfo", clubInfo.value);
   } catch (error) {
     console.error("Fetch club info error:", error);
   }

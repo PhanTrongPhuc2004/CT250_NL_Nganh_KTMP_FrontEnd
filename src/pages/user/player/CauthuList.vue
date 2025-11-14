@@ -48,39 +48,13 @@
       </section>
 
       <!-- 🧑‍🎓 Cầu thủ -->
-      <section>
-        <h2 class="section-title text-success">
-          <i class="bi bi-person-fill me-2"></i>Cầu thủ
-        </h2>
-        <div v-if="players.length === 0" class="alert alert-warning mt-3">
-          Không có cầu thủ nào.
-        </div>
-
-        <div class="row g-4 mt-2 justify-content-center">
-          <div
-            v-for="player in players"
-            :key="player._id"
-            class="col-12 col-sm-6 col-md-4 col-lg-3"
-          >
-            <router-link
-              :to="`/cauthu/${player._id}`"
-              class="text-decoration-none"
-            >
-              <div class="card player-card shadow-sm border-0">
-                <img
-                  :src="resolveImage(player.anhMinhHoa)"
-                  class="card-img-top player-image"
-                  alt="Ảnh cầu thủ"
-                />
-                <div class="card-body text-center">
-                  <h5 class="card-title fw-semibold text-dark mb-0">
-                    {{ player.hoVaTen }}
-                  </h5>
-                  <!-- <p class="text-muted small mt-1">Cầu thủ</p> -->
-                </div>
-              </div>
-            </router-link>
-          </div>
+      <section class="d-flex flex-wrap gap-3">
+        <div
+          v-for="(player, index) in players"
+          :key="player._id"
+          class="col-md-3"
+        >
+          <PlayerCard :item="player" />
         </div>
       </section>
     </div>
@@ -90,7 +64,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-
+import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 const players = ref([]);
 const coaches = ref([]);
 const loading = ref(true);

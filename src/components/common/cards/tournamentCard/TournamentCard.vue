@@ -44,14 +44,10 @@ const currentMenuItems = computed(() => {
     return [];
   }
 
-  console.log("Menu items trong TournamentCard:", props.menuItems);
-  console.log("Current item:", props.item);
-
   // Map lại menuItems để bind item vào action
   return props.menuItems.map((menuItem) => ({
     label: menuItem.label,
     action: () => {
-      console.log("Action được gọi với item:", props.item);
       menuItem.action(props.item); // Truyền item vào action
     },
   }));

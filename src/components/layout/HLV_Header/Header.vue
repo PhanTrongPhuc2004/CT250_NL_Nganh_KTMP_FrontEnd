@@ -26,7 +26,6 @@ const { activeMenuId, toggleMenu } = useDropdownManager();
 onMounted(async () => {
   try {
     userInfor.value = await getMe();
-    console.log("userInfor", userInfor.value);
   } catch (error) {
     console.error("Lỗi khi lấy thông tin user:", error);
   }
@@ -34,7 +33,6 @@ onMounted(async () => {
 
 // Routes và form fields
 const userRoutes = router.getRoutes().filter((r) => r.meta?.user);
-console.log("userRoutes", userRoutes);
 
 const registerFields = [
   { name: "hoVaTen", type: "text", label: "Họ và tên" },

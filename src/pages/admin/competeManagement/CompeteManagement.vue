@@ -91,7 +91,6 @@ const openTournamentForm = () => {
 
 // Hàm xử lý chỉnh sửa giải đấu
 const handleEditTournament = (item) => {
-  console.log("Mở form chỉnh sửa giải đấu:", item);
   currentEditTournament.value = item;
   showEditTournamentForm.value = true;
   errorMessage.value = "";
@@ -100,11 +99,7 @@ const handleEditTournament = (item) => {
 // Hàm xử lý xem chi tiết giải đấu
 // Hàm xử lý xem chi tiết giải đấu
 const viewTournamentDetails = (item) => {
-  console.log("Xem chi tiết giải đấu:", item);
-
   // Debug: kiểm tra router và routes
-  console.log("Router available:", router);
-  console.log("Current routes:", router.getRoutes());
 
   try {
     // Điều hướng đến trang chi tiết giải đấu
@@ -128,7 +123,6 @@ const deleteTournament = async (item) => {
     await axios.delete(`${tournamentApi}/ma/${item.maGiaiDau}`, {
       withCredentials: true,
     });
-    console.log("Đã xóa giải đấu thành công");
     await fetchTournaments();
   } catch (error) {
     console.error("Lỗi khi xóa giải đấu:", error);

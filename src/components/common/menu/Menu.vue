@@ -43,7 +43,6 @@ const handleClickOutside = (event) => {
 onMounted(() => {
   setTimeout(() => (isReady.value = true), 0); // Kích hoạt sau 1 tick
   document.addEventListener("click", handleClickOutside);
-  console.log("menu mound", props.menuItems);
 });
 
 onBeforeUnmount(() => {
