@@ -1,202 +1,212 @@
 <template>
-  <div class="profile-container">
-    <div class="profile-card shadow-lg">
-      <h2 class="text-center mb-4">👤 Thông tin cá nhân</h2>
+  <div class="cart-page">
+    <h1> Giỏ hàng của bạn</h1>
 
-      <form @submit.prevent="updateUser">
-        <div class="form-group">
-          <label>Họ và tên</label>
-          <input
-            v-model="form.hoVaTen"
-            type="text"
-            class="form-control"
-            placeholder="Nhập họ và tên"
-            required
-          />
-        </div>
+    <div v-if="cart.length">
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Tổng</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in cart" :key="item._id">
+            <td>{{ item.tenQuaLuuNiem }}</td>
+            <td>{{ item.gia.toLocaleString() }} VND</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ (item.gia * item.quantity).toLocaleString() }} VND</td>
+            <td>
+              <button class="btn btn-danger btn-sm" @click="removeItem(index)">
+                <i class="bi bi-trash"></i>
+              </button>
 
-        <div class="form-group">
-          <label>Email</label>
-          <input
-            v-model="form.email"
-            type="email"
-            class="form-control"
-            placeholder="Nhập email"
-            required
-          />
-        </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-        <div class="form-group">
-          <label>Tên đăng nhập</label>
-          <input
-            v-model="form.tenDangNhap"
-            type="text"
-            class="form-control"
-            disabled
-          />
-        </div>
+      <h3 class="total">Tổng cộng: {{ totalAmount.toLocaleString() }} VND</h3>
 
-        <div class="form-group">
-          <label>Vai trò</label>
-          <input
-            v-model="form.vaiTro"
-            type="text"
-            class="form-control"
-            disabled
-          />
-        </div>
+      <div class="action-buttons">
+        <button class="btn btn-outline-danger me-2" @click="clearCart">
+          <i class="bi bi-trash me-1"></i> Xóa giỏ hàng
+        </button>
 
-        <div class="d-flex justify-content-between mt-4">
-          <button
-            type="button"
-            class="btn btn-secondary px-4"
-            @click="exitProfile"
-          >
-            ❌ Hủy
-          </button>
-          <button type="submit" class="btn btn-primary px-4">
-            💾 Cập nhật
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- ✅ Toast thông báo -->
-    <div
-      class="toast-container position-fixed top-0 end-0 p-3"
-      style="z-index: 2000"
-    >
-      <div
-        id="updateToast"
-        class="toast align-items-center text-bg-success border-0"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
-        <div class="d-flex">
-          <div class="toast-body">✅ Cập nhật thông tin thành công!</div>
-          <button
-            type="button"
-            class="btn-close btn-close-white me-2 m-auto"
-            data-bs-dismiss="toast"
-            aria-label="Close"
-          ></button>
-        </div>
+        <button class="btn btn-success" @click="goToCheckout">
+          <i class="bi bi-credit-card me-1"></i> Thanh toán
+        </button>
       </div>
     </div>
+
+    <p v-else>Giỏ hàng của bạn đang trống.</p>
+    <button class="btn btn-outline-primary" @click="$router.push('/shop')">
+      <i class="bi bi-arrow-left-circle me-1"></i> Tiếp tục mua hàng
+    </button>
+
   </div>
 </template>
 
-<script setup>
-import { useUserStore } from "@/stores/userStore";
-import { reactive } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
-import { Toast } from "bootstrap";
-
-const router = useRouter();
-const userStore = useUserStore();
-
-// 📋 Dữ liệu form người dùng
-const form = reactive({
-  hoVaTen: userStore.user?.hoVaTen || "",
-  email: userStore.user?.email || "",
-  tenDangNhap: userStore.user?.tenDangNhap || "",
-  vaiTro: userStore.user?.vaiTro || "",
-});
-
-// 🔄 Cập nhật thông tin người dùng
-const updateUser = async () => {
-  try {
-    const res = await axios.put(
-      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${userStore.user._id}`,
-      form,
-      { withCredentials: true }
-    );
-    userStore.setUser(res.data);
-
-    // ✅ Hiển thị thông báo thành công
-    const toastEl = document.getElementById("updateToast");
-    const toast = new Toast(toastEl);
-    toast.show();
-  } catch (err) {
-    console.error(err);
-    alert("❌ Cập nhật thất bại!");
-  }
-};
-
-// ❌ Hủy → quay về trang trước hoặc trang chính
-const exitProfile = () => {
-  router.back(); // 👈 quay lại trang trước đó
+<script>
+export default {
+  name: "CartPage",
+  data() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const username = user?.tenDangNhap || "guest";
+    return {
+      username,
+      cart: JSON.parse(localStorage.getItem(`cart_${username}`)) || [],
+    };
+  },
+  computed: {
+    totalAmount() {
+      return this.cart.reduce((sum, item) => sum + item.gia * item.quantity, 0);
+    },
+  },
+  methods: {
+    saveCart() {
+      localStorage.setItem(`cart_${this.username}`, JSON.stringify(this.cart));
+    },
+    removeItem(index) {
+      this.cart.splice(index, 1);
+      this.saveCart();
+    },
+    clearCart() {
+      if (confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) {
+        this.cart = [];
+        localStorage.removeItem(`cart_${this.username}`);
+      }
+    },
+    goToCheckout() {
+      if (!this.cart.length) return alert("Giỏ hàng trống!");
+      this.$router.push("/checkout");
+    },
+  },
 };
 </script>
 
 <style scoped>
-.profile-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 100px);
-  background: linear-gradient(135deg, #9b7b7f, #8d494d);
-  padding: 40px;
+.cart-page {
+  padding: 50px 30px;
+  background: linear-gradient(135deg, #f0f2f5, #e8ecf1);
+  color: #333;
+  font-family: "Poppins", sans-serif;
+  min-height: 100vh;
 }
 
-.profile-card {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 35px;
-  max-width: 500px;
+.cart-page h1 {
+
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2e3b55;
+  margin-bottom: 40px;
+}
+
+.cart-table {
   width: 100%;
-  transition: all 0.3s ease;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
 }
 
-.profile-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-  margin-bottom: 1.2rem;
-}
-
-label {
+.cart-table th {
+  background: #4e73df;
+  color: white;
+  padding: 14px;
+  text-align: center;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cart-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 14px;
+  text-align: center;
+  font-size: 1rem;
   color: #444;
-  margin-bottom: 5px;
-  display: block;
 }
 
-input.form-control {
+.cart-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cart-table tr:hover {
+  background: #f8f9fc;
+  transition: 0.2s ease;
+}
+
+.total {
+  text-align: right;
+  font-size: 1.3rem;
+  color: #2e3b55;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.checkout-btn {
+  background: linear-gradient(90deg, #1cc88a, #4e73df);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
   border-radius: 10px;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: 0.25s ease;
 }
 
-input.form-control:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 5px rgba(13, 110, 253, 0.4);
-}
-
-button.btn {
-  font-weight: 500;
-  border-radius: 10px;
-  padding: 10px 18px;
-  transition: all 0.3s ease;
-}
-
-button.btn:hover {
-  transform: translateY(-2px);
+.checkout-btn:hover {
+  transform: translateY(-1px);
   opacity: 0.9;
 }
 
-h2 {
-  font-weight: 700;
-  color: #333;
-  text-align: center;
+.clear-btn {
+  background: #e74a3b;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s ease;
 }
 
-.toast-container {
-  z-index: 3000;
+.clear-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
+.back-btn {
+  background: linear-gradient(90deg, #36b9cc, #4e73df);
+  color: white;
+  border: none;
+  padding: 12px 26px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  box-shadow: 0 4px 10px rgba(78, 115, 223, 0.2);
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(78, 115, 223, 0.3);
+  opacity: 0.95;
+}
+
 </style>
+

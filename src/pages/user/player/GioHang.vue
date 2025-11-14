@@ -6,6 +6,7 @@
       <table class="cart-table">
         <thead>
           <tr>
+            <th>Hình ảnh</th>
             <th>Sản phẩm</th>
             <th>Giá</th>
             <th>Số lượng</th>
@@ -15,6 +16,13 @@
         </thead>
         <tbody>
           <tr v-for="(item, index) in cart" :key="item._id">
+              <td>
+                <img 
+                  :src="item.anhMinhHoa.startsWith('http') ? item.anhMinhHoa : `/${item.anhMinhHoa}`" 
+                  alt="Ảnh sản phẩm" 
+                  class="cart-item-img"
+                />
+              </td>
             <td>{{ item.tenQuaLuuNiem }}</td>
             <td>{{ item.gia.toLocaleString() }} VND</td>
             <td>{{ item.quantity }}</td>
@@ -207,6 +215,13 @@ export default {
   box-shadow: 0 6px 15px rgba(78, 115, 223, 0.3);
   opacity: 0.95;
 }
+.cart-item-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
 
 </style>
 
