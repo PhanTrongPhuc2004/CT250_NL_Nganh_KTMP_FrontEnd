@@ -5,34 +5,35 @@ import { useRoute, useRouter } from "vue-router";
 import Form from "@/components/common/form/Form.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
-import { matchFields } from "@/utils/constanst";
+import { matchFields, trainingFields } from "@/utils/constanst";
 
 const route = useRoute();
 const router = useRouter();
 const tournamentId = route.params.tournamentId;
 const seasonId = route.params.seasonId;
 
-// --- STATE ---
 const tournamentInfo = ref({});
 const seasonInfo = ref({});
 const matches = ref([]);
+const upcommingMatches = ref([]);
 const squads = ref([]);
 const showMatchForm = ref(false);
+const showTrainingForm = ref(false);
 const showEditMatchForm = ref(false);
 const showUpdateResultForm = ref(false);
 const currentEditMatch = ref(null);
 const currentUpdateMatch = ref(null);
 const loading = ref(false);
 const errorMessage = ref("");
+const ortherTrainingFields = ref([]);
 
-// API endpoints
 const tournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
 const seasonApi = `${import.meta.env.VITE_API_BE_BASE_URL}/muagiai`;
 const matchApi = `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`;
+const addTrainingApi = `${import.meta.env.VITE_API_BE_BASE_URL}/lichtapluyen`;
 const resultApi = `${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau`;
 const squadApi = `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`;
 
-// Computed APIs
 const editMatchApi = computed(() => {
   if (currentEditMatch.value?._id) {
     return `${matchApi}/id/${currentEditMatch.value._id}`;
@@ -47,13 +48,9 @@ const updateResultApi = computed(() => {
   return "";
 });
 
-// --- COMPUTED ---
 const hasMatches = computed(() => matches.value.length > 0);
 const isLoading = computed(() => loading.value && matches.value.length === 0);
 
-// Đảm bảo matchFields có đủ các trường bắt buộc
-
-// Fields cho form cập nhật kết quả
 const updateResultMatchFields = [
   {
     name: "tiSo",
@@ -160,7 +157,6 @@ const updateResultMatchFields = [
   },
 ];
 
-// Menu items cho match card
 const matchMenuItems = [
   {
     label: "Chỉnh sửa",
@@ -183,7 +179,6 @@ const fetchSeasonInfo = async () => {
       withCredentials: true,
     });
     seasonInfo.value = response.data;
-    console.log("Season info:", seasonInfo.value);
   } catch (error) {
     console.error("Lỗi khi tải thông tin mùa giải:", error);
     errorMessage.value = "Không thể tải thông tin mùa giải. Vui lòng thử lại!";
@@ -197,15 +192,14 @@ const fetchMatchesBySeason = async () => {
   try {
     const response = await axios.get(
       `${seasonApi}/ma/${seasonInfo?.value?.maMuaGiai}/trandau`,
-      {
-        withCredentials: true,
-      }
+      { withCredentials: true }
     );
     matches.value = response.data;
-    console.log("Matches:", matches.value);
+    upcommingMatches.value = response.data.filter(
+      (match) => match.trangThai === "chua_bat_dau"
+    );
   } catch (error) {
     console.error("Lỗi khi tải danh sách trận đấu:", error);
-
     try {
       const allMatchesResponse = await axios.get(matchApi, {
         withCredentials: true,
@@ -213,7 +207,6 @@ const fetchMatchesBySeason = async () => {
       matches.value = allMatchesResponse.data.filter(
         (match) => match.maMuaGiai === seasonInfo.value.maMuaGiai
       );
-      console.log("Matches (fallback):", matches.value);
     } catch (fallbackError) {
       console.error("Lỗi fallback:", fallbackError);
       errorMessage.value =
@@ -228,7 +221,6 @@ const fetchSquads = async () => {
   try {
     const response = await axios.get(squadApi, { withCredentials: true });
     let data = response.data;
-
     if (data) {
       data = data.map((item) => ({
         _id: item._id,
@@ -242,27 +234,20 @@ const fetchSquads = async () => {
   }
 };
 
-// --- MATCH ACTIONS ---
 const handleEditMatch = (match) => {
-  console.log("Mở form chỉnh sửa trận đấu:", match);
   currentEditMatch.value = match;
   showEditMatchForm.value = true;
   errorMessage.value = "";
 };
 
 const handleUpdateResult = (match) => {
-  console.log("Mở form cập nhật kết quả:", match);
   currentUpdateMatch.value = match;
   showUpdateResultForm.value = true;
   errorMessage.value = "";
 };
 
 const handleDeleteMatch = async (match) => {
-  if (!match?._id) {
-    console.error("Không có ID trận đấu để xóa");
-    return;
-  }
-
+  if (!match?._id) return;
   if (
     confirm(
       `Bạn có chắc muốn xóa trận đấu ${match.doiNha} vs ${match.doiKhach}?`
@@ -272,7 +257,6 @@ const handleDeleteMatch = async (match) => {
       await axios.delete(`${matchApi}/id/${match._id}`, {
         withCredentials: true,
       });
-      console.log("Đã xóa trận đấu thành công");
       await fetchMatchesBySeason();
     } catch (error) {
       console.error("Lỗi khi xóa trận đấu:", error);
@@ -291,8 +275,15 @@ const openMatchForm = () => {
   errorMessage.value = "";
 };
 
+const openTraningForm = async () => {
+  showTrainingForm.value = true;
+  await findUpcomingMatchesBySeason();
+  errorMessage.value = "";
+};
+
 const closeMatchForm = () => {
   showMatchForm.value = false;
+  showTrainingForm.value = false;
   errorMessage.value = "";
 };
 
@@ -332,13 +323,12 @@ const handleMatchError = (error) => {
   }
 };
 
-// Hàm xử lý trước khi gửi dữ liệu cập nhật kết quả
 const transformUpdateResultData = (formData) => {
   const [doiNhaScore, doiKhachScore] = formData.tiSo
     ? formData.tiSo.split("-").map(Number)
     : [null, null];
 
-  const transformedData = {
+  return {
     ketQua: {
       doiNha: doiNhaScore,
       doiKhach: doiKhachScore,
@@ -363,17 +353,11 @@ const transformUpdateResultData = (formData) => {
     },
     trangThai: "daKetThuc",
   };
-
-  return transformedData;
 };
 
-// Hàm transform data khi thêm/sửa trận đấu
 const transformMatchData = (formData) => {
   const maMuaGiai = formData.maMuaGiai || seasonInfo.value.maMuaGiai;
-
-  if (!maMuaGiai) {
-    throw new Error("Mã mùa giải là bắt buộc");
-  }
+  if (!maMuaGiai) throw new Error("Mã mùa giải là bắt buộc");
 
   let formattedNgayBatDau = formData.ngayBatDau;
   let formattedThoiGian = formData.thoiGian;
@@ -392,7 +376,7 @@ const transformMatchData = (formData) => {
   if (!formData.doiNha) throw new Error("Đội nhà là bắt buộc");
   if (!formData.doiKhach) throw new Error("Đội khách là bắt buộc");
 
-  const transformedData = {
+  return {
     maMuaGiai: maMuaGiai,
     diaDiem: formData.diaDiem,
     ngayBatDau: formattedNgayBatDau,
@@ -401,21 +385,14 @@ const transformMatchData = (formData) => {
     doiKhach: formData.doiKhach,
     trangThai: formData.trangThai || "chuaDienRa",
   };
-
-  console.log("Transformed match data:", transformedData);
-  return transformedData;
 };
 
-// Chuẩn bị dữ liệu cho form chỉnh sửa
 const prepareEditData = (match) => {
   if (!match) return {};
-
   const preparedData = { ...match };
-
   if (match.ngayBatDau && match.thoiGian) {
     preparedData.ngayBatDau = `${match.ngayBatDau}T${match.thoiGian}`;
   }
-
   return preparedData;
 };
 
@@ -423,46 +400,78 @@ const goBack = () => {
   window.history.back();
 };
 
+const findUpcomingMatchesBySeason = async () => {
+  try {
+    const response = await axios.get(
+      `${seasonApi}/ma/${seasonInfo?.value?.maMuaGiai}/trandau`,
+      { withCredentials: true }
+    );
+    upcommingMatches.value = response.data.filter(
+      (upcommingMatch) => upcommingMatch.trangThai === "chua_bat_dau"
+    );
+    return upcommingMatches.value;
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách trận đấu:", error);
+  }
+};
+
 onMounted(async () => {
   await fetchSeasonInfo();
   await fetchSquads();
   await fetchMatchesBySeason();
+
+  ortherTrainingFields.value = [
+    {
+      name: "maTranDau",
+      label: "Chọn trận đấu",
+      type: "select",
+      children: upcommingMatches.value.map((match) => ({
+        _id: match.maTranDau,
+        name: `${match.doiNha} vs ${match.doiKhach}`,
+      })),
+    },
+  ];
+
+  console.log("orther training fields", ortherTrainingFields.value);
 });
 </script>
 
 <template>
   <div>
-    <!-- Header -->
     <div class="d-flex align-items-center justify-content-between">
-      <h2
-        class="m-0 d-flex align-items-center"
-        style="color: var(--primary-color)"
-      >
+      <h2 class="m-0 d-flex align-items-center text-primary">
         <FontAwesomeIcon
           icon="fa-solid fa-angle-left"
           @click="goBack()"
-          class="me-2"
-          style="cursor: pointer"
+          class="me-2 cursor-pointer"
         />
         <span class="m-0"
           >Chi tiết mùa giải -
           {{ seasonInfo?.tenMuaGiai || "Đang tải..." }}</span
         >
       </h2>
-      <button
-        class="btn btn-primary"
-        @click="openMatchForm"
-        :disabled="!seasonInfo.maMuaGiai"
-      >
-        <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
-        Thêm trận đấu
-      </button>
+      <div class="d-flex">
+        <button
+          class="btn btn-success me-2"
+          @click="openTraningForm"
+          :disabled="!seasonInfo.maMuaGiai"
+        >
+          <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
+          Thêm lịch tập luyện
+        </button>
+        <button
+          class="btn btn-primary"
+          @click="openMatchForm"
+          :disabled="!seasonInfo.maMuaGiai"
+        >
+          <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
+          Thêm trận đấu
+        </button>
+      </div>
     </div>
 
-    <!-- Season Information -->
     <div class="border-top pt-3 border-secondary-subtle mt-3">
       <h4 class="text-secondary mb-3">Thông tin mùa giải</h4>
-
       <div class="card">
         <div class="card-body">
           <div class="row">
@@ -531,7 +540,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Matches Section -->
     <div class="border-top pt-3 border-secondary-subtle mt-3">
       <h4 class="text-secondary mb-3">Danh sách trận đấu</h4>
 
@@ -576,7 +584,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Form thêm trận đấu mới -->
     <Form
       v-if="showMatchForm && seasonInfo.maMuaGiai"
       :input-fields="matchFields"
@@ -590,7 +597,20 @@ onMounted(async () => {
       @closed="closeMatchForm"
     />
 
-    <!-- Form chỉnh sửa trận đấu -->
+    <Form
+      v-if="showTrainingForm && seasonInfo.maMuaGiai"
+      :input-fields="trainingFields"
+      :orther-fields="ortherTrainingFields"
+      form-name="Thêm lịch tập luyện mới"
+      :api="addTrainingApi"
+      method="POST"
+      :orther-data="{ maMuaGiai: seasonInfo?.maMuaGiai }"
+      :transform-data="transformMatchData"
+      @submitted="handleMatchSubmitted"
+      @error="handleMatchError"
+      @closed="closeMatchForm"
+    />
+
     <Form
       v-if="showEditMatchForm && currentEditMatch && seasonInfo.maMuaGiai"
       :input-fields="matchFields"
@@ -604,12 +624,12 @@ onMounted(async () => {
       @closed="closeEditMatchForm"
     />
 
-    <!-- Form cập nhật kết quả -->
     <Form
       v-if="showUpdateResultForm && currentUpdateMatch"
       :input-fields="updateResultMatchFields"
       form-name="Cập nhật kết quả trận đấu"
       :input-data="currentUpdateMatch"
+      :orther-data="{ maTranDau: currentUpdateMatch?.maTranDau }"
       :api="updateResultApi"
       method="PUT"
       :transform-data="transformUpdateResultData"
@@ -661,5 +681,9 @@ h2 {
 
 .text-secondary {
   color: #6c757d !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

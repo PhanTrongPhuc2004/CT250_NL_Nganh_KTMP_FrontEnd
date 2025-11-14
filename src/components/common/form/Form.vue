@@ -6,11 +6,14 @@ import classNames from "classnames/bind";
 import styles from "./form.module.scss";
 import { uploadToCloudinary } from "@/config/cloudinary.conf";
 import { useFormStore } from "@/stores/formStore";
+import instance from "@/utils/axios";
+import { getMe } from "@/utils";
 const formStore = useFormStore();
 
 const emit = defineEmits(["submitted", "updated", "deleted", "closed"]);
 
 const cx = classNames.bind(styles);
+const allFields = ref([]);
 
 const props = defineProps({
   inputFields: Array,
@@ -19,6 +22,7 @@ const props = defineProps({
   method: { type: String, default: "POST" },
   api: String,
   formName: String,
+  ortherFields: Array,
 });
 
 const formData = reactive({});
@@ -44,8 +48,14 @@ const initFormData = () => {
   // Clear trước khi init
   Object.keys(formData).forEach((key) => delete formData[key]);
 
-  props.inputFields.forEach((field) => {
-    // THÊM: Bỏ qua divider và các field không có name
+  // SỬA: Tạo allFields từ props mà không mutate props
+  allFields.value = props.ortherFields
+    ? [...props.inputFields, ...props.ortherFields]
+    : props.inputFields;
+
+  // SỬA: Dùng allFields.value thay vì props.inputFields
+  allFields.value.forEach((field) => {
+    // Bỏ qua divider và các field không có name
     if (field.type === "divider" || !field.name) {
       console.log(`Bỏ qua field: ${field.label} - type: ${field.type}`);
       return;
@@ -91,6 +101,7 @@ const initFormData = () => {
 onMounted(async () => {
   console.log("input field o form", props.inputFields);
   initFormData();
+  console.log(" field ben Form", allFields.value);
 });
 
 watch(
@@ -113,7 +124,6 @@ watch(
 );
 
 // ================= HANDLE SUBMIT =================
-// TRONG COMPONENT FORM - THÊM DEBUG
 const handleSubmit = async () => {
   if (isSubmitting.value) {
     console.warn("Form đang submit, bỏ qua request mới");
@@ -138,18 +148,33 @@ const handleSubmit = async () => {
       payload,
       formName: props.formName,
     });
+    if (props.formName === "Đăng nhập") {
+      console.log("🔐 Xử lý form đăng nhập...");
 
-    // Gửi request
-    const response = await axios({
-      url,
-      method: props.method.toLowerCase(),
-      data: payload,
-      withCredentials: true,
-    });
+      const response = await instance({
+        url,
+        method: props.method.toLowerCase(),
+        data: payload,
+      });
+      window.location.reload();
+      console.log("✅ Đăng nhập thành công:", response.data);
 
-    console.log("✅ Response nhận được:", response.data);
+      alert("🎉 Đăng nhập thành công!");
 
-    // QUAN TRỌNG: Debug emit events
+      handleClose();
+      return;
+    } else {
+      console.log("pay load truoc khi gui ", payload);
+      const response = await axios({
+        url,
+        method: props.method.toLowerCase(),
+        data: payload,
+        withCredentials: true,
+      });
+
+      console.log("✅ Response nhận được:", response.data);
+    }
+
     if (props.method === "POST") {
       console.log("📤 Trigger refresh squads từ store");
       formStore.triggerRefreshSquads();
@@ -157,14 +182,13 @@ const handleSubmit = async () => {
       console.log("📤 Trigger refresh squads từ store");
       formStore.triggerRefreshSquads();
     }
-    if (props.formName == "Đăng nhập") window.location.reload();
+
     console.log("✅ Store đã được cập nhật");
     handleClose();
   } catch (error) {
     console.error("❌ Lỗi khi submit form:", error);
     const errorMsg =
       error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
-      // console.log("🚨 Hiển thị alert lỗi:", error);
     alert(errorMsg);
     emit("error", error);
   } finally {
@@ -216,7 +240,7 @@ const getChildren = (field) => {
       </div>
 
       <form @submit.prevent="handleSubmit" class="d-flex flex-column gap-3">
-        <div v-for="(field, index) in inputFields" :key="index" class="mb-2">
+        <div v-for="(field, index) in allFields" :key="index" class="mb-2">
           <label
             :for="field.name"
             class="form-label fw-semibold"

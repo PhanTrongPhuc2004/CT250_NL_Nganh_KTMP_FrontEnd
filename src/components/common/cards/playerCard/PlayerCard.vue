@@ -4,9 +4,12 @@ import styles from "./playerCard.module.scss";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref } from "vue";
 import Menu from "../../menu/Menu.vue";
+import { useRouter } from "vue-router";
+import { getMe } from "@/utils";
+import { onMounted } from "vue";
 
 const cx = classNames.bind(styles);
-
+const router = useRouter();
 const props = defineProps({
   item: {
     type: Object,
@@ -29,6 +32,11 @@ const props = defineProps({
 
 const emit = defineEmits(["menu-action"]);
 
+const userInfor = ref(null);
+onMounted(async () => {
+  userInfor.value = await getMe();
+});
+
 // Menu state
 const showMenu = ref(false);
 
@@ -50,6 +58,10 @@ const handleMenuItemClick = (menuItem) => {
     emit("menu-action", { action: menuItem.action, item: props.item });
   }
 };
+
+const handleClickCard = () => {
+  router.push(`/cauthu/${props.item._id}`);
+};
 </script>
 
 <template>
@@ -57,6 +69,7 @@ const handleMenuItemClick = (menuItem) => {
   <div
     :class="cx('player-card')"
     class="border rounded-4 shadow-sm overflow-hidden position-relative"
+    @click="handleClickCard"
   >
     <!-- Player Image and Info -->
     <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" />
@@ -87,7 +100,7 @@ const handleMenuItemClick = (menuItem) => {
 
       <!-- Dropdown Menu -->
       <Menu
-        v-if="showMenu"
+        v-if="showMenu && userInfor?.vaiTro == 'admin'"
         top="40px"
         right="0"
         :menu-items="menuItems"

@@ -120,6 +120,7 @@ export const souvenirFields = [
     type: "text",
   },
 ];
+
 // utils/constanst.js
 export const matchFields = [
   {
@@ -161,7 +162,7 @@ export const matchFields = [
     children: await fetchSquad(),
   },
 ];
-// @/utils/constanst.js
+
 export const squadFields = [
   {
     name: "tenDoiHinh",
@@ -171,4 +172,32 @@ export const squadFields = [
     required: true,
   },
   // KHÔNG có field maDoiHinh ở đây
+];
+
+export const trainingFields = [
+  {
+    name: "diaDiem",
+    label: "Địa điểm tập luyện",
+    type: "text",
+    required: true,
+    placeholder: "Nhập địa điểm tập luyện...",
+  },
+  {
+    name: "ngayBatDau",
+    label: "Ngày tập luyện",
+    type: "date",
+    required: true,
+  },
+  {
+    name: "thoiGian",
+    label: "Thời gian tập luyện",
+    type: "time",
+    required: true,
+  },
+  {
+    name: "noiDung",
+    label: "Nội dung tập luyện",
+    type: "textarea",
+    placeholder: "Mô tả nội dung buổi tập...",
+  },
 ];

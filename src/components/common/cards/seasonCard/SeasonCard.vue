@@ -98,8 +98,16 @@ const formattedData = computed(() => ({
 // Tính số năm của mùa giải
 const seasonDuration = computed(() => {
   if (!props.item.namBatDau || !props.item.namKetThuc) return 1;
-  return parseInt(props.item.namKetThuc) - parseInt(props.item.namBatDau) + 1;
+  return parseInt(props.item.ngayKetThuc) - parseInt(props.item.ngayBatDau) + 1;
 });
+
+console.log(
+  "seasonDuration:",
+  parseInt(props.item.ngayBatDau),
+  "-",
+  parseInt(props.item.ngayKetThuc),
+  "+ 1"
+);
 </script>
 
 <template>

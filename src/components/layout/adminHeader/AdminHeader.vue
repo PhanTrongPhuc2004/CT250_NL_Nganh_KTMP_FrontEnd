@@ -38,7 +38,6 @@ const fetchClubInfo = async () => {
       `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
     );
     clubInfo.value = response.data;
-    console.log(clubInfo.value);
   } catch (error) {
     console.error("Lỗi khi tải thông tin câu lạc bộ:", error);
   }
