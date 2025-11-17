@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate, formatTime, getMe } from "@/utils";
+import { formatDate, getMe } from "@/utils";
 import Menu from "@/components/common/menu/Menu.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, computed, onMounted, watch } from "vue";
@@ -31,49 +31,30 @@ const matchResult = ref(null);
 const isLoading = ref(false);
 const userInfor = ref(null);
 
-// 🎯 ĐỊNH NGHĨA MÀU SẮC VÀ THÔNG BÁO THEO TRẠNG THÁI
 const statusConfig = {
   chua_bat_dau: {
-    color: "info",
-    text: "Sắp diễn ra",
     badgeClass: "badge bg-info",
     showTicket: true,
   },
   dang_dien_ra: {
-    color: "primary",
-    text: "Đang diễn ra",
     badgeClass: "badge bg-primary",
     showTicket: false,
   },
-
   ket_thuc: {
-    color: "secondary",
-    text: "Đã kết thúc",
     badgeClass: "badge bg-secondary",
     showTicket: false,
   },
 };
 
-// 🎯 LẤY THÔNG TIN HIỆN TẠI THEO TRẠNG THÁI
 const currentStatus = computed(() => {
   const status = props.item.trangThai || "chua_bat_dau";
   return statusConfig[status] || statusConfig.chua_bat_dau;
-});
-
-// 🎯 KIỂM TRA TRẠNG THÁI
-const isMatchUpcoming = computed(() => {
-  return ["chua_bat_dau", "tao_moi"].includes(props.item.trangThai);
 });
 
 const isMatchFinished = computed(() => {
   return ["ket_thuc", "hoan_thanh", "huy_bo"].includes(props.item.trangThai);
 });
 
-const isMatchLive = computed(() => {
-  return ["dang_dien_ra", "dang_bat_dau"].includes(props.item.trangThai);
-});
-
-// 🎯 FETCH KẾT QUẢ
 const fetchMatchResult = async () => {
   if (!props.item.maTranDau) return;
 
@@ -88,15 +69,12 @@ const fetchMatchResult = async () => {
   } catch (error) {
     if (error.response?.status === 404) {
       matchResult.value = null;
-    } else {
-      console.error("Lỗi khi fetch kết quả trận đấu:", error);
     }
   } finally {
     isLoading.value = false;
   }
 };
 
-// 🎯 XỬ LÝ MENU
 const toggleMenu = (id) => {
   activeMenuId.value = activeMenuId.value === id ? null : id;
 };
@@ -121,35 +99,24 @@ const shouldShowMenu = computed(() => {
   return currentMenuItems.value.length > 0;
 });
 
-// 🎯 KIỂM TRA CÓ KẾT QUẢ
 const hasResult = computed(() => {
   return matchResult.value?.tiSo;
 });
 
-// 🎯 ĐỊNH DẠNG DỮ LIỆU HIỂN THỊ
-const formattedData = computed(() => ({
-  teams: `${props.item.doiNha || "Chưa có"} - ${
-    props.item.doiKhach || "Chưa có"
-  }`,
-  location: props.item.diaDiem || "Địa điểm chưa cập nhật",
-  date: props.item.ngayBatDau
-    ? formatDate(props.item.ngayBatDau)
-    : "Chưa có ngày",
-  time: props.item.thoiGian ? formatTime(props.item.thoiGian) : "Chưa có giờ",
-  score: hasResult.value ? matchResult.value.tiSo : null,
-  status: currentStatus.value.text,
-}));
+const status = {
+  chua_bat_dau: "Sắp diễn ra",
+  dang_dien_ra: "Đang diễn ra",
+  ket_thuc: "Đã kết thúc",
+};
 
-// 🎯 XỬ LÝ ĐẶT VÉ
 const handleBookTicket = () => {
   if (currentStatus.value.showTicket && userInfor.value?.vaiTro !== "admin") {
     alert(
-      `Đặt vé cho trận đấu: ${formattedData.value.teams}\nNgày: ${formattedData.value.date}\nGiờ: ${formattedData.value.time}\nĐịa điểm: ${formattedData.value.location}`
+      `Đặt vé cho trận đấu: ${props.item.doiNha} - ${props.item.doiKhach}\nNgày: ${formatDate(props.item.ngayBatDau)}\nGiờ: ${props.item.thoiGian}\nĐịa điểm: ${props.item.diaDiem}`
     );
   }
 };
 
-// 🎯 LIFECYCLE
 onMounted(async () => {
   await fetchMatchResult();
   userInfor.value = await getMe();
@@ -164,9 +131,8 @@ watch(
 </script>
 
 <template>
-  <div class="match-card h-100">
+  <div class="match-card h-100" style="cursor: pointer;">
     <div class="border rounded-4 shadow-sm bg-white h-100 d-flex flex-column">
-      <!-- HEADER WITH BACKGROUND -->
       <div class="position-relative">
         <img
           src="https://img.freepik.com/vector-gratis/papel-pintado-textura-hexagonal-oscuro-audaz-estilo-geometrico_1017-43003.jpg"
@@ -178,7 +144,6 @@ watch(
           class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 rounded-top-4"
         ></div>
 
-        <!-- LOADING -->
         <div
           v-if="isLoading"
           class="position-absolute top-50 start-50 translate-middle"
@@ -191,61 +156,54 @@ watch(
           </div>
         </div>
 
-        <!-- SCORE -->
         <div
           v-else-if="hasResult"
           class="position-absolute top-0 start-0 w-100 p-2"
         >
           <span class="badge bg-success float-end fw-bold">
-            {{ formattedData.score }}
+            {{ item.tiSo }}
           </span>
         </div>
 
-        <!-- TEAM NAMES -->
         <p
           class="position-absolute top-50 start-50 translate-middle text-white fs-6 fw-bold w-100 text-center px-2 m-0"
         >
-          {{ formattedData.teams }}
+          {{ `${item.doiNha} - ${item.doiKhach}` || "Chưa có thông tin" }}
         </p>
 
-        <!-- STATUS BADGE -->
         <div
           v-if="!isLoading"
           class="position-absolute bottom-0 start-0 w-100 p-2"
         >
           <span :class="currentStatus.badgeClass" class="small">
-            {{ formattedData.status }}
+            {{ status[item.trangThai] || "Chưa có thông tin" }}
           </span>
         </div>
       </div>
 
-      <!-- BODY -->
       <div class="card-body p-3 flex-grow-1">
-        <!-- MATCH DETAILS -->
         <div class="match-details mb-3">
           <div class="d-flex align-items-center mb-2">
             <FontAwesomeIcon
               :icon="['fas', 'map-marker-alt']"
               class="text-muted me-2"
             />
-            <small class="text-muted">{{ formattedData.location }}</small>
+            <small class="text-muted">{{ item.diaDiem }}</small>
           </div>
           <div class="d-flex align-items-center mb-2">
             <FontAwesomeIcon
               :icon="['fas', 'calendar']"
               class="text-muted me-2"
             />
-            <small class="text-muted">{{ formattedData.date }}</small>
+            <small class="text-muted">{{ formatDate(item.ngayBatDau) }}</small>
           </div>
           <div class="d-flex align-items-center">
             <FontAwesomeIcon :icon="['fas', 'clock']" class="text-muted me-2" />
-            <small class="text-muted">{{ formattedData.time }}</small>
+            <small class="text-muted">{{ item.thoiGian }}</small>
           </div>
         </div>
 
-        <!-- MATCH INFO MESSAGES -->
         <div class="match-info">
-          <!-- FINISHED BUT NO RESULT -->
           <div
             v-if="isMatchFinished && !hasResult && !isLoading"
             class="border-top pt-3"
@@ -259,7 +217,6 @@ watch(
             </div>
           </div>
 
-          <!-- CANCELLED MATCH -->
           <div v-else-if="item.trangThai === 'huy_bo'" class="border-top pt-3">
             <div class="alert alert-danger small mb-0 p-2">
               <FontAwesomeIcon :icon="['fas', 'times-circle']" class="me-1" />
@@ -268,7 +225,6 @@ watch(
           </div>
         </div>
 
-        <!-- BOOK TICKET BUTTON -->
         <div
           v-if="currentStatus.showTicket && userInfor?.vaiTro !== 'admin'"
           class="mt-3"
@@ -280,7 +236,6 @@ watch(
         </div>
       </div>
 
-      <!-- MENU -->
       <div
         v-if="shouldShowMenu && userInfor?.vaiTro == 'admin'"
         class="d-flex justify-content-end align-items-center p-3 position-relative border-top"

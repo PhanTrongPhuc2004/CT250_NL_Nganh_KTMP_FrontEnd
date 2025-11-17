@@ -5,7 +5,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 180px;
   padding: 8px 0;
-  z-index: 1000;
+  z-index: 100000;
   transform: translateY(-10px);
   transition: all 0.25s ease;
   &.show {

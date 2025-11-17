@@ -23,6 +23,10 @@ export const nguoiHamMoFields = [
 ];
 export const playerFields = [
   { name: "hoVaTen", type: "text", label: "Họ và tên" },
+  {name:"gioiTinh", type: "select", label: "Giới tính", children: [
+    { name: "Nam" },
+    { name: "Nữ" },
+  ]},
   { name: "email", type: "email", label: "Email" },
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },

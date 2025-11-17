@@ -1,8 +1,8 @@
 <template>
-  <div class="container py-4">
+  <div class="container">
     <!-- Tiêu đề -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 class="fw-semibold text-dark m-0">Quản lý người dùng</h4>
+      <h4 class="fw-semibold m-0" style="color: var(--primary-color);">Quản lý người dùng</h4>
       <div class="d-flex gap-2">
         <select
           class="form-select form-select-sm w-auto"
@@ -16,7 +16,7 @@
         </select>
         <button
           class="btn btn-sm text-white"
-          style="background-color: #8b2c31"
+          style="background-color: var(--button-primary-color);"
           @click="handleOpenForm('add', roleUserAdded)"
           :disabled="!roleUserAdded"
         >
@@ -24,9 +24,28 @@
         </button>
       </div>
     </div>
-
+    <div class="d-flex pt-3 border-top">
+      <select
+          class="form-select form-select-sm w-auto me-2"
+          v-model="roleUserArrange"
+        >
+          <option value="all">Tất cả</option>
+          <option value="admin">Quản trị viên</option>
+          <option value="nguoihammo">Người hâm mộ</option>
+          <option value="cauthu">Cầu thủ</option>
+          <option value="huanluyenvien">Huấn luyện viên</option>
+        </select>
+        <button
+          class="btn btn-sm text-white "
+          style="background-color: var(--button-primary-color);"
+          @click="() => handleArrange(roleUserArrange)"
+          :disabled="!roleUserArrange"
+        >
+          <FontAwesomeIcon icon="fa-solid fa-sort"/> Lọc
+        </button>
+    </div>
     <!-- Bảng -->
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm mt-3">
       <div class="card-body p-0">
         <table class="table align-middle mb-0">
           <thead class="table-light">
@@ -40,7 +59,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(user, index) in users" :key="user._id">
+            <tr v-for="(user, index) in arrangeUsers" :key="user._id">
               <td class="text-center text-muted">{{ index + 1 }}</td>
               <td class="fw-semibold">{{ user.hoVaTen }}</td>
               <td>{{ user.email }}</td>
@@ -113,11 +132,14 @@ import {
 } from "@/utils/constanst";
 const users = ref([]);
 const roleUserAdded = ref("");
+const roleUserArrange = ref("all");
 const formMode = ref("add");
 const formData = ref({});
 const formNameAddUser = ref("");
 const formNameEditUser = ref("");
 const squad = ref([]);
+const arrangeUsers = ref([]);
+
 const api = computed(() => {
   const baseUrl = `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung`;
 
@@ -181,7 +203,18 @@ async function handleOpenForm(mode, vaiTro, user = null) {
   );
 }
 
-onMounted(fetchUsers);
+const handleArrange = (roleUserArrange) => {
+  if (roleUserArrange == 'all'){
+    arrangeUsers.value = users?.value;
+  } else{
+    arrangeUsers.value = users?.value.filter((user) => user.vaiTro === roleUserArrange);
+  }
+}
+
+onMounted(async () => {
+  await fetchUsers();
+  handleArrange(roleUserArrange.value);
+});
 </script>
 
 <style scoped>

@@ -439,22 +439,26 @@ onMounted(async () => {
 <template>
   <div>
     <div class="d-flex align-items-center justify-content-between">
-      <h2 class="m-0 d-flex align-items-center text-primary">
+      <h2
+        class="m-0 d-flex align-items-center"
+        style="color: var(--primary-color)"
+      >
         <FontAwesomeIcon
           icon="fa-solid fa-angle-left"
           @click="goBack()"
           class="me-2 cursor-pointer"
         />
-        <span class="m-0"
+        <span 
           >Chi tiết mùa giải -
           {{ seasonInfo?.tenMuaGiai || "Đang tải..." }}</span
         >
       </h2>
       <div class="d-flex">
         <button
-          class="btn btn-success me-2"
+          class="btn me-2 text-white"
           @click="openTraningForm"
           :disabled="!seasonInfo.maMuaGiai"
+          style="background-color: var(--button-secondary-color);"
         >
           <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
           Thêm lịch tập luyện
@@ -642,8 +646,6 @@ onMounted(async () => {
 
 <style scoped>
 h2 {
-  font-size: 1.8rem;
-  font-weight: 600;
 }
 
 .btn-primary {

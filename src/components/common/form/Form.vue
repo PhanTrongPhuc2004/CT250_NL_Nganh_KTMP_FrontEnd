@@ -10,7 +10,7 @@ import instance from "@/utils/axios";
 import { getMe } from "@/utils";
 const formStore = useFormStore();
 
-const emit = defineEmits(["submitted", "updated", "deleted", "closed"]);
+const emit = defineEmits(["submitted", "updated", "deleted", "closed", "error"]);
 
 const cx = classNames.bind(styles);
 const allFields = ref([]);
@@ -165,14 +165,14 @@ const handleSubmit = async () => {
       return;
     } else {
       console.log("pay load truoc khi gui ", payload);
-      const response = await axios({
+      const response = await instance({
         url,
         method: props.method.toLowerCase(),
         data: payload,
-        withCredentials: true,
       });
 
       console.log("✅ Response nhận được:", response.data);
+            emit('submitted', response.data); // Quan trọng: emit event với dữ liệu mới
     }
 
     if (props.method === "POST") {

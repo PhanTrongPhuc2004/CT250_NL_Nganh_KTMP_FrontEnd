@@ -41,7 +41,8 @@
           :to="item.path"
           class="nav-link d-flex align-items-center gap-3 text-dark px-3 py-2 rounded-3 fs-6"
           active-class="active"
-          @click="handleItemClick"
+        :class="{ active: isItemActive(item) }"
+          @click="handleItemClick(item)" 
         >
           <font-awesome-icon
             v-if="item.icon"
@@ -64,22 +65,39 @@
     style="z-index: 1040"
   ></div>
 </template>
-
 <script setup>
 import { fetchClubInfo } from "@/utils";
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { RouterLink } from "vue-router";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const props = defineProps({
   items: { type: Array, required: true },
 });
 
+const route = useRoute();
+const router = useRouter(); // Thêm router
 const isOpen = ref(false);
 const screenWidth = ref(
   typeof window !== "undefined" ? window.innerWidth : 1024
 );
 const clubInfor = ref([]);
+
+// Active item state - QUAN TRỌNG: Tách biệt với việc load ảnh
+const activeItemPath = ref(route.path);
+
+// Watch route changes - update active item ngay lập tức
+watch(() => route.path, (newPath) => {
+  activeItemPath.value = newPath;
+  console.log('🔄 Route changed to:', newPath);
+});
+
+// Hàm kiểm tra active state - KHÔNG liên quan đến ảnh
+const isItemActive = (item) => {
+  const isActive = activeItemPath.value.startsWith(item.path);
+  console.log(`📌 Check active: ${item.path} -> ${isActive}`);
+  return isActive;
+};
 
 // Cập nhật chiều rộng khi resize
 const updateWidth = () => {
@@ -89,6 +107,10 @@ const updateWidth = () => {
 onMounted(async () => {
   window.addEventListener("resize", updateWidth);
   clubInfor.value = await fetchClubInfo();
+  
+  // Set initial active item
+  activeItemPath.value = route.path;
+  console.log('🚀 Sidebar mounted, initial path:', route.path);
 });
 
 onBeforeUnmount(() => {
@@ -107,8 +129,15 @@ const visibleItems = computed(() =>
 
 const toggleSidebar = () => (isOpen.value = !isOpen.value);
 
-const handleItemClick = () => {
-  if (screenWidth.value < 768) isOpen.value = false;
+const handleItemClick = (item) => {
+  console.log('🎯 Clicked item:', item.path);
+  
+  // Cập nhật active item ngay lập tức
+  activeItemPath.value = item.path;
+  
+  if (screenWidth.value < 768) {
+    isOpen.value = false;
+  }
 };
 </script>
 

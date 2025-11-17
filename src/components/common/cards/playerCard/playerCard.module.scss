@@ -6,6 +6,7 @@
   background: #000;
   color: white;
   box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+  cursor: pointer;
 }
 
 .player-img {
@@ -20,13 +21,7 @@
   left: 12px;
 }
 
-.number {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--primary-color);
-  font-size: 40px;
 
-}
 
 .name {
   font-size: 20px;

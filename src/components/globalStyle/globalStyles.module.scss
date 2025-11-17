@@ -1,5 +1,10 @@
 :root{
-    --primary-color: #E02128;
+    //--primary-color: #192275;
+    --primary-color: #6b3333;
+    --secondary-color: #b94d00;
+    --button-primary-color: #6b3333 ;
+    --button-secondary-color: #b94d00;
+
     --header-color: #8B2C31;
     --font-family: 'Arial', sans-serif;
     --font-size: 16px;
@@ -8,6 +13,7 @@
     --header-height: 60px;
     --sidebar-width: 240px;
     --sidebar-color: #1F2937;
+    --home-background-color: rgb(246, 243, 243);
 }
 
 *{
@@ -17,6 +23,12 @@
     font-family:Arial, Helvetica, sans-serif ;
 }
 
+.global-wrapper{
+    & button{
+}
+}
+
 body{
     overflow-x: hidden;
 }
+

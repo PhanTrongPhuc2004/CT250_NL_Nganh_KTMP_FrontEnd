@@ -35,6 +35,7 @@ const seasonFields = [
   },
   { name: "ngayBatDau", label: "Ngày bắt đầu", type: "date", required: true },
   { name: "ngayKetThuc", label: "Ngày kết thúc", type: "date", required: true },
+  {name: "anhMinhHoa", label: "Ảnh minh họa", type: "file", required: false}
 ];
 
 // --- COMPUTED ---
@@ -166,10 +167,11 @@ const seasonMenuItems = [
 </script>
 
 <template>
-  <div>
-    <!-- Header -->
+  <div >
+    <div >
+      <!-- Header -->
     <div class="d-flex align-items-center justify-content-between">
-      <h2 class="m-0 d-flex align-items-center text-primary">
+      <h2 class="m-0 d-flex align-items-center" style="color: var(--primary-color)">
         <FontAwesomeIcon
           icon="fa-solid fa-angle-left"
           @click="goBack"
@@ -209,6 +211,7 @@ const seasonMenuItems = [
           </div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- Danh sách mùa giải -->
@@ -284,8 +287,7 @@ const seasonMenuItems = [
 
 <style scoped>
 h2 {
-  font-size: 1.8rem;
-  font-weight: 600;
+  
 }
 .btn-primary {
   background-color: var(--primary-color);

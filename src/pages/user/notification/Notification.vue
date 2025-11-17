@@ -107,7 +107,7 @@ const connectWebSocket = () => {
     // ✅ THÊM: Debug specific
     socket.on("notification", (data) => {
       console.log("🔔 [NOTIFICATION] Nhận thông báo realtime:", data);
-      handleNewNotification(data);
+      handleNewNotification(`data`);
     });
 
     socket.on("connect_error", (error) => {

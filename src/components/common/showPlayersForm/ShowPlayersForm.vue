@@ -1,50 +1,52 @@
 <template>
+  <!-- Lớp phủ nền -->
+  <div 
+    class="modal-backdrop fade show position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-100"
+    style="z-index: 1040;"
+    @click="handleClose"
+  ></div>
+
+  <!-- Form -->
   <div
-    class="card border-0 shadow-sm position-absolute top-50 start-50 translate-middle col-md-8 col-lg-6"
-    style="max-height: 90vh; overflow: hidden"
+    class="card border-0 shadow-sm position-fixed top-50 start-50 translate-middle col-md-10 col-lg-8"
+    style="max-height: 90vh; overflow: hidden; z-index: 1050;"
   >
     <div class="position-absolute top-0 end-0 p-2" style="z-index: 10">
       <FontAwesomeIcon
         icon="fa-solid fa-close"
-        class="text-muted hover-cursor"
+        class="text-muted hover-cursor fs-4"
         @click="handleClose"
       />
     </div>
 
-    <div class="card-header bg-white border-bottom">
-      <h5 class="card-title mb-0 text-primary">
-        <FontAwesomeIcon icon="fa-solid fa-users" class="me-2" />
-        Quản lý đội hình cầu thủ
-      </h5>
-      <p class="text-muted mb-0 small">
-        Phân công đội hình cho các cầu thủ của câu lạc bộ
-      </p>
-    </div>
+    
 
-    <div class="card-body p-0" style="overflow-y: auto">
-      <div class="p-3 border-bottom bg-light">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">
-                <FontAwesomeIcon icon="fa-solid fa-search" />
-              </span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Tìm kiếm cầu thủ..."
-                v-model="searchQuery"
-              />
-            </div>
-          </div>
-          <div class="col-md-6 text-end">
-            <span class="badge bg-success">
-              {{ filteredPlayers.length }} cầu thủ
+    <!-- Header với tìm kiếm -->
+    <div class="p-3 border-bottom bg-light">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text">
+              <FontAwesomeIcon icon="fa-solid fa-search" />
             </span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Tìm kiếm cầu thủ..."
+              v-model="searchQuery"
+            />
           </div>
         </div>
+        <div class="col-md-6 text-start">
+          <span class="badge bg-danger">
+            {{ filteredPlayers.length }} cầu thủ
+          </span>
+        </div>
       </div>
+    </div>
 
+    <!-- Danh sách cầu thủ -->
+    <div class="card-body p-0" style="overflow-y: auto">
       <table class="table align-middle mb-0">
         <thead class="table-light sticky-top" style="top: 0">
           <tr>
@@ -78,31 +80,30 @@
               </div>
             </td>
             <td class="text-center">
-              <span class="badge bg-primary fs-6">{{
+              <span class="badge bg-danger fs-6">{{
                 player.soAo || "-"
               }}</span>
             </td>
             <td class="text-center">
               <select
-                v-model="player.doiHinhId"
+                v-model="player.maDoiHinh"
                 class="form-select form-select-sm"
                 :class="{
-                  'is-invalid':
-                    !isValidSquad(player.doiHinhId) && player.doiHinhId,
-                  'border-warning': !player.doiHinhId,
+                  'is-invalid': !isValidSquad(player.maDoiHinh) && player.maDoiHinh,
+                  'border-warning': !player.maDoiHinh,
                 }"
               >
                 <option value="">-- Chưa có đội hình --</option>
                 <option
                   v-for="squad in squads"
                   :key="squad._id"
-                  :value="squad._id"
+                  :value="squad.maDoiHinh"
                 >
-                  {{ squad.tenDoiHinh }}
+                  {{ squad.tenDoiHinh }} ({{ squad.maDoiHinh }})
                 </option>
               </select>
               <div
-                v-if="!isValidSquad(player.doiHinhId) && player.doiHinhId"
+                v-if="!isValidSquad(player.maDoiHinh) && player.maDoiHinh"
                 class="invalid-feedback d-block"
               >
                 Đội hình không hợp lệ
@@ -141,11 +142,9 @@
         </span>
       </div>
       <div>
-        <button class="btn btn-outline-secondary me-2" @click="handleClose">
-          Hủy
-        </button>
+        
         <button
-          class="btn btn-success"
+          class="btn btn-danger"
           @click="handleSubmit"
           :disabled="isSubmitting || !hasChanges"
         >
@@ -154,7 +153,7 @@
             class="spinner-border spinner-border-sm me-2"
           ></span>
           <FontAwesomeIcon icon="fa-solid fa-check" class="me-2" />
-          {{ isSubmitting ? "Đang xử lý..." : "Hoàn thành" }}
+          {{ isSubmitting ? "Đang xử lý..." : "Cập nhật đội hình" }}
         </button>
       </div>
     </div>
@@ -162,7 +161,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -189,13 +188,13 @@ const filteredPlayers = computed(() => {
 
 const playersWithSquadCount = computed(() => {
   return allPlayers.value.filter(
-    (player) => player.doiHinhId && isValidSquad(player.doiHinhId)
+    (player) => player.maDoiHinh && isValidSquad(player.maDoiHinh)
   ).length;
 });
 
 const playersWithoutSquadCount = computed(() => {
   return allPlayers.value.filter(
-    (player) => !player.doiHinhId || !isValidSquad(player.doiHinhId)
+    (player) => !player.maDoiHinh || !isValidSquad(player.maDoiHinh)
   ).length;
 });
 
@@ -204,13 +203,13 @@ const hasChanges = computed(() => {
 
   return allPlayers.value.some((player, index) => {
     const originalPlayer = originalData.value[index];
-    return originalPlayer?.doiHinhId !== player.doiHinhId;
+    return originalPlayer?.maDoiHinh !== player.maDoiHinh;
   });
 });
 
-const isValidSquad = (squadId) => {
-  if (!squadId) return true; // Empty is valid (no squad)
-  return squads.value.some((squad) => squad._id === squadId);
+const isValidSquad = (maDoiHinh) => {
+  if (!maDoiHinh) return true; // Empty is valid (no squad)
+  return squads.value.some((squad) => squad.maDoiHinh === maDoiHinh);
 };
 
 // Fetch all players from club
@@ -223,9 +222,11 @@ const fetchAllPlayers = async () => {
 
     allPlayers.value = response.data.map((player) => ({
       ...player,
-      doiHinhId: player.doiHinhId || "", // Ensure doiHinhId exists
+      maDoiHinh: player.maDoiHinh || "", // Ensure maDoiHinh exists
     }));
 
+    console.log("📋 Danh sách cầu thủ:", allPlayers.value);
+    
     // Store original data for change detection
     originalData.value = JSON.parse(JSON.stringify(allPlayers.value));
   } catch (error) {
@@ -243,13 +244,14 @@ const fetchSquads = async () => {
     );
 
     squads.value = response.data;
+    console.log("📋 Danh sách đội hình:", squads.value);
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách đội hình:", error);
     alert("Không thể tải danh sách đội hình. Vui lòng thử lại!");
   }
 };
 
-// Handle form submission
+// Handle form submission - cập nhật đội hình
 const handleSubmit = async () => {
   if (!hasChanges.value) {
     alert("Không có thay đổi nào để cập nhật!");
@@ -258,7 +260,7 @@ const handleSubmit = async () => {
 
   // Validate all selections
   const invalidSelections = allPlayers.value.filter(
-    (player) => player.doiHinhId && !isValidSquad(player.doiHinhId)
+    (player) => player.maDoiHinh && !isValidSquad(player.maDoiHinh)
   );
 
   if (invalidSelections.length > 0) {
@@ -269,50 +271,55 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    // Prepare data for API - include all players with their squad assignments
-    const playersToUpdate = allPlayers.value.map((player) => ({
-      _id: player._id,
-      maDoiHinh: player.maDoiHinh || null, // Send null for empty selections
-      hoVaTen: player.hoVaTen,
-      soAo: player.soAo,
-    }));
-
-    for (const player of playersToUpdate) {
-      try {
-        const response = await axios.patch(
-          `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/${player._id}`,
-          { maDoiHinh: player.maDoiHinh },
-          { withCredentials: true }
-        );
-      } catch (error) {
-        console.error("❌ Lỗi cập nhật cầu thủ:", player._id, error);
+    const updates = [];
+    
+    // Cập nhật đội hình cho từng cầu thủ
+    for (const player of allPlayers.value) {
+      const originalPlayer = originalData.value.find(p => p._id === player._id);
+      
+      // Chỉ cập nhật nếu có thay đổi
+      if (!originalPlayer || originalPlayer.maDoiHinh !== player.maDoiHinh) {
+        updates.push({
+          playerId: player._id,
+          playerName: player.hoVaTen,
+          maDoiHinh: player.maDoiHinh || null
+        });
       }
     }
 
-    // Emit event with updated players
-    emit("players-updated", playersToUpdate);
+    console.log("🔄 Cập nhật đội hình:", updates);
+
+    // Thực hiện cập nhật
+    for (const update of updates) {
+      try {
+        await axios.patch(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/${update.playerId}`,
+          { 
+            maDoiHinh: update.maDoiHinh
+          },
+          { withCredentials: true }
+        );
+        console.log(`✅ Đã cập nhật đội hình cho: ${update.playerName}`);
+      } catch (error) {
+        console.error(`❌ Lỗi cập nhật cầu thủ ${update.playerName}:`, error);
+      }
+    }
+
+     // Sau khi cập nhật thành công
+    emit('players-updated', allPlayers.value); // Quan trọng: emit event này
+    
 
     // Show success message
     alert(
-      `✅ Đã cập nhật đội hình thành công cho ${playersToUpdate.length} cầu thủ!`
+      `✅ Đã cập nhật đội hình thành công cho ${updates.length} cầu thủ!`
     );
 
     // Update original data
     originalData.value = JSON.parse(JSON.stringify(allPlayers.value));
 
-    // Close the form
-    handleClose();
   } catch (error) {
     console.error("❌ Lỗi khi cập nhật đội hình:", error);
-
-    let errorMessage = "Có lỗi xảy ra khi cập nhật đội hình!";
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    alert(`❌ ${errorMessage}`);
+    alert("Có lỗi xảy ra khi cập nhật đội hình!");
   } finally {
     isSubmitting.value = false;
   }
@@ -334,6 +341,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Giữ nguyên các style cũ */
 .hover-cursor {
   cursor: pointer;
 }

@@ -14,7 +14,7 @@
         />
         <span class="m-0">Quản lý Đội bóng Câu lạc bộ</span>
       </h2>
-      <button class="btn btn-primary" @click="openTeamForm">
+      <button class="btn text-white" @click="openTeamForm" style="background-color: var(--button-primary-color);">
         <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
         Thêm đội bóng
       </button>
@@ -34,11 +34,12 @@
     </div>
 
     <!-- Teams Grid -->
-    <div v-else-if="teams.length > 0" class="row g-4">
+    <div v-else-if="teams.length > 0" class="row g-4  border-top mt-3">
+      <h4 class="pt-3 m-0 text-secondary">Danh sách đội bóng</h4>
       <div
         v-for="team in teams"
         :key="team._id"
-        class="col-12 col-sm-6 col-md-4 col-lg-3"
+        class="col-12 col-sm-6 col-md-4 col-lg-3 mt-3"
       >
         <ClubTeamCard
           :item="team"
@@ -156,6 +157,16 @@ const teamFields = [
     label: "Tên đội bóng",
     placeholder: "Nhập tên đội bóng",
     required: true,
+  },
+  {
+    name: "gioiTinh",
+    type: "select",
+    label: "Giới tính",
+    children:[
+      { value: "", name: "Không" },
+      { value: "nam", name: "Nam" },
+      { value: "nu", name: "Nữ" },
+    ]
   },
   {
     name: "sanNha",
