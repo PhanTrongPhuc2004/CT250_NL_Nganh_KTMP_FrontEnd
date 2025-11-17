@@ -55,6 +55,11 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+
+    &:hover{
+      background-color: rgba(118, 118, 118,0.8);
+      cursor: pointer;
+    }
     
 }
 

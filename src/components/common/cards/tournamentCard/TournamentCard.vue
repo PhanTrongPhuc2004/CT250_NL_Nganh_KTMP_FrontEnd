@@ -2,19 +2,13 @@
 import { formatDate } from "@/utils";
 import Menu from "@/components/common/menu/Menu.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import bg from "@/assets/images/default-background.jpg"
 
 const props = defineProps({
   item: {
     type: Object,
     required: true,
-    default: () => ({
-      tenGiaiDau: "",
-      moTa: "",
-      ngayBatDau: "",
-      ngayKetThuc: "",
-      _id: "",
-    }),
   },
   menuItems: {
     type: Array,
@@ -24,6 +18,8 @@ const props = defineProps({
 
 // State for menu management
 const activeMenuId = ref(null);
+const imageLoaded = ref(false); // Track image loading state
+const imageError = ref(false); // Track image error
 
 // Methods for menu handling
 const toggleMenu = (id) => {
@@ -38,38 +34,55 @@ const closeMenu = () => {
   activeMenuId.value = null;
 };
 
+// Image handling
+const handleImageLoad = () => {
+  imageLoaded.value = true;
+  console.log('✅ Image loaded:', props.item.tenGiaiDau);
+};
+
+const handleImageError = () => {
+  imageError.value = true;
+  imageLoaded.value = true; // Still mark as loaded to show default
+  console.log('❌ Image failed to load:', props.item.tenGiaiDau);
+};
+
+// Get image source with optimization
+const getImageSource = computed(() => {
+  if (!props.item.anhMinhHoa || imageError.value) {
+    return bg; // Return default background
+  }
+  
+  // If Cloudinary URL, add optimization parameters
+  if (props.item.anhMinhHoa.includes('cloudinary.com') && props.item.anhMinhHoa.includes('/upload/')) {
+    return props.item.anhMinhHoa.replace('/upload/', '/upload/w_400,h_200,c_fill,q_auto,f_auto/');
+  }
+  
+  return props.item.anhMinhHoa;
+});
+
 // QUAN TRỌNG: Sửa lại computed property
 const currentMenuItems = computed(() => {
   if (!props.menuItems || props.menuItems.length === 0) {
     return [];
   }
 
-  // Map lại menuItems để bind item vào action
   return props.menuItems.map((menuItem) => ({
     label: menuItem.label,
     action: () => {
-      menuItem.action(props.item); // Truyền item vào action
+      menuItem.action(props.item);
     },
   }));
 });
 
-// Format data with fallbacks
-const formattedData = computed(() => ({
-  name: props.item.tenGiaiDau || "Tên giải đấu chưa cập nhật",
-  description: props.item.moTa || "Chưa có mô tả chi tiết cho giải đấu này.",
-  startDate: props.item.ngayBatDau
-    ? formatDate(props.item.ngayBatDau)
-    : "Chưa có ngày bắt đầu",
-  endDate: props.item.ngayKetThuc
-    ? formatDate(props.item.ngayKetThuc)
-    : "Chưa có ngày kết thúc",
-  duration:
-    props.item.ngayBatDau && props.item.ngayKetThuc
-      ? `${formatDate(props.item.ngayBatDau)} - ${formatDate(
-          props.item.ngayKetThuc
-        )}`
-      : "Thời gian chưa xác định",
-}));
+// Auto-load image after component mounts
+onMounted(() => {
+  // Small delay to ensure card is rendered first
+  setTimeout(() => {
+    if (props.item.anhMinhHoa && !imageLoaded.value && !imageError.value) {
+      // Image will load naturally via the img tag
+    }
+  }, 100);
+});
 </script>
 
 <template>
@@ -77,20 +90,30 @@ const formattedData = computed(() => ({
     <div class="border rounded-4 shadow-sm bg-white h-100 d-flex flex-column">
       <!-- Header with tournament name -->
       <div class="position-relative">
+        <!-- Image with lazy loading -->
         <img
-          src="https://media.istockphoto.com/id/1407063872/vector/modern-abstract-background-with-black-gradient-abstract-black-business-background.jpg?s=612x612&w=0&k=20&c=6QftyGArm3LTpQsLw29DpZ9ZB42HMNK-wboAWyFZvto="
-          alt="Background giải đấu"
-          class="w-100 rounded-top-4"
+          :src="getImageSource"
+          :alt="item.tenGiaiDau"
+          class="w-100 rounded-top-4 lazy-image"
+          :class="{ 'image-loaded': imageLoaded, 'image-error': imageError }"
           style="height: 140px; object-fit: cover"
+          loading="lazy"
+          @load="handleImageLoad"
+          @error="handleImageError"
         />
-        <div
-          class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-40 rounded-top-4"
-        ></div>
+        
+        <!-- Loading overlay (optional) -->
+        <div v-if="!imageLoaded && item.anhMinhHoa" class="position-absolute top-0 start-0 w-100 h-100 bg-light d-flex align-items-center justify-content-center rounded-top-4">
+          <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+        
         <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white">
-          <h5 class="fw-bold mb-1">{{ formattedData.name }}</h5>
+          <h5 class="fw-bold mb-1">{{ item.tenGiaiDau }}</h5>
           <div class="d-flex align-items-center small">
             <FontAwesomeIcon :icon="['fas', 'calendar']" class="me-2" />
-            <span>{{ formattedData.duration }}</span>
+            <span>{{ item.namThanhLap || "Chưa có thông tin năm thành lập" }}</span>
           </div>
         </div>
       </div>
@@ -99,7 +122,7 @@ const formattedData = computed(() => ({
       <div class="card-body p-3 flex-grow-1">
         <div class="tournament-info">
           <p class="text-muted small mb-3">
-            {{ formattedData.description }}
+            {{ item.moTa || "Chưa có thông tin mô tả" }}
           </p>
         </div>
       </div>
@@ -142,10 +165,28 @@ const formattedData = computed(() => ({
   font-size: 0.9rem;
 }
 
-.tournament-stats {
-  border-top: 1px solid #e9ecef;
-  padding-top: 0.75rem;
-  margin-top: 0.75rem;
+/* Image loading effects */
+.lazy-image {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.lazy-image.image-loaded {
+  opacity: 1;
+}
+
+.lazy-image.image-error {
+  opacity: 1;
+}
+
+/* Smooth loading animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lazy-image.image-loaded {
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 @media (max-width: 576px) {

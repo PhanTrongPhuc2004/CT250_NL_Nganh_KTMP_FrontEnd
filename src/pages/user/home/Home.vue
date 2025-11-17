@@ -1,4 +1,3 @@
-<!-- src/pages/user/home/Home.vue -->
 <script setup>
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
@@ -11,7 +10,6 @@ import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-// Import đúng các modules
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import Form from "@/components/common/form/Form.vue";
 import { onMounted, ref } from "vue";
@@ -21,6 +19,7 @@ import ThongBaoMoi from "./ThongBaoMoi.vue";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { fetchClubInfo } from "@/utils";
 
 const router = useRouter();
 
@@ -33,6 +32,9 @@ const matchList = ref([]);
 const postList = ref([]);
 const playerList = ref([]);
 const clubInfo = ref({});
+const matchPlayed = ref([]);
+const upComingMatch = ref([]);
+
 const tranDau = computed(() => {
   if (matchList.value.length > 0) {
     const firstMatch = matchList.value[0];
@@ -49,69 +51,67 @@ const tranDau = computed(() => {
   };
 });
 
-//get tran dau dau tien
+
+const marqueeText = ref("");
+
+const fetchSouvenirList = async () => {
+  try {
+    const response = await axios.get(
+    `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`,
+    {
+      withCredentials: true,
+    });
+    return response.data;
+    
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 const fetchMatchList = async () => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_BE_BASE_URL}/trandau/`,
-      {
-        withCredentials: true,
-      }
-    );
-    matchList.value = response.data;
-    console.log(
-      "danh sachs tran dau--------------------------",
-      matchList.value
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-// Tạo text dài để chạy liên tục
-const marqueeText = ref("");
-
-onMounted(async () => {
-  //fetch infor club
-  const clubResponse = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`,
-    {
-      withCredentials: true,
-    }
-  );
-  clubInfo.value = clubResponse.data;
-
-  // Tạo text lặp lại nhiều lần để không bị đứt
-  const baseText = clubInfo.value[0]?.moTa;
-  marqueeText.value = `${baseText} • ${baseText} • ${baseText} • ${baseText}`;
-
-  // await fetchSouvenirList();
-  const souvenirListResponse = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`,
-    {
-      withCredentials: true,
-    }
-  );
-  souvenirList.value = souvenirListResponse.data;
-  // await fetchMatchList();
-  const matchListResponse = await axios.get(
     `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`,
     {
       withCredentials: true,
     }
   );
-  matchList.value = matchListResponse.data;
-  // await fetchPlayerList();
-  const response = await axios.get(
+  upComingMatch.value = response?.data.filter((match) => match.trangThai == 'chua_bat_dau');
+  matchPlayed.value = response?.data.filter((match) => match.trangThai == 'ket_thuc');
+  console.log("tran dau da ket thuc", matchPlayed.value);
+  return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+
+}
+
+const fetchPlayerList = async () => {
+  try {
+    const response = await axios.get(
     `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/`,
     {
       withCredentials: true,
     }
   );
-  playerList.value = response.data;
+  return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-  await fetchMatchList();
+onMounted(async () => {
+  
+  clubInfo.value = await fetchClubInfo()
+
+  const baseText = clubInfo.value[0]?.moTa;
+  marqueeText.value = `${baseText} • ${baseText} • ${baseText} • ${baseText}`;
+
+  souvenirList.value = await fetchSouvenirList();
+  matchList.value = await fetchMatchList()
+  playerList.value =await  fetchPlayerList();
+
+  
 });
 </script>
 
@@ -162,33 +162,74 @@ onMounted(async () => {
     <ThongBaoMoi />
   </section>
   <div :class="cx('home-wrapper')">
-    <div :class="cx('container', 'home-body')">
-      <div>
+    <div :class="cx('', 'home-body')">
+      <div style="background-color: var(--home-background-color);" class="p-5">
+        <div  class="container">
         <h1>Tran dau gan day</h1>
         <div class="d-flex flex-wrap gap-3 flex-row w-100">
           <swiper
             :modules="[Autoplay, Navigation, Pagination]"
-            :slides-per-view="3"
+            :slides-per-view="Math.min(3, matchPlayed.length)"
             :space-between="20"
             :autoplay="{ delay: 2000, disableOnInteraction: false }"
-            :loop="true"
-            :navigation="true"
-            :pagination="{ clickable: true }"
+            :loop="matchPlayed.length > 6"
+            :navigation="matchPlayed.length > 3"
+            :pagination="{ clickable: matchPlayed.length > 1 }"
             class="playerSlice"
           >
             <swiper-slide
-              v-for="(match, index) in matchList.slice(0, 10)"
+              v-for="(match, index) in matchPlayed"
               :key="index"
             >
-              <div class="">
+              <div class="col-md-12">
                 <MatchCard :item="match" />
               </div>
             </swiper-slide>
+            
+            <!-- Hiển thị thông báo khi không có trận đấu -->
+            <div v-if="matchPlayed.length === 0" class="text-center py-5">
+              <p class="text-muted">Không có trận đấu nào để hiển thị</p>
+            </div>
           </swiper>
         </div>
       </div>
+      </div>
 
-      <swiper
+      <div style="background-color: var(--home-background-color);" class="p-5">
+        <div class="container">
+        <h1>Tran dau sắp diễn ra</h1>
+        <div class="d-flex flex-wrap gap-3 flex-row w-100">
+          <swiper
+            :modules="[Autoplay, Navigation, Pagination]"
+            :slides-per-view="Math.min(3, upComingMatch.length)"
+            :space-between="20"
+            :autoplay="{ delay: 2000, disableOnInteraction: false }"
+            :loop="upComingMatch.length > 6"
+            :navigation="upComingMatch.length > 3"
+            :pagination="{ clickable: upComingMatch.length > 1 }"
+            class="playerSlice"
+          >
+            <swiper-slide
+              v-for="(match, index) in upComingMatch"
+              :key="index"
+            >
+              <div class="col-md-12">
+                <MatchCard :item="match" />
+              </div>
+            </swiper-slide>
+            
+            <!-- Hiển thị thông báo khi không có trận đấu -->
+            <div v-if="upComingMatch.length === 0" class="text-center py-5">
+              <p class="text-muted">Không có trận đấu nào để hiển thị</p>
+            </div>
+          </swiper>
+        </div>
+      </div>
+      </div>
+
+      <div>
+        <div class="container">
+        <swiper
         :modules="[Autoplay, Navigation, Pagination]"
         :slides-per-view="3"
         :space-between="20"
@@ -202,6 +243,8 @@ onMounted(async () => {
           <PlayerCard :item="player" />
         </swiper-slide>
       </swiper>
+      </div>
+      </div>
 
       <swiper
         :modules="[Autoplay]"

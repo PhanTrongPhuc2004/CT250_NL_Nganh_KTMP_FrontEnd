@@ -33,16 +33,6 @@ export const fanRoutes = [
     },
   },
   {
-    path: "/cauthu/:id",
-    name: "Chi tiết cầu thủ",
-    component: CauthuDetail,
-    meta: {
-      requiresAuth: false,
-      roles: ["player", "coach", "fan", "admin"],
-      hidden: true, // Ẩn trên header vì là dynamic route
-    },
-  },
-  {
     path: "/huanluyenvien/:id",
     name: "Chi tiết huấn luyện viên",
     component: HuanLuyenVien,

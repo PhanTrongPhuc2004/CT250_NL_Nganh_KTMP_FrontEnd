@@ -42,6 +42,8 @@ const showMenu = ref(false);
 
 const toggleMenu = (event) => {
   event.stopPropagation();
+  event.preventDefault();
+  
   showMenu.value = !showMenu.value;
 };
 
@@ -53,6 +55,7 @@ const handleMenuItemClick = (menuItem) => {
   console.log("Menu item clicked:", menuItem, props.item);
   closeMenu();
 
+  
   // Emit event lên component cha
   if (typeof menuItem.action === "function") {
     emit("menu-action", { action: menuItem.action, item: props.item });
@@ -60,7 +63,19 @@ const handleMenuItemClick = (menuItem) => {
 };
 
 const handleClickCard = () => {
+  if (event.target.closest('button') || event.target.closest('.menu-container')) {
+    console.log('Click vào menu, bỏ qua navigation');
+    return;
+  }
+
+  if (showMenu.value) {
+    console.log('Menu đang mở, bỏ qua navigation');
+    return;
+  }
+
+
   router.push(`/cauthu/${props.item._id}`);
+  console.log("chuyen den trang cau thu ", props.item._id)
 };
 </script>
 
@@ -68,13 +83,13 @@ const handleClickCard = () => {
   <!-- Player Card -->
   <div
     :class="cx('player-card')"
-    class="border rounded-4 shadow-sm overflow-hidden position-relative"
+    class="border rounded-4 shadow-sm overflow-hidden position-relative cursor-pointer"
     @click="handleClickCard"
   >
     <!-- Player Image and Info -->
     <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" />
     <div :class="cx('info')">
-      <span v-if="item.soAo" :class="cx('number')">#{{ item.soAo }}</span>
+      <span v-if="item.soAo" class="fs-1 fw-bold text-white">#{{ item.soAo }}</span>
       <h3
         class="fw-bold w-50"
         style="font-size: 30px; white-space: normal; overflow-wrap: normal"

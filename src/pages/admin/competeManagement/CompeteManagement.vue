@@ -46,6 +46,12 @@ const tournamentFields = [
     type: "textarea",
     placeholder: "Nhập mô tả giải đấu",
   },
+  {
+    name: "anhMinhHoa",
+    label: "Ảnh minh họa",
+    type: "file",
+    required: false,
+  }
 ];
 
 // --- FETCH FUNCTIONS ---
@@ -58,6 +64,7 @@ const fetchTournaments = async () => {
       withCredentials: true,
     });
     tournaments.value = res.data;
+    console.log(tournaments.value);
   } catch (error) {
     console.error("Lỗi khi tải danh sách giải đấu:", error);
     errorMessage.value = "Không thể tải danh sách giải đấu. Vui lòng thử lại!";
@@ -171,7 +178,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :class="cx('wrapper')">
+  <div :class="cx('')">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center">
       <h2
@@ -186,7 +193,7 @@ onMounted(() => {
         />
         <span class="m-0">Quản lý giải đấu</span>
       </h2>
-      <button type="button" class="btn btn-primary" @click="openTournamentForm">
+      <button type="button" class="btn text-white" @click="openTournamentForm" style="background-color: var(--button-primary-color);">
         <FontAwesomeIcon icon="fa-solid fa-plus" class="me-2" />
         Thêm giải đấu
       </button>
@@ -194,7 +201,7 @@ onMounted(() => {
 
     <!-- Tournaments Section -->
     <div class="border-top pt-3 border-secondary-subtle mt-3">
-      <h4 class="text-secondary mb-3">Danh sách giải đấu</h4>
+      <h4 class="mb-3 text-secondary">Danh sách giải đấu</h4>
 
       <!-- Error message -->
       <div v-if="errorMessage" class="alert alert-danger">

@@ -13,6 +13,7 @@ import donhang from "@/pages/admin/component/DonHangPage.vue";
 import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
 import ThongKe from "@/pages/admin/component/ThongKe.vue";
 import TinTucManage from "@/pages/admin/component/TinTucManage.vue";
+import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
 
 const TicketRevenueStats = () =>
   import("@/pages/admin/ticketRevenue/TicketRevenueStats.vue");
@@ -147,7 +148,7 @@ export const adminRoutes = [
     icon: ["fas", "gift"],
   },
   {
-    path: "/admin/qualuuniem/donhang",
+    path: "/admin/donhang",
     component: donhang,
     name: "Quản lý đơn hàng",
     meta: {
@@ -200,5 +201,5 @@ export const adminRoutes = [
       admin: true,
     },
     icon: ["fas", "file-contract"],
-  },
+  }
 ];

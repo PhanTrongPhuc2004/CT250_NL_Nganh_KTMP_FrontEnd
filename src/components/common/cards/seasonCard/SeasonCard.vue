@@ -3,6 +3,7 @@ import { formatDate } from "@/utils";
 import Menu from "@/components/common/menu/Menu.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, computed } from "vue";
+import bg from "@/assets/images/default-background.jpg"
 
 const props = defineProps({
   item: {
@@ -37,6 +38,9 @@ const activeMenuId = ref(null);
 const toggleMenu = (id) => {
   activeMenuId.value = activeMenuId.value === id ? null : id;
 };
+
+const imageLoaded = ref(false); // Track image loading state
+const imageError = ref(false); // Track image error
 
 const isMenuOpen = (id) => {
   return activeMenuId.value === id;
@@ -83,31 +87,37 @@ const shouldShowMenu = computed(() => {
   return currentMenuItems.value.length > 0;
 });
 
-// Format data with fallbacks
-const formattedData = computed(() => ({
-  seasonName:
-    props.item.tenMuaGiai ||
-    `Mùa giải ${props.item.namBatDau}-${props.item.namKetThuc}`,
-  years: `${props.item.namBatDau || "N/A"} - ${props.item.namKetThuc || "N/A"}`,
-  duration:
-    props.item.namBatDau && props.item.namKetThuc
-      ? `${props.item.namBatDau} - ${props.item.namKetThuc}`
-      : "Thời gian chưa xác định",
-}));
+
 
 // Tính số năm của mùa giải
 const seasonDuration = computed(() => {
   if (!props.item.namBatDau || !props.item.namKetThuc) return 1;
   return parseInt(props.item.ngayKetThuc) - parseInt(props.item.ngayBatDau) + 1;
 });
+// Image handling
+const handleImageLoad = () => {
+  imageLoaded.value = true;
+  console.log('✅ Image loaded:', props.item.tenGiaiDau);
+};
 
-console.log(
-  "seasonDuration:",
-  parseInt(props.item.ngayBatDau),
-  "-",
-  parseInt(props.item.ngayKetThuc),
-  "+ 1"
-);
+const handleImageError = () => {
+  imageError.value = true;
+  imageLoaded.value = true; // Still mark as loaded to show default
+  console.log('❌ Image failed to load:', props.item.tenGiaiDau);
+};
+const getImageSource = computed(() => {
+  if (!props.item.anhMinhHoa || imageError.value) {
+    return bg; // Return default background
+  }
+
+  if (props.item.anhMinhHoa.includes('cloudinary.com') && props.item.anhMinhHoa.includes('/upload/')) {
+    return props.item.anhMinhHoa.replace('/upload/', '/upload/w_400,h_200,c_fill,q_auto,f_auto/');
+  }
+
+  return props.item.anhMinhHoa;
+})
+
+
 </script>
 
 <template>
@@ -116,19 +126,21 @@ console.log(
       <!-- Header with season image -->
       <div class="position-relative">
         <img
-          src="https://cdn.wallpapersafari.com/74/64/SqsDew.jpg"
+          :src="getImageSource"
+          :class="{ 'image-loaded': imageLoaded, 'image-error': imageError }"
+          @load="handleImageLoad"
+          @error="handleImageError"
+
           alt="Background mùa giải"
           class="w-100 rounded-top-4"
           style="height: 140px; object-fit: cover"
         />
-        <div
-          class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-40 rounded-top-4"
-        ></div>
+        
         <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white">
-          <h5 class="fw-bold mb-1">{{ formattedData.seasonName }}</h5>
+          <h5 class="fw-bold mb-1">{{ item.tenMuaGiai }}</h5>
           <div class="d-flex align-items-center small">
             <FontAwesomeIcon :icon="['fas', 'calendar']" class="me-2" />
-            <span>{{ formattedData.years }}</span>
+            <span>{{  }}</span>
           </div>
         </div>
 
@@ -142,7 +154,6 @@ console.log(
       <div class="card-body p-3 flex-grow-1">
         <div class="season-info">
           <p class="text-muted small mb-3">
-            {{ formattedData.description }}
           </p>
 
           <!-- Additional season stats -->

@@ -1,5 +1,6 @@
 // src/router/commonRoutes.js
 import UserProfile from "@/pages/common/userProfile/UserProfile.vue";
+import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
 
 export const commonRoutes = [
   {
@@ -9,7 +10,16 @@ export const commonRoutes = [
     meta: {
       requiresAuth: true,
       common: true,
-      roles: ["player", "coach", "fan", "admin"],
     },
   },
+  {
+      path: "/cauthu/:id",
+      name: "Chi tiết cầu thủ",
+      component: CauthuDetail,
+      meta: {
+        common: true,
+        hidden: true,
+      },
+      icon: ["fas", "calendar-alt"],
+    },
 ];

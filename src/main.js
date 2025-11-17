@@ -38,6 +38,8 @@ import {
   faTicketAlt,
   faChartBar,
   faFileContract,
+  faSort,
+  faSearch
 } from "@fortawesome/free-solid-svg-icons";
 
 // Regular icons
@@ -78,7 +80,9 @@ library.add(
   farFile,
   // Brands
   faFacebook,
-  faTwitter
+  faTwitter,
+  faSort,
+  faSearch
 );
 
 // Tạo app

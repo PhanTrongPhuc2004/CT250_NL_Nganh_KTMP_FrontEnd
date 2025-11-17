@@ -1,8 +1,11 @@
 <template>
   <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4>Quản lý Đội hình</h4>
-      <button class="btn btn-primary" @click="handleAddSquad">
+        <h2 style="color: var(--primary-color);" class="mb-0">
+        <FontAwesomeIcon icon="fa-solid fa-angle-left" @click="goBack" class="me-2" style="cursor: pointer;"/>
+          
+          Quản lý Đội hình</h2>
+      <button class="btn text-white" @click="handleAddSquad" style="background-color: var(--button-primary-color);">
         <FontAwesomeIcon icon="fa-solid fa-plus" />
         Thêm đội hình
       </button>
@@ -19,7 +22,8 @@
       {{ errorMessage }}
     </div>
 
-    <div v-else-if="squads.length > 0" class="row g-3">
+    <div v-else-if="squads.length > 0" class="row g-3 mt-3 border-top pt-3">
+      <h4 class="pt-0 m-0 text-secondary">Danh sách đội hình</h4>
       <div
         v-for="squad in squads"
         :key="squad._id"
@@ -48,6 +52,18 @@
           <FontAwesomeIcon icon="fa-solid fa-plus" class="me-2" />
           Thêm đội hình đầu tiên
         </button>
+      </div>
+    </div>
+    <!--danh sach cau thu trong doi hinh nam hoac nu-->
+    <div class="pt-4 mt-3 border-top">
+      
+      <h4 class="pt-0 m-0 text-secondary py-3">Danh sách cầu thủ</h4>
+      <div class="d-flex flex-wrap gap-3 w-100">
+  
+        <div v-for="(player, index) in playersInClubTeam" :key="index" class="col-md-2">
+          <PlayerCard :item="player" />
+        </div>
+  
       </div>
     </div>
 
@@ -87,7 +103,8 @@ import SquadCard from "@/components/common/cards/squadCard/SquadCard.vue";
 import { squadFields } from "@/utils/constanst";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
-
+import instance from "@/utils/axios";
+import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 const route = useRoute();
 const router = useRouter();
 const clubTeamId = route.params.clubTeamId;
@@ -100,6 +117,7 @@ const errorMessage = ref("");
 const clubteamInfo = ref({});
 const maDoiBong = ref(null);
 const currentEditSquad = ref(null);
+const playersInClubTeam = ref([])
 
 const addSquadApi = `${import.meta.env.VITE_API_BE_BASE_URL}/doihinh`;
 const editSquadApi = computed(() =>
@@ -173,6 +191,15 @@ const fetchClubTeamInfo = async () => {
   }
 };
 
+const fetchPlayersInClubTeam = async () => {
+  try {
+    const response = await instance.get(`${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/doibong/ma/${maDoiBong.value}`)
+    playersInClubTeam.value = response.data;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const fetchSquads = async () => {
   if (!getSquadsApi.value) return;
   loading.value = true;
@@ -237,9 +264,14 @@ const handleSquadError = (error) => {
     "Có lỗi xảy ra khi xử lý đội hình. Vui lòng thử lại!";
 };
 
+const goBack = () => {
+  window.history.back();
+}
+
 onMounted(async () => {
   await fetchClubTeamInfo();
   await fetchSquads();
+  await fetchPlayersInClubTeam()
 });
 </script>
 
