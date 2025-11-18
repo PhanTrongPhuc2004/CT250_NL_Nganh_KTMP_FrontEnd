@@ -4,6 +4,28 @@
       <i class="bi bi-file-earmark-text me-2"></i>
       Danh sách Hợp Đồng Cầu Thủ
     </h1>
+    <!-- Bộ lọc -->
+      <div class="filter-box">
+        <div class="input-group search-input">
+          <span class="input-group-text">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control"
+            v-model="searchText"
+            placeholder="Tìm theo tên cầu thủ hoặc mã hợp đồng..."
+          />
+        </div>
+
+
+        <select class="form-select status-filter" v-model="filterStatus">
+          <option value="">Tất cả trạng thái</option>
+          <option value="Đang hiệu lực">Đang hiệu lực</option>
+          <option value="Hết hạn">Hết hạn</option>
+          <option value="Chưa ký">Chưa ký</option>
+        </select>
+      </div>
 
 
     <div class="actions">
@@ -32,7 +54,7 @@
         </thead>
 
         <tbody>
-          <tr v-for="hd in hopDongs" :key="hd._id">
+          <tr v-for="hd in filteredHopDongs" :key="hd._id">
             <td>{{ hd.maHopDong }}</td>
             <td>{{ hd.tenCauThu }}</td>
             <td>{{ hd.viTriCauThu }}</td>
@@ -188,7 +210,27 @@ export default {
       editableHopDong: {},
       isEditing: false,
       isCreating: false,
+
+    searchText: "",
+    filterStatus: "",
     };
+  },
+  computed: {
+    filteredHopDongs() {
+      const text = this.searchText.toLowerCase();
+
+      return this.hopDongs
+        .filter(hd => {
+          return (
+            hd.tenCauThu.toLowerCase().includes(text) ||
+            hd.maHopDong.toLowerCase().includes(text)
+          );
+        })
+        .filter(hd => {
+          if (!this.filterStatus) return true;
+          return hd.trangThai === this.filterStatus;
+        });
+    }
   },
   async mounted() {
     await this.fetchHopDongs();
@@ -330,10 +372,7 @@ export default {
 
       win.document.close();
       win.print();
-    }
-
-,
-
+    },
 
 
     xemChiTiet(hd) {
@@ -449,6 +488,22 @@ export default {
 </script>
 
 <style scoped>
+.filter-box {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+}
+
+.status-filter {
+  width: 220px;
+  padding: 8px 10px;
+}
+
 .contracts-page {
   background: whitesmoke;
   color: #2c3e50;
