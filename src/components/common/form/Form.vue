@@ -159,7 +159,6 @@ const handleSubmit = async () => {
       window.location.reload();
       console.log("✅ Đăng nhập thành công:", response.data);
 
-      alert("🎉 Đăng nhập thành công!");
 
       handleClose();
       return;

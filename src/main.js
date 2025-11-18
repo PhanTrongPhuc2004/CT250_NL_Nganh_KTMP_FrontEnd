@@ -47,6 +47,7 @@ import {
   faUser as farUser,
   faCalendar as farCalendar,
   faFile as farFile,
+  faBell
 } from "@fortawesome/free-regular-svg-icons";
 
 // Brands (nếu có)
@@ -82,7 +83,7 @@ library.add(
   faFacebook,
   faTwitter,
   faSort,
-  faSearch
+  faSearch, faBell
 );
 
 // Tạo app

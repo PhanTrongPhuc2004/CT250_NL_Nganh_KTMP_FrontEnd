@@ -11,7 +11,7 @@ import { ref, onMounted, computed } from "vue";
 import { useFormStore } from "@/stores/formStore";
 import { getMe } from "@/utils";
 import { fanRoutes, adminRoutes, coachRoutes, playerRoutes } from "@/router";
-
+import Notification from "@/pages/user/notification/Notification.vue";
 const API_BASE_URL = import.meta.env.VITE_API_BE_BASE_URL;
 const registerApiUrl = `${API_BASE_URL}/nguoidung`;
 const loginApiUrl = `${API_BASE_URL}/nguoidung/login`;
@@ -23,6 +23,9 @@ const cx = classNames.bind(styles);
 
 // State
 const userInfor = ref({});
+const notificationState = ref(false);
+
+// Dropdown
 const { activeMenuId, toggleMenu } = useDropdownManager();
 
 // Lấy user info khi component mounted
@@ -124,7 +127,8 @@ const displayUserName = computed(() => {
       </div>
     </nav>
   </div>
-
+  <!--thong bao-->
+  
   <!-- Header cho người ĐÃ đăng nhập -->
   <div :class="cx('header-wrapper')" v-else>
     <nav :class="cx('nav-wrapper')">
@@ -140,7 +144,7 @@ const displayUserName = computed(() => {
 
         <!-- Route đặc biệt cho admin -->
         <router-link
-          v-if="userStore.user.vaiTro === 'admin'"
+          v-if="userStore.user?.vaiTro === 'admin'"
           to="/admin"
           :class="cx('nav-item', 'admin-item')"
         >
@@ -148,9 +152,10 @@ const displayUserName = computed(() => {
       </div>
 
       <div :class="cx('nav-action')" data-dropdown-id>
-        <div class="dropdown-trigger" @click.stop="toggleMenu('user-menu')">
+        <div class="dropdown-trigger" >
           <span>{{ displayUserName }}</span>
-          <FontAwesomeIcon :icon="['fas', 'angle-down']" />
+          <FontAwesomeIcon :icon="['fas', 'angle-down']" @click.stop="toggleMenu('user-menu')"/>
+          <FontAwesomeIcon :icon="['far', 'bell']" class="ms-2" @click="() => notificationState = !notificationState"/>
         </div>
 
         <Menu
@@ -160,6 +165,13 @@ const displayUserName = computed(() => {
         />
       </div>
     </nav>
+   <div 
+  v-if="notificationState" 
+  class="position-fixed end-0 vh-75 overflow-y-auto bg-white shadow"
+  style="width: 80%; max-width: 600px; height: 70vh; top: var(--header-height); z-index: 1050;"
+>
+  <Notification />
+</div>
   </div>
 
   <!-- Modal Đăng ký -->
