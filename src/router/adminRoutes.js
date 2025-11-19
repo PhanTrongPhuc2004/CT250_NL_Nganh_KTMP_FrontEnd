@@ -14,6 +14,7 @@ import HopDongManage from "@/pages/admin/component/HopDongManage.vue";
 import ThongKe from "@/pages/admin/component/ThongKe.vue";
 import TinTucManage from "@/pages/admin/component/TinTucManage.vue";
 import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
+import MatchStats from "@/pages/admin/matchStats/MatchStats.vue";
 
 const TicketRevenueStats = () =>
   import("@/pages/admin/ticketRevenue/TicketRevenueStats.vue");
@@ -190,6 +191,17 @@ export const adminRoutes = [
       admin: true,
     },
     icon: ["fas", "chart-bar"],
+  },
+  {
+    path: '/admin/match-stats',
+    name: 'Thống kê trận đấu',
+    component: MatchStats,
+    meta: {
+      requiresAuth: true,
+      roles: ['admin'],
+      admin: true,
+    },
+    icon: ['fas', 'chart-bar'],
   },
   {
     path: "/admin/hopdong",

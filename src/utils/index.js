@@ -75,3 +75,12 @@ export const getMe = async () => {
     console.error("Lỗi khi tải thông tin người dùng:", error);
   }
 };
+
+export function parseScore(scoreStr) {
+    const [home, away] = scoreStr.split('-').map(Number);
+    return {
+        home,
+        away,
+        difference: home - away
+    };
+}
