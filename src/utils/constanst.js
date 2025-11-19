@@ -64,7 +64,7 @@ export const huanLuyenVienFields = [
   { name: "cauLacBoCu", type: "text", label: "Câu lạc bộ cũ" },
   { name: "quocTich", type: "text", label: "Quốc tịch" },
   { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
-  { name: "anhMinhHoa", type: "text", label: "Ảnh minh họa" },
+  { name: "anhMinhHoa", type: "file", label: "Ảnh minh họa" },
   {
     name: "maDoiHinh",
     type: "select",
