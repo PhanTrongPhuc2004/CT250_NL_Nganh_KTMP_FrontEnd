@@ -48,15 +48,18 @@
       </section>
 
       <!-- 🧑‍🎓 Cầu thủ -->
-      <section class="d-flex flex-wrap gap-3">
-        <div
-          v-for="(player, index) in players"
-          :key="player._id"
-          class="col-md-3"
-        >
-          <PlayerCard :item="player" />
-        </div>
-      </section>
+        <h2 class="section-title text-danger">
+          <i class="bi bi-person-badge me-2"></i>Cầu Thu
+        </h2>
+          <section class="d-flex flex-wrap gap-3 justify-content-center">
+            <div
+              v-for="(player, index) in players"
+              :key="player._id"
+              class="d-flex justify-content-center col-md-3"
+            >
+              <PlayerCard :item="player" />
+            </div>
+          </section>
     </div>
   </div>
 </template>
