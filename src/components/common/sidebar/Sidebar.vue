@@ -95,7 +95,6 @@ watch(() => route.path, (newPath) => {
 // Hàm kiểm tra active state - KHÔNG liên quan đến ảnh
 const isItemActive = (item) => {
   const isActive = activeItemPath.value.startsWith(item.path);
-  console.log(`📌 Check active: ${item.path} -> ${isActive}`);
   return isActive;
 };
 
