@@ -15,6 +15,7 @@ import ThongKe from "@/pages/admin/component/ThongKe.vue";
 import TinTucManage from "@/pages/admin/component/TinTucManage.vue";
 import CauthuDetail from "@/pages/user/player/CauthuDetail.vue";
 import MatchStats from "@/pages/admin/matchStats/MatchStats.vue";
+import MatchDetail from "@/pages/admin/matchDetail/MatchDetail.vue";
 
 const TicketRevenueStats = () =>
   import("@/pages/admin/ticketRevenue/TicketRevenueStats.vue");
@@ -23,16 +24,15 @@ const TicketManagement = () =>
 
 export const adminRoutes = [
   {
-    path: "/admin",
-    name: "Admin",
+    path: "/admin/dashboard",
+    name: "Dashboard",
     component: Dashboard,
     meta: {
       requiresAuth: true,
       roles: ["admin"],
       admin: true,
-      hidden: true,
     },
-    icon: ["fas", "gauge"],
+    icon: ["fas", "fa-pen-to-square"],
   },
   {
     path: "/admin/clubs",
@@ -42,6 +42,7 @@ export const adminRoutes = [
       requiresAuth: true,
       roles: ["admin"],
       admin: true,
+      hidden: true
     },
     icon: ["fas", "shield-alt"],
   },
@@ -171,39 +172,6 @@ export const adminRoutes = [
     icon: ["fas", "ticket-alt"],
   },
   {
-    path: "/admin/thongke",
-    name: "Thống kê doanh thu quà lưu niệm",
-    component: ThongKe,
-    meta: {
-      requiresAuth: true,
-      roles: ["admin"],
-      admin: true,
-    },
-    icon: ["fas", "chart-bar"],
-  },
-  {
-    path: "/admin/ticket-revenue",
-    name: "Thống kê Doanh thu Vé",
-    component: TicketRevenueStats,
-    meta: {
-      requiresAuth: true,
-      roles: ["admin"],
-      admin: true,
-    },
-    icon: ["fas", "chart-bar"],
-  },
-  {
-    path: '/admin/match-stats',
-    name: 'Thống kê trận đấu',
-    component: MatchStats,
-    meta: {
-      requiresAuth: true,
-      roles: ['admin'],
-      admin: true,
-    },
-    icon: ['fas', 'chart-bar'],
-  },
-  {
     path: "/admin/hopdong",
     name: "Quản lý hợp đồng",
     component: HopDongManage,
@@ -213,5 +181,63 @@ export const adminRoutes = [
       admin: true,
     },
     icon: ["fas", "file-contract"],
-  }
+  },
+  // --- PHÂN TÍCH & THỐNG KÊ (Dropdown) ---
+  {
+    path: "/admin/analytics",
+    name: "Phân tích & Thống kê",
+    meta: {
+      requiresAuth: true,
+      roles: ["admin"],
+      admin: true,
+      isDropdown: true, // Đánh dấu đây là dropdown
+    },
+    icon: ["fas", "chart-line"],
+    children: [
+      {
+        path: "/admin/thongke",
+        name: "Hàng lưu niệm",
+        component: ThongKe,
+        meta: {
+          requiresAuth: true,
+          roles: ["admin"],
+          admin: true,
+          parent: "Phân tích & Thống kê"
+        },
+      },
+      {
+        path: "/admin/ticket-revenue",
+        name: "Doanh thu vé",
+        component: TicketRevenueStats,
+        meta: {
+          requiresAuth: true,
+          roles: ["admin"],
+          admin: true,
+          parent: "Phân tích & Thống kê"
+        },
+      },
+      {
+        path: '/admin/match-stats',
+        name: 'Trận đấu',
+        component: MatchStats,
+        meta: {
+          requiresAuth: true,
+          roles: ['admin'],
+          admin: true,
+          parent: "Phân tích & Thống kê"
+        },
+      },
+      
+    ]
+  }, 
+  {
+        path: '/admin/compete/tournament/:tournamentId/season/:seasonId/match/:matchId',
+        name: 'Chi tiết trận đấu',
+        component: MatchDetail,
+        meta: {
+          requiresAuth: true,
+          roles: ['admin'],
+          admin: true,
+        },
+      }
 ];

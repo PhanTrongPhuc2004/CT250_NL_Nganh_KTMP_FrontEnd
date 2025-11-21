@@ -9,11 +9,9 @@ const userStore = useUserStore();
 const appReady = ref(false);
 
 onMounted(async () => {
-  console.log("🚀 App mounted - Khởi tạo auth...");
 
   try {
     await userStore.initialize();
-    console.log("✅ App initialized - User:", userStore.user?.tenDangNhap);
   } catch (error) {
     console.error("❌ App initialization failed:", error);
   } finally {

@@ -38,6 +38,7 @@ const initFormData = () => {
   console.log("Other Data:", props.ortherData);
   console.log("API URL:", props.api);
   console.log("Method:", props.method);
+  console.log("orther fields", props.ortherFields)
   console.log(
     "================================================",
     "color: blue"

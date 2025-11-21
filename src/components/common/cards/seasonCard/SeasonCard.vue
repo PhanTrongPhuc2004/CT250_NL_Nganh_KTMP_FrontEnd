@@ -50,26 +50,6 @@ const closeMenu = () => {
   activeMenuId.value = null;
 };
 
-// Default menu items
-const defaultMenuItems = [
-  {
-    label: "Chỉnh sửa",
-    action: () => console.log("Chỉnh sửa mùa giải:", props.item),
-  },
-  {
-    label: "Xem chi tiết",
-    action: () => console.log("Xem chi tiết mùa giải:", props.item),
-  },
-  {
-    label: "Quản lý giải đấu",
-    action: () => console.log("Quản lý giải đấu:", props.item),
-  },
-  {
-    label: "Xóa",
-    action: () => console.log("Xóa mùa giải:", props.item),
-  },
-];
-
 // Sử dụng menuItems từ props hoặc default
 const currentMenuItems = computed(() => {
   if (!props.menuItems || props.menuItems.length === 0) {
@@ -97,13 +77,11 @@ const seasonDuration = computed(() => {
 // Image handling
 const handleImageLoad = () => {
   imageLoaded.value = true;
-  console.log('✅ Image loaded:', props.item.tenGiaiDau);
 };
 
 const handleImageError = () => {
   imageError.value = true;
   imageLoaded.value = true; // Still mark as loaded to show default
-  console.log('❌ Image failed to load:', props.item.tenGiaiDau);
 };
 const getImageSource = computed(() => {
   if (!props.item.anhMinhHoa || imageError.value) {
@@ -174,8 +152,8 @@ const getImageSource = computed(() => {
         </button>
         <Menu
           v-if="isMenuOpen(item._id)"
-          top="100%"
-          right="0"
+          top="-115px"
+          right="10px"
           :menu-items="currentMenuItems"
           :on-close="closeMenu"
         />

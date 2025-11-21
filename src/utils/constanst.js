@@ -205,3 +205,35 @@ export const trainingFields = [
     placeholder: "Mô tả nội dung buổi tập...",
   },
 ];
+
+export const thongSoFields = [
+  {
+    name: "soLanChamBong",
+    type: "number",
+    label: "Số lần chạm bóng",
+    min: 0
+  },
+  {
+    name: "soLanDutDiem",
+    type: "number",
+    label: "Số lần dứt điểm",
+    min: 0
+  },
+  {
+    name: "soLanCanPha",
+    type: "number",
+    label: "Số lần cản phá",
+    min: 0
+  },
+  {
+    name: "soLanGhiBan",
+    type: "number",
+    label: "Số lần ghi bàn",
+    min: 0
+  },
+  {
+    name: "banDoThanNhiet",
+    type: "textarea",
+    label: "Bản đồ thân nhiệt (Heatmap URL hoặc mô tả)"
+  }
+];

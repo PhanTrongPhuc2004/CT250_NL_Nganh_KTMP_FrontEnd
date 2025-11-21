@@ -1,11 +1,491 @@
+<script setup>
+import { ref, onMounted, nextTick } from 'vue';
+import Chart from 'chart.js/auto';
+import instance from '@/utils/axios';
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import router from '@/router';
+const isLoading = ref(false);
+const matches = ref([]);
+const matchResults = ref([]); // THÊM: Lưu kết quả trận đấu
+
+// Refs cho charts...
+const resultChartRef = ref(null);
+const goalsChartRef = ref(null);
+// ... các ref khác
+
+let resultChartInstance = null;
+let goalsChartInstance = null;
+let disciplineChartInstance = null;
+let ballControlChartInstance = null;
+let trendChartInstance = null;
+// ... các chart instance khác
+
+const matchStats = ref({
+  totalMatches: 0,
+  played: 0,
+  wins: 0,
+  losses: 0,
+  draws: 0,
+  winRate: 0,
+  lossRate: 0,
+  drawRate: 0,
+  goalDifference: 0,
+  totalGoalsFor: 0,
+  totalGoalsAgainst: 0,
+  totalYellowCards: 0,
+  totalRedCards: 0,
+  totalFouls: 0,
+  avgBallControl: 0,
+  fairplayRate: 0
+});
+
+// Hàm parse score từ string "2-1"
+const parseScore = (scoreString) => {
+  if (!scoreString) return { home: 0, away: 0, difference: 0 };
+  
+  try {
+    // Xử lý cả định dạng "1-1" và "1 - 2"
+    const cleanedScore = scoreString.replace(/\s+/g, '');
+    const [home, away] = cleanedScore.split('-').map(num => parseInt(num.trim()) || 0);
+    return {
+      home,
+      away,
+      difference: home - away
+    };
+  } catch (error) {
+    return { home: 0, away: 0, difference: 0 };
+  }
+};
+
+// Fetch dữ liệu từ cả 2 API
+const fetchMatchStats = async () => {
+  isLoading.value = true;
+  try {
+    // Lấy danh sách trận đấu
+    const matchesRes = await instance.get('/trandau');
+    matches.value = matchesRes.data;
+    
+    // Lấy kết quả trận đấu
+    const resultsRes = await instance.get('/ketquatrandau');
+    matchResults.value = resultsRes.data;
+    
+    // Kết hợp dữ liệu
+    combineMatchData();
+    
+    calculateStats(matches.value);
+    
+    await nextTick();
+    setTimeout(() => {
+      createCharts();
+    }, 100);
+    
+  } catch (error) {
+    console.error('Lỗi fetch thống kê trận đấu:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Kết hợp dữ liệu trận đấu và kết quả
+const combineMatchData = () => {
+  matches.value = matches.value.map(match => {
+    // Tìm kết quả tương ứng với trận đấu
+    const matchResult = matchResults.value.find(
+      result => result.maTranDau === match.maTranDau
+    );
+    
+    // Trả về object kết hợp
+    return {
+      ...match,
+      ketQuaData: matchResult || null // Thêm dữ liệu kết quả vào trận đấu
+    };
+  });
+};
+
+const calculateStats = (matches) => {
+  let wins = 0, losses = 0, draws = 0;
+  let totalGoalsFor = 0, totalGoalsAgainst = 0;
+  let totalYellowCards = 0, totalRedCards = 0, totalFouls = 0;
+  let totalBallControl = 0;
+  let validBallControlMatches = 0;
+
+  matches.forEach(match => {
+    // SỬA: Kiểm tra có ketQuaData không
+    if (match.ketQuaData) {
+      const ketQua = match.ketQuaData;
+      
+      // Xử lý tỉ số
+      if (ketQua.tiSo) {
+        const score = parseScore(ketQua.tiSo);
+        totalGoalsFor += score.home;
+        totalGoalsAgainst += score.away;
+
+        if (score.difference > 0) wins++;
+        else if (score.difference < 0) losses++;
+        else draws++;
+      }
+
+      // Thống kê kỷ luật - sử dụng đúng tên trường từ model KetQuaTranDau
+      totalYellowCards += (ketQua.doiNha_soTheVang || 0) + (ketQua.doiKhach_soTheVang || 0);
+      totalRedCards += (ketQua.doiNha_soTheDo || 0) + (ketQua.doiKhach_soTheDo || 0);
+      totalFouls += (ketQua.doiNha_soPhaPhamLoi || 0) + (ketQua.doiKhach_soPhaPhamLoi || 0);
+
+      // Thống kê kiểm soát bóng
+      if (ketQua.doiNha_tiLeKiemSoatBong !== undefined && ketQua.doiNha_tiLeKiemSoatBong !== null) {
+        totalBallControl += ketQua.doiNha_tiLeKiemSoatBong;
+        validBallControlMatches++;
+      }
+    }
+  });
+
+  const totalMatches = matches.length;
+  const played = matches.filter(match => match.trangThai === 'ket_thuc').length 
+  const goalDifference = totalGoalsFor - totalGoalsAgainst;
+  const avgBallControl = validBallControlMatches > 0 ? Math.round(totalBallControl / validBallControlMatches) : 0;
+
+  // Tính tỷ lệ Fairplay
+  const totalCards = totalYellowCards + totalRedCards * 2;
+  const fairplayRate = Math.max(0, 100 - (totalCards * 2 + totalFouls * 0.1));
+
+  matchStats.value = {
+    totalMatches,
+    played,
+    wins,
+    losses,
+    draws,
+    winRate: totalMatches > 0 ? Math.round((wins / played) * 100) : 0,
+    lossRate: totalMatches > 0 ? Math.round((losses / played) * 100) : 0,
+    drawRate: totalMatches > 0 ? Math.round((draws / played) * 100) : 0,
+    goalDifference,
+    totalGoalsFor,
+    totalGoalsAgainst,
+    totalYellowCards,
+    totalRedCards,
+    totalFouls,
+    avgBallControl,
+    fairplayRate: Math.round(fairplayRate)
+  };
+};
+
+// SỬA: Hàm lấy tỉ số để hiển thị
+// SỬA: Hàm lấy tỉ số để hiển thị với tên đội
+const getDisplayScore = (match) => {
+  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'Chưa có kết quả';
+  
+  const score = parseScore(match.ketQuaData.tiSo);
+  return `${match.doiNha} (${score.home}) - ${match.doiKhach} (${score.away})`;
+};
+
+// HOẶC: Nếu bạn muốn hiển thị ngắn gọn hơn
+const getDisplayScoreShort = (match) => {
+  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'Chưa có kết quả';
+  
+  const score = parseScore(match.ketQuaData.tiSo);
+  return `${match.doiNha} ${score.home}-${score.away} ${match.doiKhach}`;
+};
+// SỬA: Hàm lấy kết quả trận đấu
+const getMatchResult = (match) => {
+  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'Chưa có kết quả';
+  
+  const score = parseScore(match.ketQuaData.tiSo);
+  if (score.difference > 0) return 'Thắng';
+  if (score.difference < 0) return 'Thua';
+  return 'Hòa';
+};
+
+// SỬA: Hàm lấy class badge kết quả
+const getResultBadgeClass = (match) => {
+  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'bg-secondary';
+  
+  const score = parseScore(match.ketQuaData.tiSo);
+  if (score.difference > 0) return 'bg-success';
+  if (score.difference < 0) return 'bg-danger';
+  return 'bg-warning text-dark';
+};
+
+// SỬA: Hàm tính fairplay rate
+const calculateFairplayRate = (match) => {
+  if (!match.ketQuaData) return 100;
+  
+  const ketQua = match.ketQuaData;
+  const yellowCards = (ketQua.doiNha_soTheVang || 0) + (ketQua.doiKhach_soTheVang || 0);
+  const redCards = (ketQua.doiNha_soTheDo || 0) + (ketQua.doiKhach_soTheDo || 0);
+  const fouls = (ketQua.doiNha_soPhaPhamLoi || 0) + (ketQua.doiKhach_soPhaPhamLoi || 0);
+  
+  const penalty = yellowCards * 5 + redCards * 15 + fouls * 1;
+  return Math.max(0, 100 - penalty);
+};
+
+// SỬA: Hàm lấy kiểm soát bóng để hiển thị
+const getBallControlDisplay = (match) => {
+  if (!match.ketQuaData) {
+    return { home: 0, away: 0 };
+  }
+  
+  const ketQua = match.ketQuaData;
+  return {
+    home: ketQua.doiNha_tiLeKiemSoatBong || 0,
+    away: ketQua.doiKhach_tiLeKiemSoatBong || 0
+  };
+};
+
+// SỬA: Hàm lấy thống kê thẻ và phạm lỗi
+const getDisciplineStats = (match) => {
+  if (!match.ketQuaData) {
+    return { yellowCards: 0, redCards: 0, fouls: 0 };
+  }
+  
+  const ketQua = match.ketQuaData;
+  return {
+    yellowCards: (ketQua.doiNha_soTheVang || 0) + (ketQua.doiKhach_soTheVang || 0),
+    redCards: (ketQua.doiNha_soTheDo || 0) + (ketQua.doiKhach_soTheDo || 0),
+    fouls: (ketQua.doiNha_soPhaPhamLoi || 0) + (ketQua.doiKhach_soPhaPhamLoi || 0)
+  };
+};
+
+// SỬA: Hàm lấy class badge fairplay
+const getFairplayBadgeClass = (match) => {
+  const rate = calculateFairplayRate(match);
+  if (rate >= 80) return 'bg-success';
+  if (rate >= 60) return 'bg-warning text-dark';
+  return 'bg-danger';
+};
+
+// Các hàm createCharts giữ nguyên...
+const createCharts = () => {
+  [resultChartInstance, goalsChartInstance, disciplineChartInstance, ballControlChartInstance, trendChartInstance]
+    .forEach(chart => chart?.destroy());
+
+  createResultChart();
+  createGoalsChart();
+  createDisciplineChart();
+  createBallControlChart();
+  createTrendChart();
+};
+
+// SỬA: Hàm tạo trend chart
+const createTrendChart = () => {
+  if (!trendChartRef.value || matches.value.length === 0) return;
+
+  try {
+    const ctx = trendChartRef.value.getContext('2d');
+    
+    // SỬA: Lấy dữ liệu kiểm soát bóng từ ketQuaData
+    const ballControlData = matches.value.map(match => {
+      if (match.ketQuaData) {
+        return match.ketQuaData.doiNha_tiLeKiemSoatBong || 0;
+      }
+      return 0;
+    });
+    
+    const matchLabels = matches.value.map((_, index) => `Trận ${index + 1}`);
+
+    trendChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: matchLabels,
+        datasets: [{
+          label: 'Kiểm soát bóng (%)',
+          data: ballControlData,
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#6c757d' }
+          }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            ticks: { color: '#6c757d' }
+          },
+          x: {
+            ticks: { color: '#6c757d' }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tạo biểu đồ xu hướng:', error);
+  }
+};
+
+// Các hàm create chart khác giữ nguyên...
+const createResultChart = () => {
+  if (!resultChartRef.value) return;
+
+  try {
+    const ctx = resultChartRef.value.getContext('2d');
+    resultChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Thắng', 'Hòa', 'Thua'],
+        datasets: [{
+          data: [matchStats.value.wins, matchStats.value.draws, matchStats.value.losses],
+          backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#6c757d',
+              font: { size: 12 }
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tạo biểu đồ kết quả:', error);
+  }
+};
+
+const createGoalsChart = () => {
+  if (!goalsChartRef.value) return;
+
+  try {
+    const ctx = goalsChartRef.value.getContext('2d');
+    goalsChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Bàn thắng', 'Bàn thua'],
+        datasets: [{
+          label: 'Số bàn',
+          data: [matchStats.value.totalGoalsFor, matchStats.value.totalGoalsAgainst],
+          backgroundColor: ['#28a745', '#dc3545'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#6c757d' }
+          },
+          x: {
+            ticks: { color: '#6c757d' }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tạo biểu đồ bàn thắng:', error);
+  }
+};
+
+const createDisciplineChart = () => {
+  if (!disciplineChartRef.value) return;
+
+  try {
+    const ctx = disciplineChartRef.value.getContext('2d');
+    disciplineChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Thẻ vàng', 'Thẻ đỏ', 'Pha phạm lỗi'],
+        datasets: [{
+          label: 'Số lượng',
+          data: [matchStats.value.totalYellowCards, matchStats.value.totalRedCards, matchStats.value.totalFouls],
+          backgroundColor: ['#ffc107', '#dc3545', '#17a2b8'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#6c757d' }
+          },
+          x: {
+            ticks: { color: '#6c757d' }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tạo biểu đồ kỷ luật:', error);
+  }
+};
+
+const createBallControlChart = () => {
+  if (!ballControlChartRef.value) return;
+
+  try {
+    const ctx = ballControlChartRef.value.getContext('2d');
+    ballControlChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Kiểm soát bóng', 'Còn lại'],
+        datasets: [{
+          data: [matchStats.value.avgBallControl, 100 - matchStats.value.avgBallControl],
+          backgroundColor: ['#007bff', '#e9ecef'],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#6c757d' }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi tạo biểu đồ kiểm soát bóng:', error);
+  }
+};
+
+const refreshData = () => {
+  fetchMatchStats();
+};
+
+
+const goToDashboard = () => {
+  router.push('/admin');
+};
+
+
+onMounted(() => {
+  fetchMatchStats();
+});
+</script>
+
 <template>
-  <div class="container-fluid py-4">
-    <!-- Header -->
+  <div class="container-fluid">
+    <!-- Phần header giữ nguyên -->
     <div class="row mb-4">
       <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-          <h1 class="h3 mb-0 text-dark">
-            <i class="fas fa-chart-line me-2"></i>Thống kê trận đấu
+        <div class="d-flex justify-content-between align-items-center " >
+          <h1 class="h3 mb-0 d-flex fs-2 pb-3" style="color: var(--primary-color);">
+            <FontAwesomeIcon  icon="fas fa-angle-left " style="cursor: pointer;"  @click="goToDashboard"/>
+            <p class="m-0">Thống kê trận đấu</p>
           </h1>
           <button class="btn btn-outline-secondary btn-sm" @click="refreshData">
             <i class="fas fa-sync-alt me-1"></i>Làm mới
@@ -14,16 +494,14 @@
       </div>
     </div>
 
-    <!-- Loading -->
     <div v-if="isLoading" class="text-center py-5">
       <div class="spinner-border text-secondary" role="status">
         <span class="visually-hidden">Đang tải...</span>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div v-else class="row g-4">
-      <!-- Thống kê tổng quan -->
+    <div v-else class="row g-4 pt-3 border-top">
+      <!-- Các phần thống kê tổng quan giữ nguyên -->
       <div class="col-lg-8">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-header bg-white border-bottom py-3">
@@ -31,28 +509,24 @@
           </div>
           <div class="card-body">
             <div class="row g-3">
-              <!-- Tổng số trận -->
               <div class="col-md-3">
                 <div class="text-center p-3 border rounded">
                   <div class="h2 text-primary mb-1">{{ matchStats.totalMatches }}</div>
                   <small class="text-muted">Tổng trận</small>
                 </div>
               </div>
-              <!-- Thắng -->
               <div class="col-md-3">
                 <div class="text-center p-3 border rounded">
                   <div class="h2 text-success mb-1">{{ matchStats.wins }}</div>
                   <small class="text-muted">Thắng ({{ matchStats.winRate }}%)</small>
                 </div>
               </div>
-              <!-- Hòa -->
               <div class="col-md-3">
                 <div class="text-center p-3 border rounded">
                   <div class="h2 text-warning mb-1">{{ matchStats.draws }}</div>
                   <small class="text-muted">Hòa ({{ matchStats.drawRate }}%)</small>
                 </div>
               </div>
-              <!-- Thua -->
               <div class="col-md-3">
                 <div class="text-center p-3 border rounded">
                   <div class="h2 text-danger mb-1">{{ matchStats.losses }}</div>
@@ -61,18 +535,19 @@
               </div>
             </div>
 
-            <!-- Biểu đồ tỷ lệ kết quả -->
             <div class="row mt-4">
               <div class="col-12">
                 <h6 class="text-dark mb-3">Phân bố kết quả trận đấu</h6>
-                <canvas id="resultChart" height="100"></canvas>
+                <div class="chart-container">
+                  <canvas ref="resultChartRef"></canvas>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Thống kê bàn thắng -->
+      <!-- Các phần thống kê khác giữ nguyên -->
       <div class="col-lg-4">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-header bg-white border-bottom py-3">
@@ -99,71 +574,18 @@
               </div>
               <small class="text-muted">Hiệu số bàn thắng</small>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Thống kê kỷ luật -->
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-white border-bottom py-3">
-            <h5 class="card-title mb-0 text-dark">Thống kê kỷ luật</h5>
-          </div>
-          <div class="card-body">
-            <div class="row g-3 mb-4">
-              <div class="col-4">
-                <div class="text-center p-3 border rounded">
-                  <div class="h4 text-warning mb-1">{{ matchStats.totalYellowCards }}</div>
-                  <small class="text-muted">Thẻ vàng</small>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="text-center p-3 border rounded">
-                  <div class="h4 text-danger mb-1">{{ matchStats.totalRedCards }}</div>
-                  <small class="text-muted">Thẻ đỏ</small>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="text-center p-3 border rounded">
-                  <div class="h4 text-info mb-1">{{ matchStats.totalFouls }}</div>
-                  <small class="text-muted">Pha phạm lỗi</small>
-                </div>
+            <div class="mt-4">
+              <h6 class="text-dark mb-3">So sánh bàn thắng/thua</h6>
+              <div class="chart-container">
+                <canvas ref="goalsChartRef"></canvas>
               </div>
             </div>
-            <canvas id="disciplineChart" height="150"></canvas>
           </div>
         </div>
       </div>
 
-      <!-- Thống kê kiểm soát bóng -->
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-header bg-white border-bottom py-3">
-            <h5 class="card-title mb-0 text-dark">Kiểm soát bóng & Fairplay</h5>
-          </div>
-          <div class="card-body">
-            <div class="row g-3 mb-4">
-              <div class="col-6">
-                <div class="text-center p-3 border rounded">
-                  <div class="h4 text-primary mb-1">{{ matchStats.avgBallControl }}%</div>
-                  <small class="text-muted">Kiểm soát bóng TB</small>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="text-center p-3 border rounded">
-                  <div class="h4" :class="matchStats.fairplayRate >= 80 ? 'text-success' : matchStats.fairplayRate >= 60 ? 'text-warning' : 'text-danger'">
-                    {{ matchStats.fairplayRate }}%
-                  </div>
-                  <small class="text-muted">Tỷ lệ Fairplay</small>
-                </div>
-              </div>
-            </div>
-            <canvas id="ballControlChart" height="150"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Chi tiết từng trận -->
+      <!-- Bảng chi tiết trận đấu - SỬA: Dùng các hàm mới -->
       <div class="col-12">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white border-bottom py-3">
@@ -187,35 +609,57 @@
                 <tbody>
                   <tr v-for="match in matches" :key="match._id">
                     <td class="fw-semibold">{{ match.maTranDau }}</td>
+                    
+                    <!-- THÊM: Cột hiển thị tên đội -->
+                    
+                    
+                    <!-- SỬA: Cột tỉ số với tên đội -->
                     <td>
-                      <span class="badge bg-light text-dark fs-6">{{ match.tiSo }}</span>
-                    </td>
-                    <td>
-                      <span :class="getResultBadgeClass(match.tiSo)" class="badge">
-                        {{ getMatchResult(match.tiSo) }}
-                      </span>
-                    </td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <small class="text-muted me-2">N:{{ match.doiNha_tiLeKiemSoatBong }}%</small>
-                        <small class="text-muted">K:{{ match.doiKhach_tiLeKiemSoatBong }}%</small>
+                      <div class="d-flex flex-column align-items-center">
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                          <small class="fw-semibold text-primary">{{ match.doiNha }}</small>
+                          <span class="badge bg-dark mx-2" v-if="match.ketQuaData && match.ketQuaData.tiSo">
+                            {{ parseScore(match.ketQuaData.tiSo).home }} - {{ parseScore(match.ketQuaData.tiSo).away }}
+                          </span>
+                          <small class="fw-semibold text-danger">{{ match.doiKhach }}</small>
+                        </div>
+                        <small class="text-muted mt-1" v-if="!match.ketQuaData || !match.ketQuaData.tiSo">
+                          Chưa có kết quả
+                        </small>
                       </div>
                     </td>
+                    
+                    <td>
+                      <span :class="getResultBadgeClass(match)" class="badge">
+                        {{ getMatchResult(match) }}
+                      </span>
+                    </td>
+                    
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <small class="text-muted me-2">N:{{ getBallControlDisplay(match).home }}%</small>
+                        <small class="text-muted">K:{{ getBallControlDisplay(match).away }}%</small>
+                      </div>
+                    </td>
+                    
                     <td>
                       <span class="badge bg-warning text-dark">
-                        {{ (match.doiNha_soTheVang || 0) + (match.doiKhach_soTheVang || 0) }}
+                        {{ getDisciplineStats(match).yellowCards }}
                       </span>
                     </td>
+                    
                     <td>
                       <span class="badge bg-danger">
-                        {{ (match.doiNha_soTheDo || 0) + (match.doiKhach_soTheDo || 0) }}
+                        {{ getDisciplineStats(match).redCards }}
                       </span>
                     </td>
+                    
                     <td>
                       <span class="badge bg-info text-dark">
-                        {{ (match.doiNha_soPhaPhamLoi || 0) + (match.doiKhach_soPhaPhamLoi || 0) }}
+                        {{ getDisciplineStats(match).fouls }}
                       </span>
                     </td>
+                    
                     <td>
                       <span :class="getFairplayBadgeClass(match)" class="badge">
                         {{ calculateFairplayRate(match) }}%
@@ -231,290 +675,34 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue';
-import { Chart, registerables } from 'chart.js';
-import instance from '@/utils/axios';
-import { parseScore } from '@/utils';
-
-Chart.register(...registerables);
-
-// Reactive data
-const isLoading = ref(false);
-const matches = ref([]);
-const matchStats = ref({
-  totalMatches: 0,
-  wins: 0,
-  losses: 0,
-  draws: 0,
-  winRate: 0,
-  lossRate: 0,
-  drawRate: 0,
-  goalDifference: 0,
-  totalGoalsFor: 0,
-  totalGoalsAgainst: 0,
-  totalYellowCards: 0,
-  totalRedCards: 0,
-  totalFouls: 0,
-  avgBallControl: 0,
-  fairplayRate: 0
-});
-
-// Chart instances
-let resultChart = null;
-let disciplineChart = null;
-let ballControlChart = null;
-
-// API call
-const fetchMatchStats = async () => {
-  isLoading.value = true;
-  try {
-    const res = await instance.get('/ketquatrandau');
-    matches.value = res.data;
-    calculateStats(matches.value);
-    createCharts();
-  } catch (error) {
-    console.error('Lỗi fetch thống kê trận đấu:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// Calculate statistics
-const calculateStats = (matches) => {
-  let wins = 0, losses = 0, draws = 0;
-  let totalGoalsFor = 0, totalGoalsAgainst = 0;
-  let totalYellowCards = 0, totalRedCards = 0, totalFouls = 0;
-  let totalBallControl = 0;
-
-  matches.forEach(match => {
-    // Tính kết quả trận đấu
-    if (match.tiSo) {
-      try {
-        const score = parseScore(match.tiSo);
-        totalGoalsFor += score.home;
-        totalGoalsAgainst += score.away;
-
-        if (score.difference > 0) {
-          wins++;
-        } else if (score.difference < 0) {
-          losses++;
-        } else {
-          draws++;
-        }
-      } catch (error) {
-        console.warn('Lỗi parse tỉ số:', match.tiSo);
-      }
-    }
-
-    // Tính thẻ và pha phạm lỗi
-    totalYellowCards += (match.doiNha_soTheVang || 0) + (match.doiKhach_soTheVang || 0);
-    totalRedCards += (match.doiNha_soTheDo || 0) + (match.doiKhach_soTheDo || 0);
-    totalFouls += (match.doiNha_soPhaPhamLoi || 0) + (match.doiKhach_soPhaPhamLoi || 0);
-
-    // Tính kiểm soát bóng
-    if (match.doiNha_tiLeKiemSoatBong) {
-      totalBallControl += match.doiNha_tiLeKiemSoatBong;
-    }
-  });
-
-  const totalMatches = matches.length;
-  const goalDifference = totalGoalsFor - totalGoalsAgainst;
-  const avgBallControl = totalMatches > 0 ? Math.round(totalBallControl / totalMatches) : 0;
-
-  // Tính tỷ lệ Fairplay (càng ít thẻ và phạm lỗi càng cao)
-  const totalCards = totalYellowCards + totalRedCards * 2; // Thẻ đỏ tính nặng hơn
-  const fairplayRate = Math.max(0, 100 - (totalCards * 2 + totalFouls * 0.1));
-
-  matchStats.value = {
-    totalMatches,
-    wins,
-    losses,
-    draws,
-    winRate: totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0,
-    lossRate: totalMatches > 0 ? Math.round((losses / totalMatches) * 100) : 0,
-    drawRate: totalMatches > 0 ? Math.round((draws / totalMatches) * 100) : 0,
-    goalDifference,
-    totalGoalsFor,
-    totalGoalsAgainst,
-    totalYellowCards,
-    totalRedCards,
-    totalFouls,
-    avgBallControl,
-    fairplayRate: Math.round(fairplayRate)
-  };
-};
-
-// Create charts
-const createCharts = () => {
-  // Biểu đồ kết quả
-  if (resultChart) resultChart.destroy();
-  const resultCtx = document.getElementById('resultChart').getContext('2d');
-  resultChart = new Chart(resultCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Thắng', 'Hòa', 'Thua'],
-      datasets: [{
-        data: [matchStats.value.wins, matchStats.value.draws, matchStats.value.losses],
-        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-        borderWidth: 2,
-        borderColor: '#fff'
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: '#6c757d',
-            font: { size: 12 }
-          }
-        }
-      }
-    }
-  });
-
-  // Biểu đồ kỷ luật
-  if (disciplineChart) disciplineChart.destroy();
-  const disciplineCtx = document.getElementById('disciplineChart').getContext('2d');
-  disciplineChart = new Chart(disciplineCtx, {
-    type: 'bar',
-    data: {
-      labels: ['Thẻ vàng', 'Thẻ đỏ', 'Pha phạm lỗi'],
-      datasets: [{
-        label: 'Số lượng',
-        data: [matchStats.value.totalYellowCards, matchStats.value.totalRedCards, matchStats.value.totalFouls],
-        backgroundColor: ['#ffc107', '#dc3545', '#17a2b8'],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { color: '#6c757d' }
-        },
-        x: {
-          ticks: { color: '#6c757d' }
-        }
-      }
-    }
-  });
-
-  // Biểu đồ kiểm soát bóng
-  if (ballControlChart) ballControlChart.destroy();
-  const ballControlCtx = document.getElementById('ballControlChart').getContext('2d');
-  ballControlChart = new Chart(ballControlCtx, {
-    type: 'line',
-    data: {
-      labels: matches.value.map((_, index) => `Trận ${index + 1}`),
-      datasets: [{
-        label: 'Kiểm soát bóng (%)',
-        data: matches.value.map(match => match.doiNha_tiLeKiemSoatBong || 0),
-        borderColor: '#007bff',
-        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-        tension: 0.3,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: { color: '#6c757d' }
-        }
-      },
-      scales: {
-        y: {
-          min: 0,
-          max: 100,
-          ticks: { color: '#6c757d' }
-        },
-        x: {
-          ticks: { color: '#6c757d' }
-        }
-      }
-    }
-  });
-};
-
-// Helper functions
-const getMatchResult = (score) => {
-  if (!score) return 'Chưa có kết quả';
-  try {
-    const result = parseScore(score);
-    if (result.difference > 0) return 'Thắng';
-    if (result.difference < 0) return 'Thua';
-    return 'Hòa';
-  } catch {
-    return 'Lỗi';
-  }
-};
-
-const getResultBadgeClass = (score) => {
-  if (!score) return 'bg-secondary';
-  try {
-    const result = parseScore(score);
-    if (result.difference > 0) return 'bg-success';
-    if (result.difference < 0) return 'bg-danger';
-    return 'bg-warning text-dark';
-  } catch {
-    return 'bg-secondary';
-  }
-};
-
-const calculateFairplayRate = (match) => {
-  const yellowCards = (match.doiNha_soTheVang || 0) + (match.doiKhach_soTheVang || 0);
-  const redCards = (match.doiNha_soTheDo || 0) + (match.doiKhach_soTheDo || 0);
-  const fouls = (match.doiNha_soPhaPhamLoi || 0) + (match.doiKhach_soPhaPhamLoi || 0);
-  
-  const penalty = yellowCards * 5 + redCards * 15 + fouls * 1;
-  return Math.max(0, 100 - penalty);
-};
-
-const getFairplayBadgeClass = (match) => {
-  const rate = calculateFairplayRate(match);
-  if (rate >= 80) return 'bg-success';
-  if (rate >= 60) return 'bg-warning text-dark';
-  return 'bg-danger';
-};
-
-const refreshData = () => {
-  fetchMatchStats();
-};
-
-// Lifecycle
-onMounted(() => {
-  fetchMatchStats();
-});
-</script>
-
 <style scoped>
-.card {
-  border-radius: 0.5rem;
-}
-
-.table th {
-  font-weight: 600;
-  color: #495057;
-  font-size: 0.875rem;
-}
-
+/* CSS giữ nguyên và thêm */
 .table td {
-  font-size: 0.875rem;
+  vertical-align: middle;
 }
 
 .badge {
   font-size: 0.75rem;
 }
 
-.border {
-  border-color: #e9ecef !important;
+.bg-dark {
+  background-color: #343a40 !important;
+}
+
+.text-primary {
+  color: #007bff !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.fw-bold {
+  font-weight: 600;
+}
+
+/* Đảm bảo bảng responsive */
+.table-responsive {
+  border-radius: 0.5rem;
 }
 </style>

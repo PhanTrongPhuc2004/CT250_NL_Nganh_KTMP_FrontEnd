@@ -78,7 +78,6 @@ const fetchMatchList = async () => {
   );
   upComingMatch.value = response?.data.filter((match) => match.trangThai == 'chua_bat_dau');
   matchPlayed.value = response?.data.filter((match) => match.trangThai == 'ket_thuc');
-  console.log("tran dau da ket thuc", matchPlayed.value);
   return response.data;
   } catch (error) {
     console.log(error);
@@ -166,7 +165,7 @@ onMounted(async () => {
       <div style="background-color: var(--home-background-color);" class="p-5">
         <div  class="container">
         <h1>Tran dau gan day</h1>
-        <div class="d-flex flex-wrap gap-3 flex-row w-100">
+        <div class="d-flex flex-wrap gap-3 flex-row col-md-12">
           <swiper
             :modules="[Autoplay, Navigation, Pagination]"
             :slides-per-view="Math.min(3, matchPlayed.length)"
@@ -197,34 +196,34 @@ onMounted(async () => {
 
       <div style="background-color: var(--home-background-color);" class="p-5">
         <div class="container">
-        <h1>Tran dau sắp diễn ra</h1>
-        <div class="d-flex flex-wrap gap-3 flex-row w-100">
-          <swiper
-            :modules="[Autoplay, Navigation, Pagination]"
-            :slides-per-view="Math.min(3, upComingMatch.length)"
-            :space-between="20"
-            :autoplay="{ delay: 2000, disableOnInteraction: false }"
-            :loop="upComingMatch.length > 6"
-            :navigation="upComingMatch.length > 3"
-            :pagination="{ clickable: upComingMatch.length > 1 }"
-            class="playerSlice"
-          >
-            <swiper-slide
-              v-for="(match, index) in upComingMatch"
-              :key="index"
+          <h1>Tran dau sắp diễn ra</h1>
+          <div class="d-flex flex-wrap gap-3 flex-row w-100">
+            <swiper
+              :modules="[Autoplay, Navigation, Pagination]"
+              :slides-per-view="Math.min(3, upComingMatch.length)"
+              :space-between="20"
+              :autoplay="{ delay: 2000, disableOnInteraction: false }"
+              :loop="upComingMatch.length > 6"
+              :navigation="upComingMatch.length > 3"
+              :pagination="{ clickable: upComingMatch.length > 1 }"
+              class="playerSlice"
             >
-              <div class="col-md-12">
-                <MatchCard :item="match" />
+              <swiper-slide
+                v-for="(match, index) in upComingMatch"
+                :key="index"
+              >
+                <div class="col-md-12">
+                  <MatchCard :item="match" />
+                </div>
+              </swiper-slide>
+              
+              <!-- Hiển thị thông báo khi không có trận đấu -->
+              <div v-if="upComingMatch.length === 0" class="text-center py-5">
+                <p class="text-muted">Không có trận đấu nào để hiển thị</p>
               </div>
-            </swiper-slide>
-            
-            <!-- Hiển thị thông báo khi không có trận đấu -->
-            <div v-if="upComingMatch.length === 0" class="text-center py-5">
-              <p class="text-muted">Không có trận đấu nào để hiển thị</p>
-            </div>
-          </swiper>
+            </swiper>
+          </div>
         </div>
-      </div>
       </div>
 
       <div>

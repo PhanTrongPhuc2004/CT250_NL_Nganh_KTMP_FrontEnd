@@ -37,13 +37,11 @@ const closeMenu = () => {
 // Image handling
 const handleImageLoad = () => {
   imageLoaded.value = true;
-  console.log('✅ Image loaded:', props.item.tenGiaiDau);
 };
 
 const handleImageError = () => {
   imageError.value = true;
   imageLoaded.value = true; // Still mark as loaded to show default
-  console.log('❌ Image failed to load:', props.item.tenGiaiDau);
 };
 
 // Get image source with optimization
@@ -141,8 +139,8 @@ onMounted(() => {
         </button>
         <Menu
           v-if="isMenuOpen(item._id)"
-          top="100%"
-          right="0"
+          top="-115px"
+          right="10px"
           :menu-items="currentMenuItems"
           :on-close="closeMenu"
         />
