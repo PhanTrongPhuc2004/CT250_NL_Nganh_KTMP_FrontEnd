@@ -301,13 +301,11 @@ const lastUpdated = computed(() => {
 
 // Hàm refresh dữ liệu
 const refreshData = async () => {
-  console.log("🔄 Đang làm mới dữ liệu...");
   try {
     loading.value = true;
       await fetchSquadInfo(),
       await fetchPlayers()
     lastUpdateTime.value = new Date();
-    console.log("✅ Dữ liệu đã được làm mới");
   } catch (error) {
     console.error("❌ Lỗi khi làm mới dữ liệu:", error);
     errorMessage.value = "Có lỗi xảy ra khi làm mới dữ liệu!";
@@ -319,7 +317,6 @@ const refreshData = async () => {
 const handleViewPlayer = (player) => {
   currentViewPlayer.value = player;
   showPlayerDetailModal.value = true;
-  console.log("Xem chi tiết cầu thủ:", player);
 };
 
 const handleDeletePlayer = async (player) => {
@@ -424,7 +421,6 @@ const fetchSquadInfo = async () => {
 
 const fetchPlayerMaDoiHinh = async () => {
   if (!squadInfo.value) return;
-  console.log("🔍 Đang tải danh sách cầu thủ...");
   try {
     const res = await axios.get(
       `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu?maDoiHinh=${
@@ -433,7 +429,6 @@ const fetchPlayerMaDoiHinh = async () => {
       { withCredentials: true }
     );
     playersInSquad.value = res.data || [];
-    console.log(`📋 Đã tải ${playersInSquad.value.length} cầu thủ trong đội hình`);
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách cầu thủ:", error);
     playersInSquad.value = [];
@@ -451,7 +446,6 @@ const fetchPlayers = async () => {
     playersInSquad.value = players.value.filter(
       (player) => player.maDoiHinh === squadInfo.value.maDoiHinh
     );
-    console.log(`📋 Đã tải ${players.value.length} cầu thủ`);
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách cầu thủ:", error);
     players.value = [];
@@ -468,7 +462,6 @@ const closeAddPlayerForm = () => {
 
 // QUAN TRỌNG: Sửa event handler này
 const handlePlayersUpdated = (updatedPlayers) => {
-  console.log("🎯 Nhận được sự kiện cập nhật từ form:", updatedPlayers);
   refreshData();
   closeAddPlayerForm();
 };
@@ -502,10 +495,8 @@ const goBack = () => {
 // Auto refresh mỗi 30 giây (tùy chọn)
 let refreshInterval;
 onMounted(async () => {
-  console.log("squad detail dang mound")
   try {
     await refreshData();
-    console.log("da refresh data")
     
     
   } catch (error) {
