@@ -39,7 +39,9 @@ import {
   faChartBar,
   faFileContract,
   faSort,
-  faSearch
+  faSearch,
+  faChartLine,
+  faPenToSquare
 } from "@fortawesome/free-solid-svg-icons";
 
 // Regular icons
@@ -83,7 +85,7 @@ library.add(
   faFacebook,
   faTwitter,
   faSort,
-  faSearch, faBell
+  faSearch, faBell,faChartLine,faPenToSquare
 );
 
 // Tạo app

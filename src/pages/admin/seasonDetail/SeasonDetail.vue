@@ -53,6 +53,17 @@ const isLoading = computed(() => loading.value && matches.value.length === 0);
 
 const updateResultMatchFields = [
   {
+    name:"ketQua",
+    type: "select",
+    label: "Kết quả",
+    required: true,
+    children: [
+      {name: "Thắng"},
+      {name: "Hòa"},
+      {name: "Thua"}
+    ]
+  },
+  {
     name: "tiSo",
     type: "text",
     label: "Tỉ số chung",
@@ -165,6 +176,10 @@ const matchMenuItems = [
   {
     label: "Cập nhật kết quả",
     action: (item) => handleUpdateResult(item),
+  },
+  {
+    label: "Xem chi tiết",
+    action: (item) => {router.push(`/admin/compete/tournament/${tournamentId}/season/${seasonId}/match/${item._id}`)}
   },
   {
     label: "Xóa",
@@ -432,7 +447,6 @@ onMounted(async () => {
     },
   ];
 
-  console.log("orther training fields", ortherTrainingFields.value);
 });
 </script>
 

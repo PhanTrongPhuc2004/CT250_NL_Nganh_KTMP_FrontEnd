@@ -16,35 +16,29 @@ export const useFormStore = defineStore("formStore", () => {
   }
 
   function openForm(name, data = {}) {
-    console.log("🟢 Mở form:", name, data);
     currentForm.value = name;
     formData.value = { ...data };
     isOpen.value = true;
   }
 
   function isCurrent(name) {
-    console.log("🧩 Kiểm tra form:", name, currentForm.value, isOpen.value);
     return currentForm.value === name && isOpen.value;
   }
 
   // 🆕 THÊM CÁC FUNCTION MỚI
   function triggerRefreshSquads() {
-    console.log("🔄 Store: Trigger refresh squads");
     refreshSquads.value = true;
   }
 
   function clearRefreshSquads() {
-    console.log("🔄 Store: Clear refresh squads");
     refreshSquads.value = false;
   }
 
   function triggerRefreshPlayers() {
-    console.log("🔄 Store: Trigger refresh players");
     refreshPlayers.value = true;
   }
 
   function clearRefreshPlayers() {
-    console.log("🔄 Store: Clear refresh players");
     refreshPlayers.value = false;
   }
 

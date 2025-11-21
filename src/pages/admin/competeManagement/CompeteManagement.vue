@@ -64,7 +64,6 @@ const fetchTournaments = async () => {
       withCredentials: true,
     });
     tournaments.value = res.data;
-    console.log(tournaments.value);
   } catch (error) {
     console.error("Lỗi khi tải danh sách giải đấu:", error);
     errorMessage.value = "Không thể tải danh sách giải đấu. Vui lòng thử lại!";

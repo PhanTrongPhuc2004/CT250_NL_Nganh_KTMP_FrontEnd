@@ -52,7 +52,6 @@ const closeMenu = () => {
 };
 
 const handleMenuItemClick = (menuItem) => {
-  console.log("Menu item clicked:", menuItem, props.item);
   closeMenu();
 
   
@@ -64,18 +63,15 @@ const handleMenuItemClick = (menuItem) => {
 
 const handleClickCard = () => {
   if (event.target.closest('button') || event.target.closest('.menu-container')) {
-    console.log('Click vào menu, bỏ qua navigation');
     return;
   }
 
   if (showMenu.value) {
-    console.log('Menu đang mở, bỏ qua navigation');
     return;
   }
 
 
   router.push(`/cauthu/${props.item._id}`);
-  console.log("chuyen den trang cau thu ", props.item._id)
 };
 </script>
 
@@ -83,11 +79,11 @@ const handleClickCard = () => {
   <!-- Player Card -->
   <div
     :class="cx('player-card')"
-    class="border rounded-4 shadow-sm overflow-hidden position-relative cursor-pointer"
+    class="border rounded-4 shadow-sm overflow-hidden position-relative cursor-pointer col-md-12"
     @click="handleClickCard"
   >
     <!-- Player Image and Info -->
-    <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" />
+    <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" class="col-md-12"/>
     <div :class="cx('info')">
       <span v-if="item.soAo" class="fs-1 fw-bold text-white">#{{ item.soAo }}</span>
       <h3

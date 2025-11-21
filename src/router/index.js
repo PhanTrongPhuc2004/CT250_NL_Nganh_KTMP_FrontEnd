@@ -311,35 +311,26 @@ router.beforeEach(async (to, from, next) => {
     // Lưu user info
     currentUserAfterRefresh = user;
 
-    console.log("🔍 Router Debug:");
-    console.log(" - User role:", vaiTro);
-    console.log(" - To path:", to.path);
-    console.log(" - To meta:", to.meta);
-    console.log(" - Is common route?", to.meta?.common);
-    console.log(" - Is admin route?", to.meta?.admin);
+
 
     // 🚨 QUAN TRỌNG: Kiểm tra common routes TRƯỚC TIÊN
     if (to.meta?.common) {
-      console.log("📍 Common route, cho phép truy cập");
       return next();
     }
 
     // Kiểm tra admin routes
     if (to.meta?.admin && vaiTro !== "admin") {
-      console.log("❌ Không phải admin, redirect về /");
       return next({ path: "/" });
     }
 
     // Kiểm tra role-based routes
     if (to.meta?.role && vaiTro !== to.meta.role) {
-      console.log(`❌ Role không phù hợp: ${vaiTro} != ${to.meta.role}`);
       return next({ path: "/" });
     }
 
     // 🚨 SỬA: Chỉ giữ 1 điều kiện cho admin redirect
     if (vaiTro === "admin" && !to.meta?.admin && !to.meta?.common) {
-      console.log("🔄 Admin truy cập non-admin route, redirect về /admin");
-      return next({ path: "/admin" });
+      return next({ path: "/admin/dashboard" });
     }
 
     // Xóa điều kiện trùng lặp này
@@ -355,20 +346,16 @@ router.beforeEach(async (to, from, next) => {
       // Các role khác có thể có redirect khác
     }
 
-    console.log("✅ Cho phép tiếp tục");
     next();
   } catch (err) {
-    console.log("❌ Router: Lỗi fetch user:", err.response?.status, err.message);
 
     // 🚨 Cho phép common routes ngay cả khi chưa login
     if (to.meta?.common) {
-      console.log("📍 Common route, cho phép truy cập dù chưa login");
       return next();
     }
 
     if (err.response?.status === 401) {
       try {
-        console.log("🔄 Router: Phát hiện 401, thử refresh token...");
         
         await axios.post(
           `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/refresh-token`,
@@ -376,7 +363,6 @@ router.beforeEach(async (to, from, next) => {
           { withCredentials: true, _skipRetry: true }
         );
 
-        console.log("✅ Router: Refresh token thành công");
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         const res = await axios.get(
@@ -388,16 +374,13 @@ router.beforeEach(async (to, from, next) => {
         const vaiTro = user.vaiTro;
         currentUserAfterRefresh = user;
 
-        console.log("✅ Router: User role sau refresh:", vaiTro);
 
         // 🚨 Kiểm tra common routes sau refresh
         if (to.meta?.common) {
-          console.log("📍 Common route sau refresh, cho phép truy cập");
           return next();
         }
 
         if (vaiTro === "admin") {
-          console.log("🔄 Router: Redirect admin về /admin sau refresh");
           if (to.path !== "/admin" && !to.meta?.admin && !to.meta?.common) {
             return next({ path: "/admin", replace: true });
           }
@@ -409,7 +392,6 @@ router.beforeEach(async (to, from, next) => {
 
         // 🚨 Cho phép common routes ngay cả khi refresh thất bại
         if (to.meta?.common) {
-          console.log("📍 Common route, cho phép truy cập dù refresh thất bại");
           return next();
         }
 
@@ -422,7 +404,6 @@ router.beforeEach(async (to, from, next) => {
     } else {
       // 🚨 Cho phép common routes với các lỗi khác
       if (to.meta?.common) {
-        console.log("📍 Common route, cho phép truy cập với lỗi khác");
         return next();
       }
       
@@ -437,14 +418,12 @@ router.beforeEach(async (to, from, next) => {
 router.beforeResolve((to, from, next) => {
   // 🚨 QUAN TRỌNG: Bỏ qua common routes và public routes
   if (to.meta?.common || !to.meta?.requiresAuth) {
-    console.log("📍 beforeResolve: Common/public route, bỏ qua redirect");
     return next();
   }
 
   // 🚨 CHỈ redirect nếu route yêu cầu auth và không phải common
   if (currentUserAfterRefresh && currentUserAfterRefresh.vaiTro === "admin") {
     if (to.path !== "/admin" && !to.meta?.admin && to.meta?.requiresAuth) {
-      console.log("🔄 beforeResolve: Redirect admin về /admin");
       return next({ path: "/admin", replace: true });
     }
   }

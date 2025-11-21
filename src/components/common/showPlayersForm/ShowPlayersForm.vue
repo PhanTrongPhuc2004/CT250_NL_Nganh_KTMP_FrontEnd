@@ -225,7 +225,6 @@ const fetchAllPlayers = async () => {
       maDoiHinh: player.maDoiHinh || "", // Ensure maDoiHinh exists
     }));
 
-    console.log("📋 Danh sách cầu thủ:", allPlayers.value);
     
     // Store original data for change detection
     originalData.value = JSON.parse(JSON.stringify(allPlayers.value));
@@ -244,7 +243,6 @@ const fetchSquads = async () => {
     );
 
     squads.value = response.data;
-    console.log("📋 Danh sách đội hình:", squads.value);
   } catch (error) {
     console.error("❌ Lỗi khi tải danh sách đội hình:", error);
     alert("Không thể tải danh sách đội hình. Vui lòng thử lại!");
@@ -287,7 +285,6 @@ const handleSubmit = async () => {
       }
     }
 
-    console.log("🔄 Cập nhật đội hình:", updates);
 
     // Thực hiện cập nhật
     for (const update of updates) {
@@ -299,7 +296,6 @@ const handleSubmit = async () => {
           },
           { withCredentials: true }
         );
-        console.log(`✅ Đã cập nhật đội hình cho: ${update.playerName}`);
       } catch (error) {
         console.error(`❌ Lỗi cập nhật cầu thủ ${update.playerName}:`, error);
       }

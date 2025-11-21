@@ -192,7 +192,6 @@ const deleteUser = async (id) => {
 async function handleOpenForm(mode, vaiTro, user = null) {
   formMode.value = mode;
   formData.value = mode === "add" ? { vaiTro } : { ...user };
-  console.log("formData", formData.value);
 
   if (vaiTro === "cauthu" || vaiTro === "huanluyenvien") await fetchSquad();
 

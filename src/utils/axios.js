@@ -39,7 +39,6 @@ instance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        console.log("🔄 Interceptor: Token hết hạn, đang refresh...");
 
         await instance.post(
           "/nguoidung/refresh-token",
@@ -50,7 +49,6 @@ instance.interceptors.response.use(
           }
         );
 
-        console.log("✅ Interceptor: Refresh token thành công");
 
         // Đợi browser xử lý cookie mới
         await new Promise((resolve) => setTimeout(resolve, 300));
