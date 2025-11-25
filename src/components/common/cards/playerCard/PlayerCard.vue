@@ -28,6 +28,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  height: {
+      type: String,
+      default: "300px",
+    }
 });
 
 const emit = defineEmits(["menu-action"]);
@@ -35,6 +39,7 @@ const emit = defineEmits(["menu-action"]);
 const userInfor = ref(null);
 onMounted(async () => {
   userInfor.value = await getMe();
+  console.log("item ben player card", props.item);
 });
 
 // Menu state
@@ -79,20 +84,18 @@ const handleClickCard = () => {
   <!-- Player Card -->
   <div
     :class="cx('player-card')"
-    class="border rounded-4 shadow-sm overflow-hidden position-relative cursor-pointer col-md-12"
+    class="border  shadow-sm overflow-hidden position-relative cursor-pointer col-md-12 text-center"
     @click="handleClickCard"
+    :style="{ height: height }"
   >
     <!-- Player Image and Info -->
-    <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" class="col-md-12"/>
+    <img :src="item.anhMinhHoa" alt="player" :class="cx('player-img')" class=""/>
     <div :class="cx('info')">
-      <span v-if="item.soAo" class="fs-1 fw-bold text-white">#{{ item.soAo }}</span>
-      <h3
-        class="fw-bold w-50"
-        style="font-size: 30px; white-space: normal; overflow-wrap: normal"
+      <h5
+        class="fw-bold text-center"
       >
-        {{ item.hoVaTen }}
-      </h3>
-      <p :class="cx('sub')">{{ item.viTri }}</p>
+        {{`${item.soAo} ${item.hoVaTen}` }}
+      </h5>
     </div>
 
     <!-- Menu Button (chỉ hiển thị khi có menu items) -->

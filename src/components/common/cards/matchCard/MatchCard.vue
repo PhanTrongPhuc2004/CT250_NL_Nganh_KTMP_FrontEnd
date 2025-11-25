@@ -24,6 +24,7 @@
       type: Array,
       default: () => [],
     },
+    
   });
 
   const activeMenuId = ref(null);
@@ -52,6 +53,7 @@
   });
 
   const isMatchFinished = computed(() => {
+    console.log("trang thai", props.item.trangThai);
     return ["ket_thuc", "hoan_thanh", "huy_bo"].includes(props.item.trangThai);
   });
 
@@ -143,16 +145,16 @@
 
   <template>
     <div class="match-card h-100" style="cursor: pointer; ">
-      <div class="border rounded-4 shadow-sm bg-white h-100 d-flex flex-column">
+      <div class=" shadow-sm bg-white h-100 d-flex flex-column">
         <div class="position-relative">
           <img
             src="https://img.freepik.com/vector-gratis/papel-pintado-textura-hexagonal-oscuro-audaz-estilo-geometrico_1017-43003.jpg"
             alt="Background trận đấu"
-            class="w-100 rounded-top-4"
+            class="w-100 "
             style="height: 120px; object-fit: cover"
           />
           <div
-            class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 rounded-top-4"
+            class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
           ></div>
 
           <div
@@ -238,9 +240,9 @@
 
           <div
             v-if="currentStatus.showTicket && userInfor?.vaiTro !== 'admin'"
-            class="mt-3"
+            class="mt-3 text-center"
           >
-            <button class="btn btn-warning w-100" @click="handleBookTicket">
+            <button class="btn btn-warning w-75 rounded-0" @click="handleBookTicket">
               <FontAwesomeIcon :icon="['fas', 'ticket-alt']" class="me-2" />
               Đặt vé ngay
             </button>
@@ -260,7 +262,7 @@
           </button>
           <Menu
             v-if="isMenuOpen(item._id)"
-            top="-115px"
+            top="-155px"
             right="10px"
             :menu-items="currentMenuItems"
             :on-close="closeMenu"

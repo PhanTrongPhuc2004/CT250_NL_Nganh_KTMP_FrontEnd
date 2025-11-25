@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
   <div
     ref="root"
     :class="cx('menu-wrapper')"
-    :style="{ top: top, right: right, zIndex: 5000 }"
+    :style="{ top: top, right: right, zIndex: 1000 }"
   >
     <ul>
       <li

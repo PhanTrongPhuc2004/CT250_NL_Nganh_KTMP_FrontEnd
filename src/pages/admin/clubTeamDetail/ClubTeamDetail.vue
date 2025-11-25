@@ -58,9 +58,9 @@
     <div class="pt-4 mt-3 border-top">
       
       <h4 class="pt-0 m-0 text-secondary py-3">Danh sách cầu thủ</h4>
-      <div class="d-flex flex-wrap gap-3 w-100">
+      <div class="d-flex flex-wrap  w-100">
   
-        <div v-for="(player, index) in playersInClubTeam" :key="index" class="col-md-2">
+        <div v-for="(player, index) in playersInClubTeam" :key="index" class="col-md-4">
           <PlayerCard :item="player" />
         </div>
   

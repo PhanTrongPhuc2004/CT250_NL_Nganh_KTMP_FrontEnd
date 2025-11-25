@@ -1,17 +1,14 @@
 <!-- /src/components/common/form/Form.vue -->
 <script setup>
 import { onMounted, reactive, watch, ref } from "vue";
-import axios from "axios";
 import classNames from "classnames/bind";
 import styles from "./form.module.scss";
 import { uploadToCloudinary } from "@/config/cloudinary.conf";
 import { useFormStore } from "@/stores/formStore";
 import instance from "@/utils/axios";
-import { getMe } from "@/utils";
+
 const formStore = useFormStore();
-
 const emit = defineEmits(["submitted", "updated", "deleted", "closed", "error"]);
-
 const cx = classNames.bind(styles);
 const allFields = ref([]);
 
@@ -27,82 +24,51 @@ const props = defineProps({
 
 const formData = reactive({});
 const isSubmitting = ref(false);
+const isUploading = ref(false);
+const imageUrl = ref(""); // Lưu URL ảnh sau khi upload
 
 // ================= INIT FORM DATA =================
 const initFormData = () => {
-  console.log(
-    "%c=================== FORM INIT ===================",
-    "color: blue; font-weight: bold"
-  );
-  console.log("Input Data:", props.inputData);
-  console.log("Other Data:", props.ortherData);
-  console.log("API URL:", props.api);
-  console.log("Method:", props.method);
-  console.log("orther fields", props.ortherFields)
-  console.log(
-    "================================================",
-    "color: blue"
-  );
-
   if (!props.inputFields) return;
 
-  // Clear trước khi init
   Object.keys(formData).forEach((key) => delete formData[key]);
 
-  // SỬA: Tạo allFields từ props mà không mutate props
   allFields.value = props.ortherFields
     ? [...props.inputFields, ...props.ortherFields]
     : props.inputFields;
 
-  // SỬA: Dùng allFields.value thay vì props.inputFields
   allFields.value.forEach((field) => {
-    // Bỏ qua divider và các field không có name
-    if (field.type === "divider" || !field.name) {
-      console.log(`Bỏ qua field: ${field.label} - type: ${field.type}`);
-      return;
-    }
+    if (field.type === "divider" || !field.name) return;
 
     let value = props.inputData?.[field.name] ?? "";
 
-    if (
-      field.type === "date" &&
-      typeof value === "string" &&
-      value.includes("T")
-    ) {
+    if (field.type === "date" && typeof value === "string" && value.includes("T")) {
       value = value.split("T")[0];
     }
 
-    if (
-      field.type === "array" &&
-      (!Array.isArray(value) || value.length === 0)
-    ) {
+    if (field.type === "array" && (!Array.isArray(value) || value.length === 0)) {
       value = ["", ""];
     }
 
     formData[field.name] = value;
   });
 
-  // Thêm vaiTro nếu có
   if (props.inputData?.vaiTro) {
     formData.vaiTro = props.inputData.vaiTro;
   }
 
-  // Lưu _id để tracking
   if (props.inputData?._id) {
     formData._id = props.inputData._id;
   }
 
-  console.log(
-    "%cForm Data sau khi init:",
-    "color: green; font-weight: bold",
-    formData
-  );
+  // Khởi tạo URL ảnh nếu có
+  if (props.inputData?.anhMinhHoa) {
+    imageUrl.value = props.inputData.anhMinhHoa;
+  }
 };
 
-onMounted(async () => {
-  console.log("input field o form", props.inputFields);
+onMounted(() => {
   initFormData();
-  console.log(" field ben Form", allFields.value);
 });
 
 watch(
@@ -113,23 +79,57 @@ watch(
   { immediate: true }
 );
 
-watch(
-  () => props.api,
-  (newApi) => {
-    console.log(
-      "%cAPI URL changed to:",
-      "color: orange; font-weight: bold",
-      newApi
-    );
+// ================= UPLOAD ẢNH RIÊNG =================
+const handleImageUpload = async (file) => {
+  if (!file) return null;
+  
+  try {
+    isUploading.value = true;
+    console.log("🔼 Đang upload ảnh lên Cloudinary...");
+    
+    const uploadedUrl = await uploadToCloudinary(file);
+    console.log("✅ Upload ảnh thành công:", uploadedUrl);
+    
+    imageUrl.value = uploadedUrl;
+    return uploadedUrl;
+  } catch (error) {
+    console.error("❌ Lỗi upload ảnh:", error);
+    alert("Lỗi upload ảnh! Vui lòng thử lại.");
+    throw error;
+  } finally {
+    isUploading.value = false;
   }
-);
+};
 
-// ================= HANDLE SUBMIT =================
-const handleSubmit = async () => {
-  if (isSubmitting.value) {
-    console.warn("Form đang submit, bỏ qua request mới");
+// ================= XỬ LÝ KHI CHỌN FILE ẢNH =================
+const handleFileChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validate file type và size
+  if (!file.type.startsWith('image/')) {
+    alert('Vui lòng chọn file ảnh!');
     return;
   }
+  
+  if (file.size > 5 * 1024 * 1024) { // 5MB
+    alert('Kích thước ảnh không được vượt quá 5MB!');
+    return;
+  }
+
+  try {
+    // Upload ảnh ngay khi chọn file
+    await handleImageUpload(file);
+    console.log("📸 Ảnh đã được upload và lưu tạm:", imageUrl.value);
+  } catch (error) {
+    // Reset file input nếu upload thất bại
+    event.target.value = '';
+  }
+};
+
+// ================= HANDLE SUBMIT (KHÔNG GỒM UPLOAD ẢNH) =================
+const handleSubmit = async () => {
+  if (isSubmitting.value) return;
 
   try {
     isSubmitting.value = true;
@@ -138,57 +138,52 @@ const handleSubmit = async () => {
     const itemId = props.inputData?._id;
 
     if ("_id" in payload) delete payload._id;
-    const url = props.api;
-    if (payload.anhMinhHoa) {
-      const img = await uploadToCloudinary(payload.anhMinhHoa);
-      payload.anhMinhHoa = img;
-    }
-    console.log("🔄 Đang gửi form...", {
-      url,
-      method: props.method,
-      payload,
-      formName: props.formName,
-    });
-    if (props.formName === "Đăng nhập") {
-      console.log("🔐 Xử lý form đăng nhập...");
 
+    // Thêm URL ảnh đã upload vào payload (nếu có)
+    if (imageUrl.value) {
+      payload.anhMinhHoa = imageUrl.value;
+    } else if (payload.anhMinhHoa && typeof payload.anhMinhHoa === 'string') {
+      // Giữ lại URL ảnh cũ nếu không có ảnh mới
+      payload.anhMinhHoa = payload.anhMinhHoa;
+    } else {
+      // Nếu không có ảnh, xóa trường này khỏi payload
+      delete payload.anhMinhHoa;
+    }
+
+    console.log("📤 Payload gửi đi (không gồm upload ảnh):", payload);
+
+    // Xử lý đăng nhập
+    if (props.formName === "Đăng nhập") {
       const response = await instance({
-        url,
+        url: props.api,
         method: props.method.toLowerCase(),
         data: payload,
       });
       window.location.reload();
-      console.log("✅ Đăng nhập thành công:", response.data);
-
-
       handleClose();
       return;
-    } else {
-      console.log("pay load truoc khi gui ", payload);
-      const response = await instance({
-        url,
-        method: props.method.toLowerCase(),
-        data: payload,
-      });
-
-      console.log("✅ Response nhận được:", response.data);
-            emit('submitted', response.data); // Quan trọng: emit event với dữ liệu mới
     }
 
-    if (props.method === "POST") {
-      console.log("📤 Trigger refresh squads từ store");
-      formStore.triggerRefreshSquads();
-    } else if (["PUT", "PATCH"].includes(props.method)) {
-      console.log("📤 Trigger refresh squads từ store");
+    // Gửi API chính (không chờ upload ảnh)
+    const response = await instance({
+      url: props.api,
+      method: props.method.toLowerCase(),
+      data: payload,
+    });
+
+    console.log("✅ Response nhận được:", response.data);
+    
+    // Trigger refresh và events
+    if (props.method === "POST" || ["PUT", "PATCH"].includes(props.method)) {
       formStore.triggerRefreshSquads();
     }
-
-    console.log("✅ Store đã được cập nhật");
+    
+    emit('submitted', response.data);
     handleClose();
+
   } catch (error) {
     console.error("❌ Lỗi khi submit form:", error);
-    const errorMsg =
-      error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
+    const errorMsg = error.response?.data?.message || "Có lỗi xảy ra khi gửi form!";
     alert(errorMsg);
     emit("error", error);
   } finally {
@@ -198,13 +193,14 @@ const handleSubmit = async () => {
 
 // ================= HANDLE CLOSE =================
 const handleClose = () => {
+  // Reset URL ảnh khi đóng form
+  imageUrl.value = "";
   emit("closed");
 };
 
 // ================= GET CHILDREN =================
 const getChildren = (field) => {
   if (!field.children) return [];
-  console.log("chifdren o form ", field.children);
   return field.children.value !== undefined
     ? field.children.value
     : field.children;
@@ -218,7 +214,7 @@ const getChildren = (field) => {
     @click.self="handleClose"
   >
     <div
-      class="modal-content shadow-lg p-4 rounded-4 bg-white w-50"
+      class="modal-content shadow-lg p-4 rounded-4 bg-white w-25"
       style="min-width: 500px; max-height: 90vh; overflow-y: auto"
       @click.stop
     >
@@ -235,8 +231,9 @@ const getChildren = (field) => {
       <div class="alert alert-info small mb-3" v-if="formData._id">
         <strong>Đang chỉnh sửa ID:</strong> {{ formData._id }}<br />
         <strong>API:</strong> {{ api }}<br />
+        <strong>URL ảnh hiện tại:</strong> {{ imageUrl || 'Chưa có ảnh' }}<br />
         <strong>Payload hiện tại:</strong>
-        <pre>{{ formData }}</pre>
+        <pre>{{ { ...formData, anhMinhHoa: imageUrl || formData.anhMinhHoa } }}</pre>
       </div>
 
       <form @submit.prevent="handleSubmit" class="d-flex flex-column gap-3">
@@ -258,13 +255,26 @@ const getChildren = (field) => {
             required
           />
 
-          <input
-            v-else-if="field.type === 'file'"
-            type="file"
-            accept="image/*"
-            class="form-control"
-            @change="(e) => (formData[field.name] = e.target.files[0])"
-          />
+          <div v-else-if="field.type === 'file'">
+            <input
+              type="file"
+              accept="image/*"
+              class="form-control"
+              @change="handleFileChange"
+            />
+            <div class="mt-2">
+              <small class="text-muted" v-if="isUploading">
+                ⏳ Đang upload ảnh...
+              </small>
+              <small class="text-success" v-else-if="imageUrl">
+                ✅ Ảnh đã sẵn sàng
+              </small>
+            </div>
+            <!-- Preview ảnh -->
+            <div v-if="imageUrl" class="mt-2">
+              <img :src="imageUrl" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
+            </div>
+          </div>
 
           <select
             v-else-if="field.type === 'select'"
@@ -305,9 +315,12 @@ const getChildren = (field) => {
         <button
           type="submit"
           class="btn btn-danger w-100 mt-2"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || isUploading"
         >
-          {{ isSubmitting ? "Đang xử lý..." : "Gửi" }}
+          {{ 
+            isUploading ? "Đang upload ảnh..." : 
+            isSubmitting ? "Đang xử lý..." : "Gửi" 
+          }}
         </button>
       </form>
     </div>

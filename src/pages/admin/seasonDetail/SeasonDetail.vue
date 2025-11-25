@@ -16,6 +16,8 @@ const tournamentInfo = ref({});
 const seasonInfo = ref({});
 const matches = ref([]);
 const upcommingMatches = ref([]);
+const matchesPlayed = ref([]);
+const currentSortMatches = ref([]);
 const squads = ref([]);
 const showMatchForm = ref(false);
 const showTrainingForm = ref(false);
@@ -26,6 +28,7 @@ const currentUpdateMatch = ref(null);
 const loading = ref(false);
 const errorMessage = ref("");
 const ortherTrainingFields = ref([]);
+const sortMatch = ref("all");
 
 const tournamentApi = `${import.meta.env.VITE_API_BE_BASE_URL}/giaidau`;
 const seasonApi = `${import.meta.env.VITE_API_BE_BASE_URL}/muagiai`;
@@ -210,8 +213,13 @@ const fetchMatchesBySeason = async () => {
       { withCredentials: true }
     );
     matches.value = response.data;
+    currentSortMatches.value = matches.value;
+
     upcommingMatches.value = response.data.filter(
       (match) => match.trangThai === "chua_bat_dau"
+    );
+    matchesPlayed.value = response.data.filter(
+      (match) => match.trangThai == "ket_thuc"
     );
   } catch (error) {
     console.error("Lỗi khi tải danh sách trận đấu:", error);
@@ -248,6 +256,18 @@ const fetchSquads = async () => {
     console.error("Lỗi khi tải danh sách đội hình:", error);
   }
 };
+
+const handleSortMatches = () => {
+  if (sortMatch.value === "all") {
+    currentSortMatches.value = matches.value;
+  } else if (sortMatch.value === "matchesPlayed") {
+    currentSortMatches.value = matchesPlayed.value;
+  } else if (sortMatch.value === "upcomingMatches") {
+    currentSortMatches.value = upcommingMatches.value;
+  } else {
+    currentSortMatches.value = matches.value;
+  }
+}
 
 const handleEditMatch = (match) => {
   currentEditMatch.value = match;
@@ -559,8 +579,16 @@ onMounted(async () => {
     </div>
 
     <div class="border-top pt-3 border-secondary-subtle mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
       <h4 class="text-secondary mb-3">Danh sách trận đấu</h4>
-
+      <div class="d-flex">
+        <select name="sortMatch" id="sortMatch" class="form-select form-select-sm w-auto" v-model="sortMatch" @change="handleSortMatches">
+          <option value="all">Tất cả trận đấu</option>
+          <option value="matchesPlayed">Trận đã diễn ra</option>
+          <option value="upcomingMatches">Trận sắp diễn ra</option>
+        </select>
+      </div>
+    </div>
       <div v-if="errorMessage" class="alert alert-danger">
         {{ errorMessage }}
       </div>
@@ -574,7 +602,7 @@ onMounted(async () => {
 
       <div v-else-if="hasMatches" class="row g-3">
         <div
-          v-for="match in matches"
+          v-for="match in currentSortMatches"
           :key="match._id"
           class="col-12 col-sm-6 col-md-4 col-lg-3"
         >

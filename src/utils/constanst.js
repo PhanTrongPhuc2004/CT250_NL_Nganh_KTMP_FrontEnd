@@ -12,7 +12,7 @@ export const adminFields = [
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
   { name: "diaChi", type: "text", label: "Địa chỉ" },
-  { name: "anhMinhHoa", type: "file", label: "Ảnh minh họa" },
+  { name: "anhMinhHoa", type: "file", label: "Ảnh đại diện" },
 ];
 
 export const nguoiHamMoFields = [
@@ -20,38 +20,50 @@ export const nguoiHamMoFields = [
   { name: "email", type: "email", label: "Email" },
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
+  {name: "anhMinhHoa", type: "file", label: "Ảnh đại diện" },
 ];
 export const playerFields = [
-  { name: "hoVaTen", type: "text", label: "Họ và tên" },
-  {name:"gioiTinh", type: "select", label: "Giới tính", children: [
+  { name: "hoVaTen", type: "text", label: "Họ và tên", required: true },
+  { name: "tenDangNhap", type: "text", label: "Tên đăng nhập", required: true },
+  { name: "matKhau", type: "password", label: "Mật khẩu", required: true },
+  { name: "email", type: "email", label: "Email", required: true },
+  
+  { type: "divider", label: "Thông tin cá nhân" },
+  
+  { name: "namSinh", type: "date", label: "Năm sinh" },
+  { name: "gioiTinh", type: "select", label: "Giới tính", children: [
     { name: "Nam" },
     { name: "Nữ" },
   ]},
-  { name: "email", type: "email", label: "Email" },
-  { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
-  { name: "matKhau", type: "password", label: "Mật khẩu" },
+  { name: "quocTich", type: "text", label: "Quốc tịch" },
   { name: "diaChi", type: "text", label: "Địa chỉ" },
-  { name: "namHanhNghe", type: "text", label: "Năm hành nghề" },
-  { name: "cauLacBoCu", type: "text", label: "Câu lạc bộ cũ" },
-  { name: "chieuCao", type: "number", step: "0.01", label: "Chiều cao" },
-  { name: "viTri", type: "select", label: "Vị trí", children: viTriOptions },
+  
+  // ================= THÔNG TIN THỂ THAO =================
+  { type: "divider", label: "Thông tin thể thao" },
+  
+  { name: "viTri", type: "select", label: "Vị trí", children: viTriOptions, required: true },
+  { name: "soAo", type: "number", label: "Số áo" },
+  { name: "chieuCao", type: "number", step: "0.01", label: "Chiều cao (m)" },
   {
     name: "chanThuan",
     type: "select",
     label: "Chân thuận",
     children: [{ name: "Trái" }, { name: "Phải" }, { name: "Cả hai" }],
   },
-  { name: "quocTich", type: "text", label: "Quốc tịch" },
-  { name: "soAo", type: "number", label: "Số áo" },
+  
+  { type: "divider", label: "Thông tin nghề nghiệp" },
+  
+  { name: "namHanhNghe", type: "text", label: "Năm hành nghề" },
+  { name: "cauLacBoCu", type: "text", label: "Câu lạc bộ cũ" },
   { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
-  { name: "namSinh", type: "date", label: "Năm sinh" },
   {
     name: "maDoiHinh",
     type: "select",
     label: "Đội hình",
     children: await fetchSquad(),
   },
-  { name: "anhMinhHoa", type: "file", label: "Ảnh minh họa" },
+  { type: "divider", label: "Hình ảnh" },
+  { name: "anhMinhHoa", type: "file", label: "Ảnh đại diện" },
 ];
 
 export const huanLuyenVienFields = [
@@ -64,7 +76,7 @@ export const huanLuyenVienFields = [
   { name: "cauLacBoCu", type: "text", label: "Câu lạc bộ cũ" },
   { name: "quocTich", type: "text", label: "Quốc tịch" },
   { name: "ngayGiaNhap", type: "date", label: "Ngày gia nhập" },
-  { name: "anhMinhHoa", type: "file", label: "Ảnh minh họa" },
+  { name: "anhMinhHoa", type: "file", label: "Ảnh đại diện" },
   {
     name: "maDoiHinh",
     type: "select",

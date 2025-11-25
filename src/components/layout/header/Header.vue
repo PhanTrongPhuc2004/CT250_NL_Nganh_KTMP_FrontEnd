@@ -110,7 +110,7 @@ const displayUserName = computed(() => {
       </div>
       <div :class="cx('nav-action')">
         <button
-          :class="cx('register-btn', 'btn', 'btn-primary')"
+          class="btn text-white fw-bold"
           type="button"
           @click="formStore.openForm('Đăng nhập', {})"
         >
@@ -118,7 +118,7 @@ const displayUserName = computed(() => {
         </button>
         <p style="margin: 0">|</p>
         <button
-          :class="cx('register-btn', 'btn', 'btn-primary')"
+          class="btn text-white fw-bold"
           type="button"
           @click="formStore.openForm('Đăng ký', {})"
         >
@@ -166,12 +166,12 @@ const displayUserName = computed(() => {
       </div>
     </nav>
    <div 
-  v-if="notificationState" 
-  class="position-fixed end-0 vh-75 overflow-y-auto bg-white shadow"
-  style="width: 80%; max-width: 600px; height: 70vh; top: var(--header-height); z-index: 1050;"
->
-  <Notification />
-</div>
+      v-if="notificationState" 
+      class="position-fixed end-0 vh-75 overflow-y-auto bg-white shadow"
+      style="width: 80%; max-width: 400px; height: 100vh; top: var(--header-height); z-index: 1050;"
+    >
+      <Notification />
+    </div>
   </div>
 
   <!-- Modal Đăng ký -->

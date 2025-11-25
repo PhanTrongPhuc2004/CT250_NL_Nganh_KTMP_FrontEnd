@@ -9,7 +9,7 @@ import SeasonCard from "@/components/common/cards/seasonCard/SeasonCard.vue";
 const route = useRoute();
 const router = useRouter();
 const tournamentId = route.params.tournamentId;
-
+const searchQuery = ref("");
 // --- STATE ---
 const tournamentInfo = ref({});
 const seasons = ref([]);
@@ -164,6 +164,19 @@ const seasonMenuItems = [
   { label: "Xem chi tiết", action: viewSeasonDetails },
   { label: "Xóa", action: deleteSeason, class: "text-danger" },
 ];
+
+const handleSearch = () => {
+  const query = searchQuery.value.trim().toLowerCase();
+  if (!query) {
+    fetchSeasonsByTournament();
+    return;
+  }
+
+  const filtered = seasons.value.filter((season) =>
+    season.tenMuaGiai.toLowerCase().includes(query)
+  );
+  seasons.value = filtered;
+};
 </script>
 
 <template>
@@ -179,10 +192,13 @@ const seasonMenuItems = [
         />
         <span>Chi tiết giải đấu</span>
       </h2>
-      <button class="btn btn-primary" @click="openSeasonForm">
-        <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
-        Thêm mùa giải
-      </button>
+      <div class="d-flex">
+        <input type="text" class="form-control form-control-sm w-auto me-3 " placeholder="Tìm kiếm..." v-model="searchQuery" @input="handleSearch" />
+        <button class="btn btn-primary" @click="openSeasonForm">
+          <FontAwesomeIcon icon="fa-solid fa-plus" class="me-1" />
+          Thêm mùa giải
+        </button>
+      </div>
     </div>
 
     <!-- Thông tin giải đấu -->

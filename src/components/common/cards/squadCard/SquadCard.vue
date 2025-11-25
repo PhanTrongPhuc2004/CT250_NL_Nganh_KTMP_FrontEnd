@@ -136,7 +136,7 @@ onUnmounted(() => {
             </button>
             <Menu
               v-if="isMenuOpen"
-              top="100%"
+              top="-130px"
               right="0"
               :menu-items="currentMenuItems"
               :on-close="closeMenu"

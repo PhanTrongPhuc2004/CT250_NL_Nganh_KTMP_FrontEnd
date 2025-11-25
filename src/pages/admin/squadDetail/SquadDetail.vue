@@ -81,16 +81,17 @@
         </div>
       </div>
 
-      <div v-if="playersInSquad.length > 0" class="row g-3">
+      <div v-if="playersInSquad.length > 0" class="d-flex flex-wrap  w-100">
         <div
           v-for="(player, index) in playersInSquad"
           :key="player._id || index"
-          class="col-12 col-sm-6 col-md-4 col-lg-3"
+          class="col-12 col-sm-6 col-md-4 col-lg-4"
         >
           <PlayerCard
             :item="player"
             :menu-items="getPlayerMenuItems(player)"
             @menu-action="handleMenuAction"
+            height="400px"
           />
         </div>
       </div>
@@ -125,7 +126,7 @@
       v-if="showPlayerDetailModal"
       class="modal fade show d-block"
       tabindex="-1"
-      style="background-color: rgba(0, 0, 0, 0.5)"
+      style="background-color: rgba(0, 0, 0, 0.5); z-index: 10000;"
     >
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -151,7 +152,7 @@
                     "
                     :alt="currentViewPlayer.hoVaTen"
                     class="img-fluid rounded-circle player-avatar"
-                    style="width: 200px; height: 200px; object-fit: cover"
+                    style="width: 200px; height: 200px; object-fit: cover; object-position: top;"
                   />
                 </div>
                 <h4 class="mt-3" style="color: grey">

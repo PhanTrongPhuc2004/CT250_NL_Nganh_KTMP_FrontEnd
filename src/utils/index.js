@@ -1,3 +1,5 @@
+import instance from "./axios";
+
 export const formatTime = (time) => {
   if (!time) return "Chưa xác định";
 
@@ -52,7 +54,7 @@ export const fetchSquad = async () => {
 
 export const fetchClubInfo = async () => {
   try {
-    const response = await axios.get(
+    const response = await instance.get(
       `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
     );
     return response.data;

@@ -3,25 +3,28 @@
     <!-- Tiêu đề -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="fw-semibold m-0" style="color: var(--primary-color);">Quản lý người dùng</h4>
-      <div class="d-flex gap-2">
-        <select
-          class="form-select form-select-sm w-auto"
-          v-model="roleUserAdded"
-        >
-          <option value="">Chọn vai trò</option>
-          <option value="admin">Quản trị viên</option>
-          <option value="nguoihammo">Người hâm mộ</option>
-          <option value="cauthu">Cầu thủ</option>
-          <option value="huanluyenvien">Huấn luyện viên</option>
-        </select>
-        <button
-          class="btn btn-sm text-white"
-          style="background-color: var(--button-primary-color);"
-          @click="handleOpenForm('add', roleUserAdded)"
-          :disabled="!roleUserAdded"
-        >
-          <i class="bi bi-plus-lg me-1"></i> Thêm
-        </button>
+      <div class="d-flex">
+        <input type="text" class="form-control form-control-sm w-auto me-3 " placeholder="Tìm kiếm..." v-model="searchQuery" @input="handleSearch" />
+        <div class="d-flex gap-2">
+          <select
+            class="form-select form-select-sm w-auto"
+            v-model="roleUserAdded"
+          >
+            <option value="">Chọn vai trò</option>
+            <option value="admin">Quản trị viên</option>
+            <option value="nguoihammo">Người hâm mộ</option>
+            <option value="cauthu">Cầu thủ</option>
+            <option value="huanluyenvien">Huấn luyện viên</option>
+          </select>
+          <button
+            class="btn btn-sm text-white"
+            style="background-color: var(--button-primary-color);"
+            @click="handleOpenForm('add', roleUserAdded)"
+            :disabled="!roleUserAdded"
+          >
+            <i class="bi bi-plus-lg me-1"></i> Thêm
+          </button>
+        </div>
       </div>
     </div>
     <div class="d-flex pt-3 border-top">
@@ -108,10 +111,10 @@
       :api="api"
       :method="formMode === 'add' ? 'POST' : 'PUT'"
       modal-id="userModal"
-      @success="fetchUsers"
+      @submitted="handleFormSubmitted" 
+      @updated="handleFormSubmitted"   
       @closed="formStore.closeForm"
-      @submitted="formStore.closeForm"
-      @updated="formStore.closeForm"
+      @error="handleFormError"
     />
   </div>
 </template>
@@ -139,7 +142,7 @@ const formNameAddUser = ref("");
 const formNameEditUser = ref("");
 const squad = ref([]);
 const arrangeUsers = ref([]);
-
+const searchQuery = ref("");
 const api = computed(() => {
   const baseUrl = `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung`;
 
@@ -160,7 +163,16 @@ const viTriOptions = [
   { name: "Hậu vệ" },
 ];
 
-// --- Các field định nghĩa (tối giản, rõ ràng)
+const handleSearch = () => {
+  const query = searchQuery.value.toLowerCase().trim();
+  if (query === "") {
+    handleArrange(roleUserArrange.value);
+  } else {
+    arrangeUsers.value = users.value.filter((user) =>
+      user.hoVaTen.toLowerCase().includes(query)
+    );
+  }
+};
 
 // --- Mapping
 const dataObj = {
@@ -178,16 +190,34 @@ const fetchSquad = async () => {
   squad.value = res.data.map((i) => ({ _id: i._id, name: i.doiHinh }));
 };
 const fetchUsers = async () => {
-  const res = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/`
-  );
-  users.value = res.data;
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/`
+    );
+    users.value = res.data;
+    // Tự động cập nhật filtered users sau khi fetch
+    handleArrange(roleUserArrange.value);
+  } catch (error) {
+    console.error("❌ Lỗi khi tải danh sách người dùng:", error);
+    alert("Có lỗi xảy ra khi tải danh sách người dùng!");
+  }
 };
+
+// SỬA LẠI HÀM DELETE ĐỂ TỰ ĐỘNG CẬP NHẬT
 const deleteUser = async (id) => {
   if (!confirm("Xóa người dùng này?")) return;
-  await axios.delete(`${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${id}`);
-  fetchUsers();
+  try {
+    await axios.delete(`${import.meta.env.VITE_API_BE_BASE_URL}/nguoidung/${id}`);
+    // Fetch lại danh sách sau khi xóa
+    await fetchUsers();
+    // Cập nhật lại filtered users
+    handleArrange(roleUserArrange.value);
+  } catch (error) {
+    console.error("❌ Lỗi khi xóa người dùng:", error);
+    alert("Có lỗi xảy ra khi xóa người dùng!");
+  }
 };
+
 
 async function handleOpenForm(mode, vaiTro, user = null) {
   formMode.value = mode;
@@ -201,15 +231,34 @@ async function handleOpenForm(mode, vaiTro, user = null) {
     mode === "add" ? formNameAddUser.value : formNameEditUser.value
   );
 }
-
-const handleArrange = (roleUserArrange) => {
-  if (roleUserArrange == 'all'){
-    arrangeUsers.value = users?.value;
-  } else{
-    arrangeUsers.value = users?.value.filter((user) => user.vaiTro === roleUserArrange);
+const handleArrange = (role) => {
+  if (role === 'all') {
+    arrangeUsers.value = [...users.value]; // Tạo bản copy để đảm bảo reactivity
+  } else {
+    arrangeUsers.value = users.value.filter((user) => user.vaiTro === role);
   }
-}
+};
 
+const handleFormSubmitted = (responseData) => {
+  console.log("✅ Form submitted successfully:", responseData);
+  
+  // Fetch lại danh sách người dùng
+  fetchUsers();
+  
+  // Đóng form
+  formStore.closeForm();
+  
+  // Reset form data
+  formData.value = {};
+  formMode.value = "add";
+};
+
+// THÊM HÀM XỬ LÝ LỖI
+const handleFormError = (error) => {
+  console.error("❌ Form error:", error);
+  alert("Có lỗi xảy ra khi xử lý form!");
+  formStore.closeForm();
+};
 onMounted(async () => {
   await fetchUsers();
   handleArrange(roleUserArrange.value);

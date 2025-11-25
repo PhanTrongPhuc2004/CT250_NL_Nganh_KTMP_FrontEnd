@@ -1,19 +1,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { fetchClubInfo } from "@/utils";
 
 const clubInfo = ref({});
 
 onMounted(async () => {
-  try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_BE_BASE_URL}/caulacbo/`
-    );
-    // API trả về mảng, lấy phần tử đầu tiên
-    clubInfo.value = response.data[0] || {};
-  } catch (error) {
-    console.error("Fetch club info error:", error);
-  }
+  const response = await fetchClubInfo()
+  clubInfo.value = response[0];
 });
 </script>
 

@@ -238,6 +238,7 @@ export const adminRoutes = [
           requiresAuth: true,
           roles: ['admin'],
           admin: true,
+          hidden: true
         },
       }
 ];

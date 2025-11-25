@@ -1,11 +1,14 @@
 <template>
     <div>
-        <div class="d-flex">
-            <h2>Danh sách cầu thủ của trận đấu</h2>
-            <button class="btn " @click="handleParamPlayer">Cập nhật thông số</button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex h2 align-items-center gap-3" style="cursor: pointer; color: var(--primary-color);" @click="router.back()">
+                <FontAwesomeIcon icon="fas fa-angle-left" />
+            <h2 class="m-0">Danh sách cầu thủ của trận đấu</h2>
+            </div>
+            <button class="btn text-white" @click="handleParamPlayer" style="background-color: var(--primary-color)">Cập nhật thông số</button>
         </div>
-        <div>
-            <div v-for="(player, index) in players" class="col-md-3">
+        <div class="d-flex flex-wrap  pt-3 mt-3 border-top">
+            <div v-for="(player, index) in players" class="col-md-4">
             <PlayerCard :item="player" :menu-items="menuFields"/>
         </div>
         </div>
@@ -30,27 +33,28 @@ import { onMounted, ref } from 'vue';
 import PlayerCard from '@/components/common/cards/playerCard/PlayerCard.vue';
 import Form from '@/components/common/form/Form.vue';
 import { thongSoFields } from '../../../utils/constanst';
-
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 const router = useRouter();
 const route = useRoute();
 
 const matchId = route.params.matchId
-const players = ref([])
+const playersChoose = ref([])
 const showForm = ref(false)
 const ortherField = ref([])
 const matchInfo = ref({})
+const players = ref([])
 const thongSoCauThuApi = `${import.meta.env.VITE_API_BE_BASE_URL}/thongsocauthu`
 const getPlayerByMatchId = async () => {
     try {
         const response = await instance.get(`${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/trandau/id/${matchId}`)
-        players.value = response.data.map((player) => {
+        playersChoose.value = response.data.map((player) => {
             return {
                 name: player.hoVaTen,
                 _id: player.maNguoiDung
             }
         })
         console.log("danh sach cau thu", players.value)
-        return players.value
+        return response.data
     } catch (error) {
         console.log(error);
     }
@@ -72,14 +76,15 @@ const handleParamPlayer = async() => {
             type:'select',
             label: 'Chọn cầu thủ',
             required: true,
-            children: await getPlayerByMatchId()
+            children: playersChoose.value
         }
 ]
     showForm.value = !showForm.value;
 }
 
+
 onMounted(async () => {
     await getMatch()
-    await getPlayerByMatchId()
+    players.value = await getPlayerByMatchId()
 })
 </script>

@@ -20,7 +20,7 @@ import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { fetchClubInfo } from "@/utils";
-
+import backgroundImage from '../../../assets/images/match-list-backgound.png';
 const router = useRouter();
 
 const handleBookSticket = () => {
@@ -129,7 +129,7 @@ onMounted(async () => {
   <!-- Marquee chạy liên tục -->
   <div class="marquee-wrapper">
     <MarqueeText
-      :duration="60"
+      :duration="90"
       :repeat="2"
       :paused="false"
       class="marquee-text"
@@ -162,9 +162,16 @@ onMounted(async () => {
   </section>
   <div :class="cx('home-wrapper')">
     <div :class="cx('', 'home-body')">
-      <div style="background-color: var(--home-background-color);" class="p-5">
+      <div 
+        :style="{ backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundBlendMode: 'multiply' }" 
+        class="p-5"
+      >
         <div  class="container">
-        <h1>Tran dau gan day</h1>
+        <h1 class="fw-bold text-white d-flex align-items-center mb-4">Trận đấu gần đây <FontAwesomeIcon icon="fas fa-angle-right"/> </h1>
         <div class="d-flex flex-wrap gap-3 flex-row col-md-12">
           <swiper
             :modules="[Autoplay, Navigation, Pagination]"
@@ -193,10 +200,47 @@ onMounted(async () => {
         </div>
       </div>
       </div>
-
-      <div style="background-color: var(--home-background-color);" class="p-5">
+      <div class="py-5" >
         <div class="container">
-          <h1>Tran dau sắp diễn ra</h1>
+          <div class="d-flex">
+            
+          <!-- LEFT CONTENT -->
+          <div class="col-md-6 pe-3"  >
+            <h1 class="fw-bold mb-4 " style="font-size: 48px; color: var(--primary-color);">Tinh thần của {{ clubInfo[0]?.ten }}</h1>
+
+            <p class="mb-4 fs-4" style="color: var(--primary-color);">
+              {{ clubInfo[0]?.moTa }}
+            </p>
+            <div class="border"></div>
+            <div class="d-flex justify-content-between mt-4 pt-3 border-top border-light">
+              <span class="fw-bold" style="color: #FFC107;">CLUB</span>
+              <span class="text-danger" style="color: var(--primary-color);">12 NOV 2025</span>
+            </div>
+          </div>
+
+          <!-- RIGHT IMAGE -->
+          <div class="col-md-6 text-center" style="background-color: var(--primary-color);">
+            <img 
+              src="../../../assets/images/home-content-img.png" 
+              alt="CTU FC"
+              style="max-height: 420px; object-fit: cover;"
+            >
+          </div>
+          </div>
+
+        </div>
+      </div>
+      <div  >
+        <div 
+          :style="{ backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundBlendMode: 'multiply' }" 
+          class="p-5"
+        >
+          <h1 class="fw-bold text-white d-flex align-items-center mb-4">Trận đấu sắp diễn ra <FontAwesomeIcon icon="fas fa-angle-right"/> </h1>
+
           <div class="d-flex flex-wrap gap-3 flex-row w-100">
             <swiper
               :modules="[Autoplay, Navigation, Pagination]"
@@ -225,23 +269,23 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-
+      
       <div>
         <div class="container">
-        <swiper
-        :modules="[Autoplay, Navigation, Pagination]"
-        :slides-per-view="3"
-        :space-between="20"
-        :autoplay="{ delay: 2000, disableOnInteraction: false }"
-        :loop="true"
-        :navigation="true"
-        :pagination="{ clickable: true }"
-        class="playerSlice"
-      >
-        <swiper-slide v-for="(player, index) in playerList" :key="index">
-          <PlayerCard :item="player" />
-        </swiper-slide>
-      </swiper>
+          <swiper
+          :modules="[Autoplay, Navigation, Pagination]"
+          :slides-per-view="3"
+          :space-between="20"
+          :autoplay="{ delay: 2000, disableOnInteraction: false }"
+          :loop="true"
+          :navigation="true"
+          :pagination="{ clickable: true }"
+          class="playerSlice"
+        >
+          <swiper-slide v-for="(player, index) in playerList" :key="index">
+            <PlayerCard :item="player" height="400px"/>
+          </swiper-slide>
+        </swiper>
       </div>
       </div>
 
@@ -257,24 +301,53 @@ onMounted(async () => {
       </swiper>
     </div>
   </div>
+  <div style="background-color: var(--home-background-color-souvenir); overflow: hidden;" class="items-list">
+    <div class="container">
+      <div class="row align-items-center py-5">
 
-  <div class="sponsors mt-3">
-    <h6>Nhà tài trợ</h6>
-    <ul
-      class="sponsor-list list-unstyled d-flex flex-wrap gap-3 align-items-center justify-content-center"
-    >
-      <li v-for="(sponsor, index) in clubInfo[0]?.nhaTaiTro || []" :key="index">
-        <i class="fas fa-star text-warning me-1"></i>{{ sponsor.ten }}
-      </li>
-    </ul>
+        <!-- LEFT CONTENT -->
+        <div class="col-lg-6 text-white">
+          <h1 class="display-4 fw-bold mb-4 animate-fade-in">
+            Những món quà lưu niệm của CTU FC!
+          </h1>
+
+          <p class="lead mb-4 opacity-75 animate-fade-in" style="animation-delay: 0.2s;">
+            Một món quà lưu niệm đầy ý nghĩa, tái hiện lịch sử đáng tự hào qua nhiều thế hệ của CTU FC — được trình bày sinh động
+             trong ấn phẩm minh hoạ tuyệt đẹp, ghi lại hành trình hình thành, phát triển và những khoảnh khắc đáng nhớ nhất.
+          </p>
+
+          <div class=" fs-5 fw-bold d-inline-flex align-items-center animate-fade-in">
+            <a href="/shop"  class="text-white ">
+              Mua ngay tại cửa hàng 
+            </a>
+            <FontAwesomeIcon icon="fas fa-angle-right" class="ms-2"/>
+          </div>
+        </div>
+
+        <!-- RIGHT IMAGE -->
+        <div class="col-lg-6 text-center animate-fade-in" >
+          <div >
+            <img 
+              src="../../../assets/images/qua-luu-niem.png" 
+              alt="CTU FC Book"
+              class="img-fluid"
+              style="max-height: 450px;"
+            >
+            <div class="image-overlay"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  
 </template>
 
 <style scoped>
 /* Wrapper cho marquee */
 .marquee-wrapper {
   width: 100%;
-  height: 50px;
+  height: 40px;
   background: linear-gradient(90deg, #dc3545 0%, #8b0000 50%, #dc3545 100%);
   overflow: hidden;
   display: flex;
@@ -317,5 +390,11 @@ onMounted(async () => {
 
 .sponsor-list i {
   font-size: 0.75rem;
+}
+
+.items-list:hover img{
+  transform: scale(1.7);
+  transition: transform 8s;
+
 }
 </style>

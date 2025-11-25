@@ -7,10 +7,14 @@ import router from '@/router';
 const isLoading = ref(false);
 const matches = ref([]);
 const matchResults = ref([]); // THÊM: Lưu kết quả trận đấu
-
+const matchesPlayed = ref([]);
+const matchInfor = ref([])
 // Refs cho charts...
 const resultChartRef = ref(null);
 const goalsChartRef = ref(null);
+const disciplineChartRef = ref(null);
+const ballControlChartRef = ref(null);
+const trendChartRef = ref(null);
 // ... các ref khác
 
 let resultChartInstance = null;
@@ -61,17 +65,16 @@ const parseScore = (scoreString) => {
 const fetchMatchStats = async () => {
   isLoading.value = true;
   try {
-    // Lấy danh sách trận đấu
-    const matchesRes = await instance.get('/trandau');
+    const matchesRes = await instance.get(`${import.meta.env.VITE_API_BE_BASE_URL}/trandau`);
     matches.value = matchesRes.data;
+    matchesPlayed.value = matchesRes.data.filter(
+      (match) => match.trangThai === 'ket_thuc'
+    );
     
-    // Lấy kết quả trận đấu
-    const resultsRes = await instance.get('/ketquatrandau');
+    const resultsRes = await instance.get(`${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau`);
     matchResults.value = resultsRes.data;
     
-    // Kết hợp dữ liệu
     combineMatchData();
-    
     calculateStats(matches.value);
     
     await nextTick();
@@ -79,8 +82,12 @@ const fetchMatchStats = async () => {
       createCharts();
     }, 100);
     
+    // RETURN để biết khi nào hoàn thành
+    return { matches: matches.value, matchesPlayed: matchesPlayed.value };
+    
   } catch (error) {
     console.error('Lỗi fetch thống kê trận đấu:', error);
+    throw error;
   } finally {
     isLoading.value = false;
   }
@@ -166,41 +173,58 @@ const calculateStats = (matches) => {
     fairplayRate: Math.round(fairplayRate)
   };
 };
-
-// SỬA: Hàm lấy tỉ số để hiển thị
-// SỬA: Hàm lấy tỉ số để hiển thị với tên đội
-const getDisplayScore = (match) => {
-  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'Chưa có kết quả';
-  
-  const score = parseScore(match.ketQuaData.tiSo);
-  return `${match.doiNha} (${score.home}) - ${match.doiKhach} (${score.away})`;
-};
-
-// HOẶC: Nếu bạn muốn hiển thị ngắn gọn hơn
-const getDisplayScoreShort = (match) => {
-  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'Chưa có kết quả';
-  
-  const score = parseScore(match.ketQuaData.tiSo);
-  return `${match.doiNha} ${score.home}-${score.away} ${match.doiKhach}`;
-};
 // SỬA: Hàm lấy kết quả trận đấu
-const getMatchResult = (match) => {
-  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'Chưa có kết quả';
-  
-  const score = parseScore(match.ketQuaData.tiSo);
-  if (score.difference > 0) return 'Thắng';
-  if (score.difference < 0) return 'Thua';
-  return 'Hòa';
+const findMatchResult = (maTranDau) => {
+  return matchInfor.value?.find(result => result.maTranDau === maTranDau);
 };
 
-// SỬA: Hàm lấy class badge kết quả
+// THÊM HÀM NÀY
 const getResultBadgeClass = (match) => {
-  if (!match.ketQuaData || !match.ketQuaData.tiSo) return 'bg-secondary';
+  const result = findMatchResult(match.maTranDau)?.ketQua;
   
-  const score = parseScore(match.ketQuaData.tiSo);
-  if (score.difference > 0) return 'bg-success';
-  if (score.difference < 0) return 'bg-danger';
-  return 'bg-warning text-dark';
+  switch (result) {
+    case 'Thắng':
+      return 'bg-success';
+    case 'Hòa':
+      return 'bg-warning text-dark';
+    case 'Thua':
+      return 'bg-danger';
+    default:
+      return 'bg-secondary';
+  }
+};
+const getMatchesInfor = async () => {
+  try {
+    console.log("Bắt đầu lấy thông tin cho", matchesPlayed.value.length, "trận đấu");
+    
+    // Dùng Promise.allSettled để không bị dừng khi có lỗi
+    const promises = matchesPlayed.value.map(async (match) => {
+      try {
+        const response = await instance.get(`${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau/ma/${match.maTranDau}`);
+        console.log(`✅ Tìm thấy kết quả cho ${match.maTranDau}`);
+        return { success: true, data: response.data, maTranDau: match.maTranDau };
+      } catch (error) {
+        // Nếu lỗi 404 hoặc lỗi khác, vẫn tiếp tục
+        console.warn(`⚠️ Không tìm thấy kết quả cho ${match.maTranDau}:`, error.response?.status || error.message);
+        return { success: false, data: null, maTranDau: match.maTranDau, error: error.message };
+      }
+    });
+    
+    const results = await Promise.allSettled(promises);
+    
+    // Lọc chỉ lấy những request thành công
+    matchInfor.value = results
+      .filter(result => result.status === 'fulfilled' && result.value.success)
+      .map(result => result.value.data);
+    
+    // Thống kê
+    const successful = matchInfor.value.length;
+    const total = matchesPlayed.value.length;
+    console.log(`📊 Kết quả: ${successful}/${total} trận có dữ liệu`);
+    
+  } catch (error) {
+    console.error("Lỗi nghiêm trọng khi lấy thông tin trận đấu:", error);
+  }
 };
 
 // SỬA: Hàm tính fairplay rate
@@ -472,8 +496,9 @@ const goToDashboard = () => {
 };
 
 
-onMounted(() => {
-  fetchMatchStats();
+onMounted(async() => {
+  await fetchMatchStats();
+  await getMatchesInfor()
 });
 </script>
 
@@ -607,7 +632,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="match in matches" :key="match._id">
+                  <tr v-for="match in matchesPlayed" :key="match._id">
                     <td class="fw-semibold">{{ match.maTranDau }}</td>
                     
                     <!-- THÊM: Cột hiển thị tên đội -->
@@ -631,7 +656,7 @@ onMounted(() => {
                     
                     <td>
                       <span :class="getResultBadgeClass(match)" class="badge">
-                        {{ getMatchResult(match) }}
+                        {{ findMatchResult(match.maTranDau)?.ketQua || 'Chưa có kết quả' }}
                       </span>
                     </td>
                     
