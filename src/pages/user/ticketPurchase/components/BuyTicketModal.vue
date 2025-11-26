@@ -1,27 +1,53 @@
 <!-- src/pages/user/ticketPurchase/components/BuyTicketModal.vue -->
 <template>
-    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5)" @click.self="$emit('close')">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận mua vé</h5>
-                    <button type="button" class="btn-close" @click="$emit('close')"></button>
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.6)" @click.self="$emit('close')">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-cart-check"></i> Xác nhận đặt vé</h5>
+                    <button class="btn-close btn-close-white" @click="$emit('close')"></button>
                 </div>
-                <div class="modal-body">
-                    <p><strong>Trận đấu:</strong> {{ matchInfo.doiNha }} vs {{ matchInfo.doiKhach }}</p>
-                    <p><strong>Ngày:</strong> {{ new Date(matchInfo.ngayBatDau).toLocaleDateString('vi-VN') }}</p>
+                <div class="modal-body py-4">
+                    <div class="text-center mb-4">
+                        <h4 class="text-danger">{{ matchInfo.doiNha?.tenDoiBong || matchInfo.doiNha }} vs {{
+                            matchInfo.doiKhach?.tenDoiBong || matchInfo.doiKhach }}</h4>
+                        <p class="text-muted">
+                            <i class="bi bi-calendar-event"></i> {{ formatFullDate(matchInfo.ngayBatDau) }}
+                            • {{ matchInfo.sanVanDong }}
+                        </p>
+                    </div>
+
                     <hr>
-                    <p><strong>Loại vé:</strong> <span :class="getLoaiVeBadgeClass(config.loaiVe)">{{
-                            formatLoaiVe(config.loaiVe) }}</span></p>
-                    <p><strong>Khu vực:</strong> {{ config.khuVuc }} | <strong>Hàng:</strong> {{ config.hangGhe }}</p>
-                    <p><strong>Số ghế:</strong> {{ selectedSeat }}</p>
-                    <p><strong>Giá vé:</strong> <span class="text-success fw-bold">{{ formatCurrency(config.giaVe)
-                            }}</span></p>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Loại vé</label>
+                            <div class="p-3 bg-light rounded">
+                                <span :class="getLoaiVeBadgeClass(config.loaiVe)" class="fs-6">
+                                    {{ formatLoaiVe(config.loaiVe) }}
+                                </span>
+                                <p class="mb-0 mt-2">Khu vực: <strong>{{ config.khuVuc }} - Hàng {{ config.hangGhe
+                                        }}</strong></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Số lượng vé</label>
+                            <input type="number" v-model.number="quantity" min="1" :max="config.soGheConLai"
+                                class="form-control form-control-lg text-center" />
+                            <small class="text-muted">Còn lại: {{ config.soGheConLai }} vé</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 text-center py-4">
+                        <h5>Tổng tiền: <span class="text-danger fw-bold">{{ formatCurrency(totalPrice) }}</span></h5>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @click="$emit('close')">Hủy</button>
-                    <button type="button" class="btn btn-success" @click="buyTicket" :disabled="loading">
-                        {{ loading ? 'Đang xử lý...' : 'Xác nhận mua' }}
+                <div class="modal-footer justify-content-center gap-3">
+                    <button class="btn btn-lg btn-outline-secondary px-5" @click="$emit('close')">Hủy</button>
+                    <button class="btn btn-lg btn-danger px-5" @click="buyTickets"
+                        :disabled="loading || quantity < 1 || quantity > config.soGheConLai">
+                        <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+                        {{ loading ? 'Đang xử lý...' : 'Thanh toán ngay' }}
                     </button>
                 </div>
             </div>
@@ -40,54 +66,38 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "success"]);
 
+const quantity = ref(1);
 const loading = ref(false);
 
-// Tìm ghế trống đầu tiên
-const selectedSeat = computed(() => {
-    const start = props.config.soGheBatDau;
-    const end = props.config.soGheKetThuc;
-    const sold = props.config.daBan || []; // Cần backend trả về danh sách ghế đã bán
-    for (let i = start; i <= end; i++) {
-        if (!sold.includes(i.toString())) return i;
-    }
-    return "Hết ghế";
-});
+const totalPrice = computed(() => props.config.giaVe * quantity.value);
 
-const buyTicket = async () => {
-    if (selectedSeat.value === "Hết ghế") return;
+const buyTickets = async () => {
+    if (quantity.value > props.config.soGheConLai) return alert("Không đủ vé!");
 
     loading.value = true;
     try {
-        await axios.post("/ve/mua", {
+        // Gọi API mua nhiều vé
+        await axios.post("/ve/mua-nhieu", {
             maTranDau: props.matchInfo.maTranDau,
-            loaiVe: props.config.loaiVe,
-            khuVuc: props.config.khuVuc,
-            hangGhe: props.config.hangGhe,
-            soGhe: selectedSeat.value,
+            maCauHinhVe: props.config._id,
+            soLuong: quantity.value
         });
-        alert("Mua vé thành công!");
+        alert(`Mua thành công ${quantity.value} vé!`);
         emit("success");
     } catch (err) {
-        alert(err.response?.data?.message || "Lỗi khi mua vé");
+        alert(err.response?.data?.message || "Lỗi hệ thống");
     } finally {
         loading.value = false;
     }
 };
 
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+const formatCurrency = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v);
+const formatFullDate = (d) => new Date(d).toLocaleString('vi-VN', { dateStyle: 'full', timeStyle: 'short' });
+
+const getLoaiVeBadgeClass = (v) => {
+    const map = { VIP: 'badge bg-danger', Thuong: 'badge bg-primary', KhuyenMai: 'badge bg-warning text-dark' };
+    return map[v] || 'badge bg-secondary';
 };
 
-const getLoaiVeBadgeClass = (loaiVe) => {
-    switch (loaiVe) {
-        case "VIP": return "badge bg-danger text-white small px-2 py-1";
-        case "Thuong": return "badge bg-primary small px-2 py-1";
-        case "KhuyenMai": return "badge bg-warning text-dark small px-2 py-1";
-        default: return "badge bg-secondary small px-2 py-1";
-    }
-};
-
-const formatLoaiVe = (loaiVe) => {
-    return loaiVe === "Thuong" ? "Thường" : loaiVe === "KhuyenMai" ? "Khuyến mãi" : loaiVe;
-};
+const formatLoaiVe = (v) => v === 'Thuong' ? 'Thường' : v === 'KhuyenMai' ? 'Khuyến mãi' : v;
 </script>

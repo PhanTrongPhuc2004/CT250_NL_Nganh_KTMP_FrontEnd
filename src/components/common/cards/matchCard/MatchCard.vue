@@ -1,290 +1,100 @@
-  <script setup>
-  import { formatDate, getMe } from "@/utils";
-  import Menu from "@/components/common/menu/Menu.vue";
-  import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-  import { ref, computed, onMounted, watch } from "vue";
-  import axios from "axios";
+<!-- src/components/common/cards/matchCard/MatchCard.vue -->
+<script setup>
+import { formatDate, getMe } from "@/utils";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { ref, computed, onMounted, watch } from "vue";
+import axios from "axios";
 
-  const props = defineProps({
-    item: {
-      type: Object,
-      required: true,
-      default: () => ({
-        doiNha: "",
-        doiKhach: "",
-        diaDiem: "",
-        ngayBatDau: "",
-        thoiGian: "",
-        _id: "",
-        maTranDau: "",
-        trangThai: "",
-      }),
-    },
-    menuItems: {
-      type: Array,
-      default: () => [],
-    },
-    
-  });
+const props = defineProps({
+  item: { type: Object, required: true }
+});
 
-  const activeMenuId = ref(null);
-  const matchResult = ref(null);
-  const isLoading = ref(false);
-  const userInfor = ref(null);
+defineEmits(['book-ticket']); // THÊM EMIT ĐỂ GỌI TỪ HOME
 
-  const statusConfig = {
-    chua_bat_dau: {
-      badgeClass: "badge bg-info",
-      showTicket: true,
-    },
-    dang_dien_ra: {
-      badgeClass: "badge bg-primary",
-      showTicket: false,
-    },
-    ket_thuc: {
-      badgeClass: "badge bg-secondary",
-      showTicket: false,
-    },
-  };
+const userInfor = ref(null);
+const matchResult = ref(null);
+const isLoading = ref(false);
 
-  const currentStatus = computed(() => {
-    const status = props.item.trangThai || "chua_bat_dau";
-    return statusConfig[status] || statusConfig.chua_bat_dau;
-  });
+const statusConfig = {
+  chua_bat_dau: { badgeClass: "badge bg-info", text: "Sắp diễn ra", showTicket: true },
+  dang_dien_ra: { badgeClass: "badge bg-primary", text: "Đang diễn ra", showTicket: false },
+  ket_thuc: { badgeClass: "badge bg-secondary", text: "Đã kết thúc", showTicket: false },
+};
 
-  const isMatchFinished = computed(() => {
-    console.log("trang thai", props.item.trangThai);
-    return ["ket_thuc", "hoan_thanh", "huy_bo"].includes(props.item.trangThai);
-  });
+const currentStatus = computed(() => statusConfig[props.item.trangThai] || statusConfig.chua_bat_dau);
 
-  const fetchMatchResult = async () => {
-    if (!props.item.maTranDau) return;
+onMounted(async () => {
+  userInfor.value = await getMe();
+  if (props.item.trangThai === 'ket_thuc') fetchMatchResult();
+});
 
-    isLoading.value = true;
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau/ma/${
-          props.item.maTranDau
-        }`
-      );
-      matchResult.value = response.data;
-    } catch (error) {
-      if (error.response?.status === 404) {
-        matchResult.value = null;
-      }
-    } finally {
-      isLoading.value = false;
-    }
-  };
+const fetchMatchResult = async () => {
+  if (!props.item.maTranDau) return;
+  isLoading.value = true;
+  try {
+    const res = await axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/ketquatrandau/ma/${props.item.maTranDau}`);
+    matchResult.value = res.data;
+  } catch (err) {
+    if (err.response?.status === 404) matchResult.value = null;
+  } finally {
+    isLoading.value = false;
+  }
+};
+</script>
 
-  const toggleMenu = (id) => {
-    activeMenuId.value = activeMenuId.value === id ? null : id;
-  };
+<template>
+  <div class="match-card h-100 shadow-sm bg-white d-flex flex-column">
+    <!-- Background + Tỉ số -->
+    <div class="position-relative">
+      <img
+        src="https://img.freepik.com/vector-gratis/papel-pintado-textura-hexagonal-oscuro-audaz-estilo-geometrico_1017-43003.jpg"
+        class="w-100" style="height: 120px; object-fit: cover" />
+      <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"></div>
 
-  const isMenuOpen = (id) => {
-    return activeMenuId.value === id;
-  };
+      <p class="position-absolute top-50 start-50 translate-middle text-white fs-6 fw-bold text-center w-100 px-2 m-0">
+        {{ `${item.doiNha?.tenDoiBong || item.doiNha} vs ${item.doiKhach?.tenDoiBong || item.doiKhach}` }}
+      </p>
 
-  const closeMenu = () => {
-    activeMenuId.value = null;
-  };
+      <div v-if="matchResult?.tiSo" class="position-absolute top-0 end-0 p-2">
+        <span class="badge bg-success fw-bold">{{ matchResult.tiSo }}</span>
+      </div>
 
-  const currentMenuItems = computed(() => {
-    if (!props.menuItems?.length) return [];
-    return props.menuItems.map((item) => ({
-      ...item,
-      action: () => item.action(props.item),
-    }));
-  });
+      <div class="position-absolute bottom-0 start-0 w-100 p-2">
+        <span :class="currentStatus.badgeClass" class="small">{{ currentStatus.text }}</span>
+      </div>
+    </div>
 
-  const shouldShowMenu = computed(() => {
-    return currentMenuItems.value.length > 0;
-  });
-
-  const hasResult = computed(() => {
-    return matchResult.value?.tiSo && matchResult.value.tiSo.trim() !== '';
-  });
-
-  const status = {
-    chua_bat_dau: "Sắp diễn ra",
-    dang_dien_ra: "Đang diễn ra",
-    ket_thuc: "Đã kết thúc",
-  };
-
-  const handleBookTicket = () => {
-    if (currentStatus.value.showTicket && userInfor.value?.vaiTro !== "admin") {
-      alert(
-        `Đặt vé cho trận đấu: ${props.item.doiNha} - ${props.item.doiKhach}\nNgày: ${formatDate(props.item.ngayBatDau)}\nGiờ: ${props.item.thoiGian}\nĐịa điểm: ${props.item.diaDiem}`
-      );
-    }
-  };
-
-  onMounted(async () => {
-    await fetchMatchResult();
-    userInfor.value = await getMe();
-  });
-
-  watch(
-    () => props.item.maTranDau,
-    (newMaTranDau) => {
-      if (newMaTranDau) fetchMatchResult();
-    }
-  );
-
-  // Thêm watch này để theo dõi khi trận đấu kết thúc
-  watch(
-    () => props.item.trangThai,
-    (newStatus, oldStatus) => {
-      // Nếu trận đấu vừa chuyển sang trạng thái kết thúc, fetch lại kết quả
-      if (newStatus === 'ket_thuc' && oldStatus !== 'ket_thuc') {
-        fetchMatchResult();
-      }
-    }
-  );
-  </script>
-
-  <template>
-    <div class="match-card h-100" style="cursor: pointer; ">
-      <div class=" shadow-sm bg-white h-100 d-flex flex-column">
-        <div class="position-relative">
-          <img
-            src="https://img.freepik.com/vector-gratis/papel-pintado-textura-hexagonal-oscuro-audaz-estilo-geometrico_1017-43003.jpg"
-            alt="Background trận đấu"
-            class="w-100 "
-            style="height: 120px; object-fit: cover"
-          />
-          <div
-            class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
-          ></div>
-
-          <div
-            v-if="isLoading"
-            class="position-absolute top-50 start-50 translate-middle"
-          >
-            <div
-              class="spinner-border spinner-border-sm text-white"
-              role="status"
-            >
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-
-          <div
-            v-else-if="hasResult"
-            class="position-absolute top-0 start-0 w-100 p-2"
-          >
-            <span class="badge bg-success float-end fw-bold">
-              {{ matchResult.tiSo }}
-            </span>
-          </div>
-
-          <p
-            class="position-absolute top-50 start-50 translate-middle text-white fs-6 fw-bold w-100 text-center px-2 m-0"
-          >
-            {{ `${item.doiNha} - ${item.doiKhach}` || "Chưa có thông tin" }}
-          </p>
-
-          <div
-            v-if="!isLoading"
-            class="position-absolute bottom-0 start-0 w-100 p-2"
-          >
-            <span :class="currentStatus.badgeClass" class="small">
-              {{ status[item.trangThai] || "Chưa có thông tin" }}
-            </span>
-          </div>
+    <div class="card-body p-3 flex-grow-1">
+      <div class="small text-muted mb-3">
+        <div>
+          <FontAwesomeIcon icon="fas fa-map-marker-alt" class="me-2" /> {{ item.diaDiem }}
         </div>
-
-        <div class="card-body p-3 flex-grow-1">
-          <div class="match-details mb-3">
-            <div class="d-flex align-items-center mb-2">
-              <FontAwesomeIcon
-                :icon="['fas', 'map-marker-alt']"
-                class="text-muted me-2"
-              />
-              <small class="text-muted">{{ item.diaDiem }}</small>
-            </div>
-            <div class="d-flex align-items-center mb-2">
-              <FontAwesomeIcon
-                :icon="['fas', 'calendar']"
-                class="text-muted me-2"
-              />
-              <small class="text-muted">{{ formatDate(item.ngayBatDau) }}</small>
-            </div>
-            <div class="d-flex align-items-center">
-              <FontAwesomeIcon :icon="['fas', 'clock']" class="text-muted me-2" />
-              <small class="text-muted">{{ item.thoiGian }}</small>
-            </div>
-          </div>
-
-          <div class="match-info">
-            <div
-              v-if="isMatchFinished && !hasResult && !isLoading"
-              class="border-top pt-3"
-            >
-              <div class="alert alert-warning small mb-0 p-2">
-                <FontAwesomeIcon
-                  :icon="['fas', 'exclamation-triangle']"
-                  class="me-1"
-                />
-                Trận đấu đã kết thúc nhưng chưa có kết quả
-              </div>
-            </div>
-
-            <div v-else-if="item.trangThai === 'huy_bo'" class="border-top pt-3">
-              <div class="alert alert-danger small mb-0 p-2">
-                <FontAwesomeIcon :icon="['fas', 'times-circle']" class="me-1" />
-                Trận đấu đã bị hủy
-              </div>
-            </div>
-          </div>
-
-          <div
-            v-if="currentStatus.showTicket && userInfor?.vaiTro !== 'admin'"
-            class="mt-3 text-center"
-          >
-            <button class="btn btn-warning w-75 rounded-0" @click="handleBookTicket">
-              <FontAwesomeIcon :icon="['fas', 'ticket-alt']" class="me-2" />
-              Đặt vé
-            </button>
-          </div>
+        <div>
+          <FontAwesomeIcon icon="fas fa-calendar" class="me-2" /> {{ formatDate(item.ngayBatDau) }}
         </div>
-
-        <div
-          v-if="shouldShowMenu && userInfor?.vaiTro == 'admin'"
-          class="d-flex justify-content-end align-items-center p-3 position-relative border-top"
-        >
-          <button
-            class="btn btn-sm btn-outline-secondary d-flex align-items-center p-2"
-            @click="toggleMenu(item._id)"
-            aria-label="Tùy chọn"
-          >
-            <FontAwesomeIcon :icon="['fas', 'ellipsis-v']" />
-          </button>
-          <Menu
-            v-if="isMenuOpen(item._id)"
-            top="-155px"
-            right="10px"
-            :menu-items="currentMenuItems"
-            :on-close="closeMenu"
-          />
+        <div>
+          <FontAwesomeIcon icon="fas fa-clock" class="me-2" /> {{ item.thoiGian || 'Chưa có giờ' }}
         </div>
       </div>
     </div>
-  </template>
 
-  <style scoped>
-  .match-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  }
+    <!-- NÚT ĐẶT VÉ -->
+    <div v-if="currentStatus.showTicket && userInfor?.vaiTro !== 'admin'" class="p-3 border-top text-center">
+      <button @click="$emit('book-ticket', item)" class="btn btn-danger w-100 fw-bold">
+        <FontAwesomeIcon icon="fas fa-ticket-alt" class="me-2" />
+        Đặt vé
+      </button>
+    </div>
+  </div>
+</template>
 
-  .match-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-  }
+<style scoped>
+.match-card {
+  transition: all 0.2s;
+}
 
-  @media (max-width: 576px) {
-    .match-stats {
-      font-size: 0.75rem;
-    }
-  }
-  </style>
+.match-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+</style>

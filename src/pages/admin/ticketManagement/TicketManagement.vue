@@ -54,16 +54,22 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 40px">#</th>
-                            <th @click="sortBy('loaiVe')" class="sortable">Loại vé <i :class="sortIcon('loaiVe')"></i>
+                            <th @click="sortBy('loaiVe')" class="sortable">
+                                Loại vé <i :class="sortIcon('loaiVe')"></i>
                             </th>
-                            <th @click="sortBy('khuVuc')" class="sortable">Khu vực <i :class="sortIcon('khuVuc')"></i>
+                            <th @click="sortBy('khuVuc')" class="sortable">
+                                Khu vực <i :class="sortIcon('khuVuc')"></i>
                             </th>
-                            <th @click="sortBy('hangGhe')" class="sortable">Hàng ghế <i
-                                    :class="sortIcon('hangGhe')"></i></th>
+                            <th @click="sortBy('hangGhe')" class="sortable">
+                                Hàng ghế <i :class="sortIcon('hangGhe')"></i>
+                            </th>
                             <th>Số ghế</th>
-                            <th @click="sortBy('giaVe')" class="sortable">Giá vé <i :class="sortIcon('giaVe')"></i></th>
-                            <th @click="sortBy('soGheConLai')" class="text-center sortable">Còn lại <i
-                                    :class="sortIcon('soGheConLai')"></i></th>
+                            <th @click="sortBy('giaVe')" class="sortable">
+                                Giá vé <i :class="sortIcon('giaVe')"></i>
+                            </th>
+                            <th @click="sortBy('soGheConLai')" class="text-center sortable">
+                                Còn lại <i :class="sortIcon('soGheConLai')"></i>
+                            </th>
                             <th class="text-center" style="width: 120px">Thao tác</th>
                         </tr>
                     </thead>
@@ -77,9 +83,12 @@
                             </td>
                             <td>{{ config.khuVuc }}</td>
                             <td>{{ config.hangGhe }}</td>
-                            <td>{{ config.soGheBatDau }} - {{ config.soGheKetThuc }}</td>
+                            <td>
+                                {{ config.soGheBatDau }} → {{ config.soGheKetThuc }}
+                                <span class="text-muted small">({{ config.tongSoGhe }} ghế)</span>
+                            </td>
                             <td class="fw-semibold text-success">{{ formatCurrency(config.giaVe) }}</td>
-                            <td class="text-center">
+                            <td class="text-center fw-bold">
                                 <span :class="getConLaiBadgeClass(config.soGheConLai, config.tongSoGhe)">
                                     {{ config.soGheConLai }} / {{ config.tongSoGhe }}
                                 </span>
@@ -109,7 +118,7 @@
             <p class="mt-3">Vui lòng chọn trận đấu để xem cấu hình vé</p>
         </div>
 
-        <!-- Form -->
+        <!-- Form Modal -->
         <TicketForm v-if="formStore.isCurrent(formName)" :mode="formMode" :initial-data="formData"
             :api="formMode === 'edit' ? `/cauhinhve/id/${formData._id}` : '/cauhinhve'"
             :method="formMode === 'add' ? 'POST' : 'PUT'" @success="fetchCauHinhVe" @closed="formStore.closeForm" />
@@ -117,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue"; // THÊM nextTick
+import { ref, computed, onMounted, nextTick } from "vue";
 import axios from "@/utils/axios";
 import TicketForm from "@/components/common/form/TicketForm.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -139,7 +148,7 @@ const formMode = ref("add");
 const formData = ref({});
 const formName = ref("");
 
-// --- Sắp xếp
+// --- Sắp xếp bảng
 const sortKey = ref("");
 const sortOrder = ref(1);
 
@@ -164,7 +173,7 @@ const sortedCauHinhVeList = computed(() => {
         let valA = a[sortKey.value];
         let valB = b[sortKey.value];
 
-        if (sortKey.value === "giaVe" || sortKey.value === "soGheConLai") {
+        if (sortKey.value === "giaVe" || sortKey.value === "soGheConLai" || sortKey.value === "tongSoGhe") {
             valA = Number(valA);
             valB = Number(valB);
         }
@@ -175,7 +184,7 @@ const sortedCauHinhVeList = computed(() => {
     });
 });
 
-// --- Đổi màu badge
+// --- Hiển thị badge
 const getLoaiVeBadgeClass = (loaiVe) => {
     switch (loaiVe) {
         case "VIP": return "badge bg-danger text-white small px-2 py-1";
@@ -186,17 +195,13 @@ const getLoaiVeBadgeClass = (loaiVe) => {
 };
 
 const formatLoaiVe = (loaiVe) => {
-    switch (loaiVe) {
-        case "Thuong": return "Thường";
-        case "KhuyenMai": return "Khuyến mãi";
-        default: return loaiVe;
-    }
+    return loaiVe === "Thuong" ? "Thường" : loaiVe === "KhuyenMai" ? "Khuyến mãi" : loaiVe;
 };
 
 const getConLaiBadgeClass = (conLai, tong) => {
-    const percent = tong > 0 ? (conLai / tong) * 100 : 0;
     if (conLai === 0) return "badge bg-danger";
-    if (percent < 30) return "badge bg-warning";
+    const percent = tong > 0 ? (conLai / tong) * 100 : 0;
+    if (percent <= 30) return "badge bg-warning";
     return "badge bg-success";
 };
 
@@ -217,11 +222,25 @@ const fetchTranDauByMuaGiai = async () => {
 
     tranDauList.value = [];
     selectedMatch.value = "";
+    cauHinhVeList.value = [];
     await nextTick();
 
     try {
         const res = await axios.get(`/muagiai/ma/${selectedMuaGiai.value}/trandau`);
-        tranDauList.value = res.data;
+
+        // CHỈ LẤY TRẬN ĐẤU CHƯA DIỄN RA (từ hôm nay trở đi)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcomingMatches = res.data
+            .filter(match => {
+                const matchDate = new Date(match.ngayBatDau);
+                matchDate.setHours(0, 0, 0, 0);
+                return matchDate >= today;
+            })
+            .sort((a, b) => new Date(a.ngayBatDau) - new Date(b.ngayBatDau)); // Sắp xếp gần nhất trước
+
+        tranDauList.value = upcomingMatches;
     } catch (err) {
         console.error("Lỗi lấy trận đấu:", err);
         tranDauList.value = [];
@@ -230,23 +249,26 @@ const fetchTranDauByMuaGiai = async () => {
 
 const onMuaGiaiChange = async () => {
     selectedMatch.value = "";
-    tranDauList.value = [];
     cauHinhVeList.value = [];
-    await nextTick();
-    fetchTranDauByMuaGiai();
+    await fetchTranDauByMuaGiai();
 };
 
 const fetchCauHinhVe = async () => {
     if (!selectedMatch.value) return;
-    const res = await axios.get(`/cauhinhve/trandau/${selectedMatch.value}`);
 
-    cauHinhVeList.value = res.data.map(config => {
-        const tongMoi = config.soGheKetThuc - config.soGheBatDau + 1;
-        return {
+    try {
+        const res = await axios.get(`/cauhinhve/trandau/${selectedMatch.value}`);
+
+        // DÙNG ĐÚNG DỮ LIỆU TỪ DB - KHÔNG TỰ TÍNH TỔNG GHẾ NỮA
+        cauHinhVeList.value = res.data.map(config => ({
             ...config,
-            tongSoGhe: tongMoi,
-        };
-    });
+            tongSoGhe: config.tongSoGhe,
+            soGheConLai: config.soGheConLai ?? config.tongSoGhe
+        }));
+    } catch (err) {
+        console.error("Lỗi lấy cấu hình vé:", err);
+        cauHinhVeList.value = [];
+    }
 };
 
 const deleteCauHinhVe = async (id) => {
@@ -267,10 +289,11 @@ const onGiaiDauChange = async () => {
 };
 
 const getMatchName = (td) => {
-    const doiNha = td.doiNha || "Chưa xác định";
-    const doiKhach = td.doiKhach || "Chưa xác định";
+    const doiNha = td.doiNha?.tenDoiBong || td.doiNha || "Chưa xác định";
+    const doiKhach = td.doiKhach?.tenDoiBong || td.doiKhach || "Chưa xác định";
     const date = new Date(td.ngayBatDau).toLocaleDateString("vi-VN");
-    return `${doiNha} vs ${doiKhach} - ${date}`;
+    const time = new Date(td.ngayBatDau).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    return `${doiNha} vs ${doiKhach} - ${date} ${time}`;
 };
 
 const formatCurrency = (value) => {
@@ -291,7 +314,7 @@ const handleOpenForm = (mode, config = null) => {
             giaVe: 100000,
         };
     } else {
-        formData.value = { ...config, _id: config._id };
+        formData.value = { ...config };
     }
 
     formName.value = mode === "add" ? "Thêm cấu hình vé" : "Chỉnh sửa cấu hình vé";

@@ -1,400 +1,323 @@
+<!-- src/pages/user/home/Home.vue -->
 <script setup>
 import classNames from "classnames/bind";
 import styles from "./home.module.scss";
 const cx = classNames.bind(styles);
+
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import New from "@/components/common/new/New.vue";
-import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import Form from "@/components/common/form/Form.vue";
-import { onMounted, ref } from "vue";
+
+import { onMounted, ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
-import MarqueeText from "vue-marquee-text-component";
+
 import ThongBaoMoi from "./ThongBaoMoi.vue";
 import MatchCard from "@/components/common/cards/matchCard/MatchCard.vue";
-import { computed } from "vue";
-import { useRouter } from "vue-router";
+import PlayerCard from "@/components/common/cards/playerCard/PlayerCard.vue";
+import MarqueeText from "vue-marquee-text-component";
 import { fetchClubInfo } from "@/utils";
-import backgroundImage from '../../../assets/images/match-list-backgound.png';
+
 const router = useRouter();
 
-const handleBookSticket = () => {
-  router.push("/ve");
+/* === HÀM ĐẶT VÉ === */
+const bookMatch = (match) => {
+  if (!match?.maTranDau) return alert("Không có thông tin trận đấu!");
+  router.push({
+    path: "/ve",
+    query: {
+      maTranDau: match.maTranDau,
+      maMuaGiai: match.maMuaGiai || "",
+      maGiaiDau: match.maGiaiDau || "",
+    },
+  });
 };
 
-const souvenirList = ref([]);
-const matchList = ref([]);
-const postList = ref([]);
-const playerList = ref([]);
+/* === DATA === */
 const clubInfo = ref({});
-const matchPlayed = ref([]);
-const upComingMatch = ref([]);
-
-const tranDau = computed(() => {
-  if (matchList.value.length > 0) {
-    const firstMatch = matchList.value[0];
-    return {
-      capDau: [firstMatch.doiNha, firstMatch.doiKhach],
-      diaDiem: firstMatch.diaDiem,
-      thoiGianDienRa: firstMatch.thoiGianDienRa,
-    };
-  }
-  return {
-    capDau: ["Đang tải...", "Đang tải..."],
-    diaDiem: "Đang tải...",
-    thoiGianDienRa: "Đang tải...",
-  };
-});
-
-
 const marqueeText = ref("");
+const matchList = ref([]);
+const upComingMatch = ref([]);
+const matchPlayed = ref([]);
+const playerList = ref([]);
 
-const fetchSouvenirList = async () => {
+/* Trận đấu tiếp theo (ưu tiên trận chưa bắt đầu) */
+const nextMatch = computed(() =>
+  matchList.value.find(m => m.trangThai === "chua_bat_dau") || matchList.value[0] || null
+);
+
+/* === FETCH DATA === */
+const fetchAll = async () => {
   try {
-    const response = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`,
-    {
-      withCredentials: true,
-    });
-    return response.data;
-    
-  } catch (error) {
-    console.log(error);
+    const [club, matches, players] = await Promise.all([
+      fetchClubInfo(),
+      axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/trandau`, { withCredentials: true }),
+      axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/`, { withCredentials: true }),
+    ]);
+
+    clubInfo.value = club[0] || {};
+    marqueeText.value = `${clubInfo.value.moTa || ""} • `.repeat(4);
+
+    const data = matches?.data || [];
+    matchList.value = data;
+    upComingMatch.value = data.filter(m => m.trangThai === "chua_bat_dau");
+    matchPlayed.value = data.filter(m => m.trangThai === "ket_thuc");
+
+    playerList.value = players.data || [];
+  } catch (err) {
+    console.error("Lỗi load trang chủ:", err);
   }
-}
+};
 
-const fetchMatchList = async () => {
-  try {
-    const response = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/trandau`,
-    {
-      withCredentials: true,
-    }
-  );
-  upComingMatch.value = response?.data.filter((match) => match.trangThai == 'chua_bat_dau');
-  matchPlayed.value = response?.data.filter((match) => match.trangThai == 'ket_thuc');
-  return response.data;
-  } catch (error) {
-    console.log(error);
-  }
-
-}
-
-const fetchPlayerList = async () => {
-  try {
-    const response = await axios.get(
-    `${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/`,
-    {
-      withCredentials: true,
-    }
-  );
-  return response.data;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-onMounted(async () => {
-  
-  clubInfo.value = await fetchClubInfo()
-
-  const baseText = clubInfo.value[0]?.moTa;
-  marqueeText.value = `${baseText} • ${baseText} • ${baseText} • ${baseText}`;
-
-  souvenirList.value = await fetchSouvenirList();
-  matchList.value = await fetchMatchList()
-  playerList.value =await  fetchPlayerList();
-
-  
-});
+onMounted(fetchAll);
 </script>
 
 <template>
-  <div>
-    <img
-      src="../../../assets/images/old-traford.jpg"
-      alt=""
-      :class="cx('thumbnail')"
-    />
-    <div :class="cx('slogan', 'col-md-5')">
-      {{ clubInfo[0]?.slogan }}
-    </div>
-  </div>
+  <!-- 1. ẢNH NỀN + SLOGAN + THẺ TRẬN ĐẤU TIẾP THEO (ĐÃ NHỎ LẠI 15%) -->
+  <section class="position-relative">
+    <!-- Ảnh nền -->
+    <img src="@/assets/images/old-traford.jpg" alt="Sân vận động" class="w-100"
+      style="height: 100vh; object-fit: cover;" />
 
-  <!-- Marquee chạy liên tục -->
+    <!-- Lớp tối gradient -->
+    <div class="position-absolute top-0 start-0 w-100 h-100"
+      style="background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85));">
+    </div>
+
+    <!-- SLOGAN – NHỎ LẠI 15% + MỜ THÊM 15% -->
+    <div class="position-absolute top-50 start-0 translate-middle-y text-white px-5" :class="cx('slogan')">
+      <h1 class="display-4 fw-bold text-shadow" style="opacity: 0.85;">
+        {{ clubInfo?.slogan || "CTU FC – NIỀM TỰ HÀO" }}
+      </h1>
+      <p class="lead fs-4 mt-3" style="opacity: 0.75;">
+        {{ clubInfo?.ten }}
+      </p>
+    </div>
+
+    <!-- THẺ TRẬN ĐẤU TIẾP THEO – NHỎ LẠI 15% (scale 0.85) -->
+    <div class="position-absolute bottom-0 end-0 mb-5 me-5 next-match-card-wrapper">
+      <div class="next-match-card">
+        <div class="card-body text-center py-5 px-4">
+          <h5 class="fw-bold text-danger mb-3 text-uppercase tracking-wider">Trận đấu tiếp theo</h5>
+          <h4 class="fw-bold mb-3">
+            {{ nextMatch
+              ? `${nextMatch.doiNha?.tenDoiBong || nextMatch.doiNha} vs ${nextMatch.doiKhach?.tenDoiBong ||
+              nextMatch.doiKhach}`
+              : "Đang cập nhật..." }}
+          </h4>
+
+          <p class="mb-2 small">
+            <FontAwesomeIcon icon="fas fa-calendar" class="me-2 text-danger" />
+            {{ nextMatch
+              ? new Date(nextMatch.ngayBatDau).toLocaleDateString('vi-VN', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+              })
+              : "..." }}
+          </p>
+          <p class="mb-4 small">
+            <FontAwesomeIcon icon="fas fa-clock" class="me-2 text-danger" />
+            {{ nextMatch
+              ? new Date(nextMatch.ngayBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+              : "..." }}
+            <span class="mx-3">•</span>
+            <FontAwesomeIcon icon="fas fa-location-dot" class="me-2 text-danger" />
+            {{ nextMatch?.diaDiem || "Sân CTU" }}
+          </p>
+
+          <button @click="bookMatch(nextMatch)" :disabled="!nextMatch"
+            class="btn btn-danger btn-lg px-5 py-3 fw-bold shadow-sm">
+            <FontAwesomeIcon icon="fas fa-ticket" class="me-2" />
+            ĐẶT VÉ NGAY
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Marquee -->
   <div class="marquee-wrapper">
-    <MarqueeText
-      :duration="90"
-      :repeat="2"
-      :paused="false"
-      class="marquee-text"
-    >
+    <MarqueeText :duration="80" :repeat="4" :paused="false" class="marquee-text">
       {{ marqueeText }}
     </MarqueeText>
   </div>
 
-  <div :class="cx('next-match')">
-    <div>
-      <div>
-        <h4>{{ `${tranDau.capDau[0]} vs ${tranDau.capDau[1]}` }}</h4>
-        <h5>{{ tranDau.diaDiem }}</h5>
-        <h5>{{ tranDau.thoiGianDienRa }}</h5>
-        <button
-          type="button"
-          class="btn btn-warning"
-          @click="handleBookSticket"
-        >
-          Đặt vé ngay
-        </button>
-      </div>
-    </div>
-    <div>
-      <FontAwesomeIcon :icon="['fas', 'angle-right']" :class="'display-3'" />
-    </div>
-  </div>
-  <section class="mt-5">
+  <!-- 3. Thông báo mới -->
+  <section class="container my-5">
     <ThongBaoMoi />
   </section>
-  <div :class="cx('home-wrapper')">
-    <div :class="cx('', 'home-body')">
-      <div 
-        :style="{ backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        backgroundBlendMode: 'multiply' }" 
-        class="p-5"
-      >
-        <div  class="container">
-        <h1 class="fw-bold text-white d-flex align-items-center mb-4">Trận đấu gần đây <FontAwesomeIcon icon="fas fa-angle-right"/> </h1>
-        <div class="d-flex flex-wrap gap-3 flex-row col-md-12">
-          <swiper
-            :modules="[Autoplay, Navigation, Pagination]"
-            :slides-per-view="Math.min(3, matchPlayed.length)"
-            :space-between="20"
-            :autoplay="{ delay: 2000, disableOnInteraction: false }"
-            :loop="matchPlayed.length > 6"
-            :navigation="matchPlayed.length > 3"
-            :pagination="{ clickable: matchPlayed.length > 1 }"
-            class="playerSlice"
-          >
-            <swiper-slide
-              v-for="(match, index) in matchPlayed"
-              :key="index"
-            >
-              <div class="col-md-12">
-                <MatchCard :item="match" />
-              </div>
-            </swiper-slide>
-            
-            <!-- Hiển thị thông báo khi không có trận đấu -->
-            <div v-if="matchPlayed.length === 0" class="text-center py-5">
-              <p class="text-muted">Không có trận đấu nào để hiển thị</p>
-            </div>
-          </swiper>
-        </div>
-      </div>
-      </div>
-      <div class="py-5" >
-        <div class="container">
-          <div class="d-flex">
-            
-          <!-- LEFT CONTENT -->
-          <div class="col-md-6 pe-3"  >
-            <h1 class="fw-bold mb-4 " style="font-size: 48px; color: var(--primary-color);">Tinh thần của {{ clubInfo[0]?.ten }}</h1>
 
-            <p class="mb-4 fs-4" style="color: var(--primary-color);">
-              {{ clubInfo[0]?.moTa }}
-            </p>
-            <div class="border"></div>
-            <div class="d-flex justify-content-between mt-4 pt-3 border-top border-light">
-              <span class="fw-bold" style="color: #FFC107;">CLUB</span>
-              <span class="text-danger" style="color: var(--primary-color);">12 NOV 2025</span>
-            </div>
-          </div>
-
-          <!-- RIGHT IMAGE -->
-          <div class="col-md-6 text-center" style="background-color: var(--primary-color);">
-            <img 
-              src="../../../assets/images/home-content-img.png" 
-              alt="CTU FC"
-              style="max-height: 420px; object-fit: cover;"
-            >
-          </div>
-          </div>
-
-        </div>
+  <!-- 4. Các trận đấu sắp diễn ra -->
+  <section class="py-5"
+    style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('@/assets/images/match-list-backgound.png') center/cover no-repeat;">
+    <div class="container">
+      <h2 class="text-white text-center mb-5 display-5 fw-bold">
+        CÁC TRẬN ĐẤU SẮP DIỄN RA
+      </h2>
+      <swiper :modules="[Autoplay, Navigation]" :slides-per-view="1.1" :space-between="20" :navigation="true"
+        :loop="upComingMatch.length > 3" :breakpoints="{ 768: { slidesPerView: 2 }, 992: { slidesPerView: 3 } }"
+        class="mb-4">
+        <swiper-slide v-for="match in upComingMatch" :key="match._id">
+          <MatchCard :item="match" @book-ticket="bookMatch($event)" />
+        </swiper-slide>
+      </swiper>
+      <div v-if="upComingMatch.length === 0" class="text-center text-white py-5 fs-4">
+        Chưa có lịch thi đấu sắp tới
       </div>
-      <div  >
-        <div 
-          :style="{ backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          backgroundBlendMode: 'multiply' }" 
-          class="p-5"
-        >
-          <h1 class="fw-bold text-white d-flex align-items-center mb-4">Trận đấu sắp diễn ra <FontAwesomeIcon icon="fas fa-angle-right"/> </h1>
+    </div>
+  </section>
 
-          <div class="d-flex flex-wrap gap-3 flex-row w-100">
-            <swiper
-              :modules="[Autoplay, Navigation, Pagination]"
-              :slides-per-view="Math.min(3, upComingMatch.length)"
-              :space-between="20"
-              :autoplay="{ delay: 2000, disableOnInteraction: false }"
-              :loop="upComingMatch.length > 6"
-              :navigation="upComingMatch.length > 3"
-              :pagination="{ clickable: upComingMatch.length > 1 }"
-              class="playerSlice"
-            >
-              <swiper-slide
-                v-for="(match, index) in upComingMatch"
-                :key="index"
-              >
-                <div class="col-md-12">
-                  <MatchCard :item="match" />
-                </div>
-              </swiper-slide>
-              
-              <!-- Hiển thị thông báo khi không có trận đấu -->
-              <div v-if="upComingMatch.length === 0" class="text-center py-5">
-                <p class="text-muted">Không có trận đấu nào để hiển thị</p>
-              </div>
-            </swiper>
-          </div>
-        </div>
-      </div>
-      
-      <div>
-        <div class="container">
-          <swiper
-          :modules="[Autoplay, Navigation, Pagination]"
-          :slides-per-view="3"
-          :space-between="20"
-          :autoplay="{ delay: 2000, disableOnInteraction: false }"
-          :loop="true"
-          :navigation="true"
-          :pagination="{ clickable: true }"
-          class="playerSlice"
-        >
-          <swiper-slide v-for="(player, index) in playerList" :key="index">
-            <PlayerCard :item="player" height="400px"/>
-          </swiper-slide>
-        </swiper>
-      </div>
-      </div>
-
-      <swiper
-        :modules="[Autoplay]"
-        :slides-per-view="4"
-        :space-between="20"
-        :autoplay="{ delay: 2000, disableOnInteraction: false }"
-        :loop="true"
-        class="souvenirSlice"
-      >
-        <!--bỏ các quà lưu niệm vào đây-->
+  <!-- 5. Trận đấu gần đây -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <h2 class="text-center mb-5 display-5 fw-bold" style="color: var(--primary-color);">
+        TRẬN ĐẤU GẦN ĐÂY
+      </h2>
+      <swiper :modules="[Autoplay]" :slides-per-view="1.2" :space-between="20" :loop="true"
+        :breakpoints="{ 768: { slidesPerView: 2 }, 992: { slidesPerView: 3 } }">
+        <swiper-slide v-for="match in matchPlayed" :key="match._id">
+          <MatchCard :item="match" />
+        </swiper-slide>
       </swiper>
     </div>
-  </div>
-  <div style="background-color: var(--home-background-color-souvenir); overflow: hidden;" class="items-list">
+  </section>
+
+  <!-- 6. Giới thiệu CLB -->
+  <section class="py-5">
     <div class="container">
-      <div class="row align-items-center py-5">
-
-        <!-- LEFT CONTENT -->
-        <div class="col-lg-6 text-white">
-          <h1 class="display-4 fw-bold mb-4 animate-fade-in">
-            Những món quà lưu niệm của CTU FC!
-          </h1>
-
-          <p class="lead mb-4 opacity-75 animate-fade-in" style="animation-delay: 0.2s;">
-            Một món quà lưu niệm đầy ý nghĩa, tái hiện lịch sử đáng tự hào qua nhiều thế hệ của CTU FC — được trình bày sinh động
-             trong ấn phẩm minh hoạ tuyệt đẹp, ghi lại hành trình hình thành, phát triển và những khoảnh khắc đáng nhớ nhất.
-          </p>
-
-          <div class=" fs-5 fw-bold d-inline-flex align-items-center animate-fade-in">
-            <a href="/shop"  class="text-white ">
-              Mua ngay tại cửa hàng 
-            </a>
-            <FontAwesomeIcon icon="fas fa-angle-right" class="ms-2"/>
-          </div>
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 order-lg-2">
+          <img src="@/assets/images/home-content-img.png" alt="CTU FC" class="img-fluid rounded shadow" />
         </div>
-
-        <!-- RIGHT IMAGE -->
-        <div class="col-lg-6 text-center animate-fade-in" >
-          <div >
-            <img 
-              src="../../../assets/images/qua-luu-niem.png" 
-              alt="CTU FC Book"
-              class="img-fluid"
-              style="max-height: 450px;"
-            >
-            <div class="image-overlay"></div>
-          </div>
+        <div class="col-lg-6 order-lg-1">
+          <h1 class="display-4 fw-bold mb-4" style="color: var(--primary-color);">
+            Tinh thần của {{ clubInfo?.ten || "CTU FC" }}
+          </h1>
+          <p class="lead fs-4 text-muted">{{ clubInfo?.moTa }}</p>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  
+  <!-- 7. Đội hình tiêu biểu -->
+  <section class="py-5 bg-dark text-white">
+    <div class="container">
+      <h2 class="text-center mb-5 display-5 fw-bold">ĐỘI HÌNH TIÊU BIỂU</h2>
+      <swiper :modules="[Autoplay, Navigation]" :slides-per-view="2" :space-between="30" :navigation="true" :loop="true"
+        :breakpoints="{ 768: { slidesPerView: 3 }, 992: { slidesPerView: 4 } }">
+        <swiper-slide v-for="player in playerList" :key="player._id">
+          <PlayerCard :item="player" height="400px" />
+        </swiper-slide>
+      </swiper>
+    </div>
+  </section>
+
+  <!-- 8. Quà lưu niệm -->
+  <section class="py-5 text-white" style="background: linear-gradient(135deg, #8B0000, #DC143C);">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <h1 class="display-4 fw-bold mb-4">QUÀ LƯU NIỆM CHÍNH HÃNG CTU FC</h1>
+          <p class="lead">Sở hữu ngay áo đấu, kỷ vật, sách ảnh độc quyền!</p>
+          <a href="/shop" class="btn btn-light btn-lg px-5 mt-3">
+            MUA NGAY
+            <FontAwesomeIcon icon="fas fa-arrow-right" class="ms-2" />
+          </a>
+        </div>
+        <div class="col-lg-6 text-center">
+          <img src="@/assets/images/qua-luu-niem.png" alt="Quà" class="img-fluid" style="max-height: 480px;" />
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-/* Wrapper cho marquee */
-.marquee-wrapper {
-  width: 100%;
-  height: 40px;
-  background: linear-gradient(90deg, #dc3545 0%, #8b0000 50%, #dc3545 100%);
+/* Slogan mờ + nhỏ hơn */
+.slogan h1 {
+  font-size: 3.5rem !important;
+  /* nhỏ lại ~15% so với display-2 */
+}
+
+@media (max-width: 992px) {
+  .slogan h1 {
+    font-size: 2.8rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .slogan h1 {
+    font-size: 2.3rem !important;
+  }
+}
+
+/* Thẻ trận đấu tiếp theo – nhỏ lại 15% */
+.next-match-card-wrapper {
+  transform: scale(0.85);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease;
+}
+
+.next-match-card-wrapper:hover {
+  transform: scale(0.90);
+  /* hover lên tí cho đẹp */
+}
+
+.next-match-card {
+  min-width: 360px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  position: relative;
 }
 
-/* Style cho MarqueeText component */
+/* Responsive mobile: căn giữa và scale hợp lý */
+@media (max-width: 992px) {
+  .next-match-card-wrapper {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) scale(0.82);
+    bottom: 20px !important;
+  }
+
+  .next-match-card {
+    min-width: 340px;
+  }
+}
+
+@media (max-width: 576px) {
+  .next-match-card-wrapper {
+    transform: translateX(-50%) scale(0.78);
+  }
+
+  .next-match-card {
+    min-width: 300px;
+  }
+
+  .slogan {
+    text-align: center;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(-50%);
+  }
+}
+
+/* Các style cũ giữ nguyên */
+.marquee-wrapper {
+  background: linear-gradient(90deg, #8B2C31, #E02128);
+  padding: 0.6rem 0;
+}
+
 .marquee-text {
-  color: #fff;
-  font-size: 18px;
+  color: white;
   font-weight: bold;
-  white-space: nowrap;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
 }
 
-/* Style cho sponsors */
-.sponsors h6 {
-  font-weight: 600;
-  color: #dc3545;
-  margin-bottom: 0.75rem;
-}
-
-.sponsor-list li {
-  background-color: #343a40;
-  color: #fff;
-  padding: 0.3rem 0.6rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  transition: transform 0.2s, background-color 0.3s;
-}
-
-.sponsor-list li:hover {
-  background-color: #495057;
-  transform: translateY(-2px);
-}
-
-.sponsor-list i {
-  font-size: 0.75rem;
-}
-
-.items-list:hover img{
-  transform: scale(1.7);
-  transition: transform 8s;
-
+.text-shadow {
+  text-shadow: 3px 3px 12 chainedpx rgba(0, 0, 0, 0.9);
 }
 </style>

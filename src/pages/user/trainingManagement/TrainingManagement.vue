@@ -1,286 +1,257 @@
-<!-- src/pages/user/trainingManagement/TrainingManagement.vue -->
+<!-- src/pages/user/training/Training.vue -->
 <template>
-    <div class="container py-4">
-        <!-- Tiêu đề -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-semibold text-dark m-0">Quản lý lịch tập luyện</h4>
-            <button class="btn btn-sm text-white" style="background-color: #8b2c31" @click="handleOpenForm('add')"
-                :disabled="!selectedMatch">
-                <i class="bi bi-plus-lg me-1"></i> Thêm lịch tập
-            </button>
+    <div class="container py-4 py-lg-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-danger display-5">
+                <i class="bi bi-calendar-heart-fill me-3"></i>Lịch Tập Luyện
+            </h2>
+            <p class="lead text-muted">Cập nhật mới nhất từ HLV • {{ filteredList.length }} buổi tập</p>
         </div>
 
-        <!-- Bộ lọc: Đội bóng → Đội hình → Trận đấu -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <!-- Đội bóng -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-medium text-muted small">Đội bóng</label>
-                        <select class="form-select form-select-sm" v-model="selectedDoiBong" @change="onDoiBongChange">
-                            <option value="">Chọn đội bóng</option>
-                            <option v-for="db in doiBongList" :key="db._id" :value="db.maDoiBong">
-                                {{ db.tenDoiBong }}
-                            </option>
-                        </select>
-                    </div>
+        <!-- Bộ lọc & Tìm kiếm -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-danger"></i>
+                    </span>
+                    <input v-model="searchQuery" type="text" class="form-control border-start-0 ps-0"
+                        placeholder="Tìm địa điểm, nội dung..." @input="filterList" />
+                </div>
+            </div>
 
-                    <!-- Đội hình -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-medium text-muted small">Đội hình</label>
-                        <select class="form-select form-select-sm" v-model="selectedDoiHinh" @change="onDoiHinhChange"
-                            :disabled="!selectedDoiBong">
-                            <option value="">Chọn đội hình</option>
-                            <option v-for="dh in doiHinhList" :key="dh._id" :value="dh.maDoiHinh">
-                                {{ dh.tenDoiHinh }}
-                            </option>
-                        </select>
-                    </div>
+            <div class="col-md-6 col-lg-8">
+                <div class="btn-group w-100 shadow-sm" role="group">
+                    <input type="radio" class="btn-check" id="all" value="all" v-model="filterStatus"
+                        @change="filterList">
+                    <label class="btn btn-outline-danger" for="all">
+                        <i class="bi bi-grid-3x3-gap"></i> Tất cả
+                    </label>
 
-                    <!-- Trận đấu -->
-                    <div class="col-md-4">
-                        <label class="form-label fw-medium text-muted small">Trận đấu</label>
-                        <select class="form-select form-select-sm" v-model="selectedMatch" @change="fetchLichTap"
-                            :disabled="!selectedDoiHinh">
-                            <option value="">Chọn trận đấu</option>
-                            <option v-for="td in tranDauList" :key="td._id" :value="td.maTranDau">
-                                {{ getMatchName(td) }}
-                            </option>
-                        </select>
-                    </div>
+                    <input type="radio" class="btn-check" id="today" value="today" v-model="filterStatus"
+                        @change="filterList">
+                    <label class="btn btn-outline-danger" for="today">
+                        <i class="bi bi-sun"></i> Hôm nay
+                    </label>
+
+                    <input type="radio" class="btn-check" id="upcoming" value="upcoming" v-model="filterStatus"
+                        @change="filterList">
+                    <label class="btn btn-outline-warning" for="upcoming">
+                        <i class="bi bi-clock-history"></i> Sắp tới
+                    </label>
+
+                    <input type="radio" class="btn-check" id="past" value="past" v-model="filterStatus"
+                        @change="filterList">
+                    <label class="btn btn-outline-secondary" for="past">
+                        <i class="bi bi-check2-all"></i> Đã qua
+                    </label>
                 </div>
             </div>
         </div>
 
-        <!-- Bảng lịch tập -->
-        <div class="card bordersthe-0 shadow-sm" v-if="selectedMatch">
-            <div class="card-body p-0">
-                <table class="table align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" style="width: 40px">#</th>
-                            <th @click="sortBy('maDoiHinh')" class="sortable">Đội hình <i
-                                    :class="sortIcon('maDoiHinh')"></i></th>
-                            <th @click="sortBy('diaDiem')" class="sortable">Địa điểm <i
-                                    :class="sortIcon('diaDiem')"></i></th>
-                            <th @click="sortBy('ngayBatDau')" class="sortable">Ngày <i
-                                    :class="sortIcon('ngayBatDau')"></i></th>
-                            <th @click="sortBy('thoiGian')" class="sortable">Giờ <i :class="sortIcon('thoiGian')"></i>
-                            </th>
-                            <th>Nội dung</th>
-                            <th class="text-center" style="width: 120px">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(lich, index) in sortedLichTapList" :key="lich._id">
-                            <td class="text-center text-muted">{{ index + 1 }}</td>
-                            <td>
-                                <span class="badge bg-info text-dark small px-2 py-1">
-                                    {{ lich.tenDoiHinh || lich.maDoiHinh }}
-                                </span>
-                            </td>
-                            <td>{{ lich.diaDiem }}</td>
-                            <td>{{ formatDate(lich.ngayBatDau) }}</td>
-                            <td>{{ lich.thoiGian }}</td>
-                            <td class="text-muted small">{{ lich.noiDung || '—' }}</td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-outline-secondary me-1"
-                                    @click="handleOpenForm('edit', lich)">
-                                    <FontAwesomeIcon icon="fa-solid fa-pen" />
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" @click="deleteLichTap(lich._id)">
-                                    <FontAwesomeIcon icon="fa-solid fa-trash" />
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="lichTapList.length === 0">
-                            <td colspan="7" class="text-center text-muted py-3 fst-italic">
-                                Chưa có lịch tập cho trận đấu này.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Loading -->
+        <div v-if="loading" class="text-center py-5">
+            <div class="spinner-border text-danger" style="width: 4rem; height: 4rem;" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-muted fs-5">Đang tải lịch tập luyện...</p>
+        </div>
+
+        <!-- Không có dữ liệu -->
+        <div v-else-if="filteredList.length === 0" class="text-center py-5">
+            <i class="bi bi-calendar-x display-1 text-muted opacity-50"></i>
+            <h4 class="mt-4 text-muted fw-normal">Không tìm thấy lịch tập</h4>
+            <p v-if="searchQuery || filterStatus !== 'all'" class="text-muted">
+                Thử thay đổi bộ lọc hoặc tìm kiếm lại nhé!
+            </p>
+            <p v-else class="text-muted">HLV sẽ sớm cập nhật lịch tập cho đội!</p>
+        </div>
+
+        <!-- Danh sách lịch tập -->
+        <div v-else class="row g-4">
+            <div v-for="session in filteredList" :key="session._id" class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-lg border-0 overflow-hidden position-relative transition-all" :class="{
+                    'border-danger border-4 shadow-danger': session.isToday,
+                    'border-warning border-3': session.isSoon && !session.isToday,
+                    'opacity-75': session.isPast
+                }" @click="showDetail(session)" style="cursor: pointer;">
+                    <!-- Badge trạng thái -->
+                    <div class="position-absolute top-0 end-0 m-3 z-10">
+                        <span class="badge fs-6 px-3 py-2 fw-bold" :class="{
+                            'bg-danger text-white': session.isToday,
+                            'bg-warning text-dark': session.isSoon && !session.isToday,
+                            'bg-secondary text-white': session.isPast
+                        }">
+                            <i :class="session.statusIcon"></i> {{ session.statusText }}
+                        </span>
+                    </div>
+
+                    <!-- Card body -->
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-danger fw-bold mb-3">
+                            {{ formatDateFull(session.ngayBatDau) }}
+                        </h5>
+
+                        <div class="d-flex align-items-center mb-3 text-muted">
+                            <i class="bi bi-clock-fill text-primary me-2"></i>
+                            <strong>{{ session.thoiGian }}</strong>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-geo-alt-fill text-success me-2 fs-5"></i>
+                            <span class="fw-semibold">{{ session.diaDiem || 'Sân tập chính' }}</span>
+                        </div>
+
+                        <!-- Nội dung tập -->
+                        <div v-if="session.noiDung" class="mt-3 p-3 bg-light rounded">
+                            <p class="mb-1 fw-bold text-dark small">
+                                <i class="bi bi-list-check text-danger"></i> Nội dung buổi tập:
+                            </p>
+                            <p class="text-muted small mb-0">{{ session.noiDung }}</p>
+                        </div>
+
+                        <!-- Ghi chú HLV -->
+                        <div v-if="session.ghiChu"
+                            class="mt-3 p-3 bg-primary bg-opacity-10 rounded border-start border-primary border-4">
+                            <p class="mb-0 text-primary small">
+                                <i class="bi bi-chat-quote-fill me-2"></i>
+                                <em>{{ session.ghiChu }}</em>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="card-footer bg-gradient bg-light border-0 text-center py-3">
+                        <small class="text-muted">
+                            Đội: <strong class="text-danger">{{ session.maDoiHinh?.tenDoiHinh || 'CTU FC' }}</strong>
+                        </small>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Không chọn trận đấu -->
-        <div v-else class="text-center text-muted py-5">
-            <i class="bi bi-calendar-check fs-1"></i>
-            <p class="mt-3">Vui lòng chọn trận đấu để xem lịch tập luyện</p>
-        </div>
-
-        <!-- Form -->
-        <TrainingForm v-if="formStore.isCurrent(formName)" :mode="formMode" :initial-data="formData"
-            :api="formMode === 'edit' ? `/tapluyen/id/${formData._id}` : '/tapluyen'"
-            :method="formMode === 'add' ? 'POST' : 'PUT'" @success="fetchLichTap" @closed="formStore.closeForm" />
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted } from "vue";
 import axios from "@/utils/axios";
-import TrainingForm from "./components/TrainingForm.vue";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { useFormStore } from "@/stores/formStore";
 
-const formStore = useFormStore();
+const trainingList = ref([]);
+const loading = ref(true);
+const searchQuery = ref("");
+const filterStatus = ref("all");
 
-// --- Dữ liệu
-const doiBongList = ref([]);
-const doiHinhList = ref([]);
-const tranDauList = ref([]);
-const lichTapList = ref([]);
+// Lấy dữ liệu
+const fetchTraining = async () => {
+    try {
+        const res = await axios.get("/lichtapluyen/doihinh");
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-const selectedDoiBong = ref("");
-const selectedDoiHinh = ref("");
-const selectedMatch = ref("");
+        trainingList.value = res.data.map(s => {
+            const sessionDate = new Date(s.ngayBatDau);
+            const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+            const diffTime = sessionDate - now;
+            const diffHours = diffTime / (1000 * 60 * 60);
+            const diffDays = (sessionDay - today) / (1000 * 60 * 60 * 24);
 
-const formMode = ref("add");
-const formData = ref({});
-const formName = ref("");
+            const isToday = diffDays === 0;
+            const isSoon = diffDays > 0 && diffDays <= 7;
+            const isPast = diffDays < 0;
 
-// --- Sắp xếp
-const sortKey = ref("");
-const sortOrder = ref(1);
-
-const sortBy = (key) => {
-    if (sortKey.value === key) sortOrder.value *= -1;
-    else { sortKey.value = key; sortOrder.value = 1; }
-};
-
-const sortIcon = (key) => {
-    if (sortKey.value !== key) return "bi bi-dash";
-    return sortOrder.value === 1 ? "bi bi-arrow-up" : "bi bi-arrow-down";
-};
-
-const sortedLichTapList = computed(() => {
-    if (!sortKey.value) return lichTapList.value;
-    return [...lichTapList.value].sort((a, b) => {
-        let valA = a[sortKey.value], valB = b[sortKey.value];
-        if (sortKey.value === "ngayBatDau") {
-            valA = new Date(valA); valB = new Date(valB);
-        }
-        return (valA > valB ? 1 : -1) * sortOrder.value;
-    });
-});
-
-// --- API
-const fetchDoiBong = async () => {
-    const res = await axios.get("/doibong");
-    doiBongList.value = res.data;
-};
-
-const fetchDoiHinhByDoiBong = async () => {
-    if (!selectedDoiBong.value) return;
-    const res = await axios.get(`/doihinh/doibong/ma/${selectedDoiBong.value}`);
-    doiHinhList.value = res.data;
-};
-
-const fetchTranDauByDoiHinh = async () => {
-    if (!selectedDoiHinh.value) return;
-    const res = await axios.get(`/trandau?maDoiHinh=${selectedDoiHinh.value}`);
-    tranDauList.value = res.data;
-};
-
-const fetchLichTap = async () => {
-    if (!selectedMatch.value) return;
-    const res = await axios.get(`/trandau/${selectedMatch.value}/lichtap`);
-    lichTapList.value = res.data.map(lich => ({
-        ...lich,
-        tenDoiHinh: lich.maDoiHinh?.tenDoiHinh || lich.maDoiHinh
-    }));
-};
-
-const deleteLichTap = async (id) => {
-    if (!confirm("Xóa lịch tập này?")) return;
-    await axios.delete(`/tapluyen/id/${id}`);
-    fetchLichTap();
-};
-
-// --- Sự kiện
-const onDoiBongChange = async () => {
-    selectedDoiHinh.value = "";
-    selectedMatch.value = "";
-    doiHinhList.value = [];
-    tranDauList.value = [];
-    lichTapList.value = [];
-    await nextTick();
-    fetchDoiHinhByDoiBong();
-};
-
-const onDoiHinhChange = async () => {
-    selectedMatch.value = "";
-    tranDauList.value = [];
-    lichTapList.value = [];
-    await nextTick();
-    fetchTranDauByDoiHinh();
-};
-
-const getMatchName = (td) => {
-    const doiNha = td.doiNha || "Đội nhà";
-    const doiKhach = td.doiKhach || "Đội khách";
-    const date = new Date(td.ngayBatDau).toLocaleDateString("vi-VN");
-    return `${doiNha} vs ${doiKhach} - ${date}`;
-};
-
-const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN', {
-    weekday: 'short', day: 'numeric', month: 'short'
-});
-
-const handleOpenForm = (mode, lich = null) => {
-    formMode.value = mode;
-    if (mode === "add") {
-        formData.value = {
-            maTranDau: selectedMatch.value,
-            maDoiHinh: selectedDoiHinh.value,
-            diaDiem: "",
-            ngayBatDau: "",
-            thoiGian: "",
-            noiDung: ""
-        };
-    } else {
-        formData.value = { ...lich };
+            return {
+                ...s,
+                isToday,
+                isSoon,
+                isPast,
+                statusText: isToday ? "Hôm nay" : isSoon ? "Sắp tới" : "Đã qua",
+                statusIcon: isToday ? "bi bi-fire" : isSoon ? "bi bi-hourglass-split" : "bi bi-check2-circle"
+            };
+        });
+    } catch (err) {
+        console.error("Lỗi tải lịch tập:", err);
+        alert("Không thể tải lịch tập luyện!");
+    } finally {
+        loading.value = false;
     }
-    formName.value = mode === "add" ? "Thêm lịch tập" : "Chỉnh sửa lịch tập";
-    formStore.openForm(formName.value);
 };
 
-// --- Lifecycle
-onMounted(() => {
-    fetchDoiBong();
+// Bộ lọc + tìm kiếm
+const filteredList = computed(() => {
+    let list = trainingList.value;
+
+    // Lọc theo trạng thái
+    if (filterStatus.value === "today") {
+        list = list.filter(s => s.isToday);
+    } else if (filterStatus.value === "upcoming") {
+        list = list.filter(s => s.isSoon && !s.isToday);
+    } else if (filterStatus.value === "past") {
+        list = list.filter(s => s.isPast);
+    }
+
+    // Tìm kiếm
+    if (searchQuery.value.trim()) {
+        const query = searchQuery.value.toLowerCase();
+        list = list.filter(s =>
+            (s.diaDiem?.toLowerCase().includes(query)) ||
+            (s.noiDung?.toLowerCase().includes(query)) ||
+            (s.ghiChu?.toLowerCase().includes(query))
+        );
+    }
+
+    // Sắp xếp: gần nhất lên đầu
+    return list.sort((a, b) => new Date(a.ngayBatDau) - new Date(b.ngayBatDau));
 });
+
+// Hàm format ngày đẹp
+const formatDateFull = (date) => {
+    return new Date(date).toLocaleDateString("vi-VN", {
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    });
+};
+
+const showDetail = (session) => {
+    alert(`Buổi tập: ${session.thoiGian} - ${session.diaDiem}\nNội dung: ${session.noiDung || 'Không có'}\nGhi chú: ${session.ghiChu || 'Không có'}`);
+};
+
+onMounted(fetchTraining);
 </script>
 
 <style scoped>
-.table {
-    font-size: 0.9rem;
+.transition-all {
+    transition: all 0.3s ease;
 }
 
-.card {
-    border-radius: 12px;
+.card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(224, 33, 40, 0.2) !important;
+    z-index: 10;
 }
 
-select.form-select,
-button.btn {
-    border-radius: 6px;
+.shadow-danger {
+    box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3) !important;
 }
 
-.badge {
-    font-size: 0.75rem;
+.bg-gradient {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
-.sortable {
-    cursor: pointer;
-    user-select: none;
+.text-danger {
+    color: #E02128 !important;
 }
 
-.sortable i {
-    font-size: 0.8rem;
-    margin-left: 4px;
-    opacity: 0.5;
+.btn-check:checked+.btn {
+    background-color: #E02128 !important;
+    color: white !important;
+    border-color: #E02128 !important;
 }
 
-.sortable:hover i {
-    opacity: 1;
+.input-group input:focus {
+    border-color: #E02128;
+    box-shadow: 0 0 0 0.2rem rgba(224, 33, 40, 0.25);
 }
 </style>

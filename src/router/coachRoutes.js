@@ -12,6 +12,8 @@ import Notifivation from "@/pages/user/notification/Notification.vue";
 
 const TraingManagement = () =>
   import("@/pages/user/trainingManagement/TrainingManagement.vue");
+const Match = () =>
+  import("@/pages/user/match/Match.vue");
 
 export const coachRoutes = [
   {
@@ -44,7 +46,7 @@ export const coachRoutes = [
   },
   {
     path: "/training",
-    name: "Lịch Tập Luyện",
+    name: "Lịch tập luyện",
     component: TraingManagement,
     meta: {
       requiresAuth: true,
@@ -54,7 +56,7 @@ export const coachRoutes = [
   {
     path: "/match",
     name: "Lịch thi đấu",
-    component: TraingManagement,
+    component: Match,
     meta: {
       requiresAuth: true,
       roles: ["player", "coach"],
