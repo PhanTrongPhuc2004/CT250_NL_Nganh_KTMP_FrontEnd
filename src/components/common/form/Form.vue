@@ -6,7 +6,8 @@ import styles from "./form.module.scss";
 import { uploadToCloudinary } from "@/config/cloudinary.conf";
 import { useFormStore } from "@/stores/formStore";
 import instance from "@/utils/axios";
-
+//debug
+const debug = false;
 const formStore = useFormStore();
 const emit = defineEmits(["submitted", "updated", "deleted", "closed", "error"]);
 const cx = classNames.bind(styles);
@@ -228,7 +229,7 @@ const getChildren = (field) => {
       <h2 class="text-center mb-4 fw-bold">{{ formName }}</h2>
 
       <!-- Debug info -->
-      <div class="alert alert-info small mb-3" v-if="formData._id">
+      <div class="alert alert-info small mb-3" v-if="formData._id && debug">
         <strong>Đang chỉnh sửa ID:</strong> {{ formData._id }}<br />
         <strong>API:</strong> {{ api }}<br />
         <strong>URL ảnh hiện tại:</strong> {{ imageUrl || 'Chưa có ảnh' }}<br />
