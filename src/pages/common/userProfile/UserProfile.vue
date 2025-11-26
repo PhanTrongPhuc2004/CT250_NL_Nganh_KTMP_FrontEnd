@@ -122,68 +122,52 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <div class="position-relative">
-      <img
-        :src="userData.anhMinhHoa || 'https://via.placeholder.com/150'"
-        class="shadow w-100 position-relative"
-        :style="{
-          height: '400px',
-          objectFit: 'cover',
-          objectPosition: 'top',
-        }"
-        alt="Ảnh người dùng"
-      />
-      <button 
-        class="btn position-absolute top-0 end-0 text-white d-flex align-items-center gap-2" 
-        style="z-index: 10; background: rgba(0,0,0,0.5);" 
-        @click="showFormEditProfile"
-      >
-        <FontAwesomeIcon icon="fa-solid fa-pen" />
-        <p class="m-0">Chỉnh sửa thông tin</p>
-      </button>
+    <div class="position-relative ">
+      <div class="d-flex justify-content-end">
+        <div class="w-100 d-flex flex-column" style="height: 100vh; color: var(--primary-color);">
+          <span class="fw-bold" style="font-size: 170px;">{{ userData.hoVaTen }}</span>
+          <div v-if="role == 'cauthu'" class="d-flex flex-column">
+            <span class="fw-bold" style="font-size: 150px;">{{ userData.soAo }}</span>
+            <span class="fw-bold fs-1" >{{ userData.viTri }}</span>
+            <span class="fw-bold fs-1">{{ userData.ngaySinh }}</span>
+            <span class="fw-bold fs-1">{{ userData.cauLacBoCu }}</span>
+          </div>
+          <div v-if="role == 'huanluyenvien'">
+            <span class="fw-bold" style="font-size: 150px;">{{ userData.viTri }}</span>
+            <span class="fw-bold fs-1">{{ userData.quocTich }}</span>
+            <span class="fw-bold fs-1">{{ userData.phuTrach }}</span>
+          </div>
+          <div v-if="role == 'admin'">
+            <span class="fw-bold fs-1">{{ userData.email }}</span>
+
+          </div>
+        </div>
+
+        <img
+          :src="userData.anhMinhHoa || 'https://via.placeholder.com/150'"
+          class="col-md-6 h-100 position-absolute"
+          :style="{
+            objectPosition: 'top',
+            zIndex: 50
+          }"
+          alt="Ảnh người dùng"
+        />
+        <button 
+          class="btn text-white d-flex align-items-center gap-2 position-absolute top-0 end-0"  
+          style="z-index: 10; background: rgba(0,0,0,0.5); z-index: 51;" 
+          @click="showFormEditProfile"
+        >
+          <FontAwesomeIcon icon="fa-solid fa-pen" />
+          <p class="m-0">Chỉnh sửa thông tin</p>
+        </button>
+      </div>
     </div>
     
-    <div>
-      <ul class="list-group mb-3">
-        <li class="list-group-item">
-          <strong>Họ và tên:</strong> 
-          <span class="text-primary fw-bold">{{ userData.hoVaTen }}</span>
-        </li>
-        <li class="list-group-item">
-          <strong>Email:</strong> {{ userData.email }}
-        </li>
-        <li class="list-group-item">
-          <strong>Vai trò:</strong> {{ userData.vaiTro }}
-        </li>
-        <li class="list-group-item">
-          <strong>Đội hình:</strong> {{ userData?.maDoiHinh || "Chưa có" }}
-        </li>
-      </ul>
-    </div>
     
-    <div v-if="role === 'cauthu'">
-      <h5 class="text-primary mb-2">Thông tin cầu thủ</h5>
-      <ul class="list-group">
-        <li class="list-group-item">
-          <strong>Vị trí:</strong> {{ userData.viTri }}
-        </li>
-        <li class="list-group-item">
-          <strong>Chân thuận:</strong> {{ userData.chanThuan }}
-        </li>
-        <li class="list-group-item">
-          <strong>Số áo:</strong> {{ userData.soAo }}
-        </li>
-        <li class="list-group-item">
-          <strong>Chiều cao:</strong> {{ userData.chieuCao }} m
-        </li>
-        <li class="list-group-item">
-          <strong>Quốc tịch:</strong> {{ userData.quocTich }}
-        </li>
-      </ul>
-    </div>
+
+    
 
     <div class="d-flex flex-wrap gap-3 mt-4" v-if="matchOfPlayer.length > 0">
-      <h5 class="w-100">Các trận đấu tham gia</h5>
       <div class="col-md-2" v-for="(match, index) in matchOfPlayer" :key="match._id || index">
         <MatchCard :item="match" />
       </div>
