@@ -20,6 +20,7 @@ export const nguoiHamMoFields = [
   { name: "email", type: "email", label: "Email" },
   { name: "tenDangNhap", type: "text", label: "Tên đăng nhập" },
   { name: "matKhau", type: "password", label: "Mật khẩu" },
+  {name: "diaChi", type: "text", label: "Địa chỉ" },
   {name: "anhMinhHoa", type: "file", label: "Ảnh đại diện" },
 ];
 export const playerFields = [

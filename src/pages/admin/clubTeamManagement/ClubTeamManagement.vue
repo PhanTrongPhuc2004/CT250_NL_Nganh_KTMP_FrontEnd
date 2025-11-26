@@ -177,7 +177,7 @@ const teamFields = [
   },
   {
     name: "logoUrl",
-    type: "url",
+    type: "file",
     label: "URL Logo",
     placeholder: "https://example.com/logo.png",
     description: "Đường dẫn đến hình ảnh logo của đội bóng",

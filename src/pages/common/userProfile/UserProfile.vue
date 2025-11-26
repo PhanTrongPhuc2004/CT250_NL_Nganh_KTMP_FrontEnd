@@ -125,7 +125,7 @@ onMounted(async () => {
     <div class="position-relative ">
       <div class="d-flex justify-content-end">
         <div class="w-100 d-flex flex-column" style="height: 100vh; color: var(--primary-color);">
-          <span class="fw-bold" style="font-size: 170px;">{{ userData.hoVaTen }}</span>
+          <span class="fw-bold" style="font-size: 170px;" v-if="role != 'nguoihammo'">{{ userData.hoVaTen }}</span>
           <div v-if="role == 'cauthu'" class="d-flex flex-column">
             <span class="fw-bold" style="font-size: 150px;">{{ userData.soAo }}</span>
             <span class="fw-bold fs-1" >{{ userData.viTri }}</span>
@@ -139,6 +139,14 @@ onMounted(async () => {
           </div>
           <div v-if="role == 'admin'">
             <span class="fw-bold fs-1">{{ userData.email }}</span>
+          </div>
+
+          <div v-if="role=='nguoihammo'" class="d-flex flex-column mt-5">
+            <span class="fw-bold fs-1">{{ userData.hoVaTen }}</span>
+            <span class="fw-bold fs-2">{{ userData.email }}</span>
+            <span class="fw-bold fs-2">{{ userData.diaChi }}</span>
+            <span class="fw-bold fs-2">{{ userData.vaiTro }}</span>
+
 
           </div>
         </div>

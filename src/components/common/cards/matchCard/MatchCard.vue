@@ -244,7 +244,7 @@
           >
             <button class="btn btn-warning w-75 rounded-0" @click="handleBookTicket">
               <FontAwesomeIcon :icon="['fas', 'ticket-alt']" class="me-2" />
-              Đặt vé ngay
+              Đặt vé
             </button>
           </div>
         </div>
