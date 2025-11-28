@@ -1,7 +1,9 @@
 // stores/userStore.js
 import { defineStore } from "pinia";
 import axios from "@/utils/axios";
-
+import { ref } from "vue";
+const user = ref(JSON.parse(localStorage.getItem('user')) || null)
+const accessToken = ref(localStorage.getItem('accessToken') || null)
 export const useUserStore = defineStore("user", {
   state: () => ({
     user: null,
@@ -9,7 +11,7 @@ export const useUserStore = defineStore("user", {
     authChecked: false,
     initializeError: null,
   }),
-
+  
   actions: {
     async initialize() {
       console.log("🔄 Store: Bắt đầu initialize...");
@@ -84,33 +86,92 @@ export const useUserStore = defineStore("user", {
         this.loading = false;
       }
     },
-
-    mergeCart() {
-      if (!this.user) return;
-
-      const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
-      const userCartKey = `cart_${this.user.tenDangNhap}`;
-      const userCart = JSON.parse(localStorage.getItem(userCartKey)) || [];
-
-      if (guestCart.length > 0) {
-        const mergedCart = [...userCart];
-
-        guestCart.forEach((item) => {
-          const index = mergedCart.findIndex(
-            (i) => i.maSanPham === item.maSanPham
-          );
-          if (index > -1) {
-            mergedCart[index].quantity += item.quantity;
-          } else {
-            mergedCart.push(item);
-          }
-        });
-
-        localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
-        localStorage.removeItem("cart_guest");
-        console.log("✅ Đã merge giỏ hàng");
+    loginFromGoogle(userData) {
+      try {
+        console.log('🔄 UserStore: Google login with data', userData)
+        
+        this.user = userData.user
+        this.accessToken = userData.accessToken
+        
+        // Lưu vào localStorage
+        localStorage.setItem('user', JSON.stringify(userData.user))
+        localStorage.setItem('accessToken', userData.accessToken)
+        
+        console.log('✅ UserStore: Google login successful', this.user)
+        
+        // Gọi mergeCart nếu có
+        if (this.mergeCart) {
+          this.mergeCart()
+        }
+        
+        return true
+      } catch (error) {
+        console.error('❌ UserStore: Google login failed', error)
+        this.user = null
+        this.accessToken = null
+        return false
       }
     },
+    mergeCart() {
+  // Kiểm tra user đã đăng nhập chưa
+  if (!this.user) {
+    console.warn("⚠️ Chưa đăng nhập, không thể merge giỏ hàng");
+    return;
+  }
+  
+  try {
+    const guestCart = JSON.parse(localStorage.getItem("cart_guest") || "[]");
+    const userCartKey = `cart_${this.user.tenDangNhap}`;
+    const userCart = JSON.parse(localStorage.getItem(userCartKey) || "[]");
+
+    // Nếu không có cart_guest hoặc cart_guest rỗng
+    if (!guestCart || guestCart.length === 0) {
+      console.log("ℹ️ Không có giỏ hàng guest để merge");
+      return;
+    }
+
+    console.log(`🛒 Đang merge ${guestCart.length} sản phẩm từ guest vào user cart`);
+
+    // Tạo bản sao của user cart để tránh mutation trực tiếp
+    const mergedCart = [...userCart];
+
+    // Merge từng item từ guest cart
+    guestCart.forEach((guestItem) => {
+      // Validate item có đủ thông tin cần thiết
+      if (!guestItem.maSanPham || !guestItem.quantity) {
+        console.warn("⚠️ Bỏ qua item không hợp lệ trong guest cart:", guestItem);
+        return;
+      }
+
+      const existingItemIndex = mergedCart.findIndex(
+        userItem => userItem.maSanPham === guestItem.maSanPham
+      );
+
+      if (existingItemIndex > -1) {
+        // Item đã tồn tại, cộng dồn quantity
+        mergedCart[existingItemIndex].quantity += guestItem.quantity;
+        console.log(`↔️ Đã cập nhật số lượng cho sản phẩm ${guestItem.maSanPham}`);
+      } else {
+        // Item mới, thêm vào giỏ hàng
+        mergedCart.push({ ...guestItem });
+        console.log(`➕ Đã thêm mới sản phẩm ${guestItem.maSanPham}`);
+      }
+    });
+
+    // Lưu giỏ hàng đã merge và xóa guest cart
+    localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
+    localStorage.removeItem("cart_guest");
+    
+    console.log("✅ Đã merge giỏ hàng thành công");
+    console.log(`📊 Tổng số sản phẩm trong giỏ: ${mergedCart.length}`);
+
+    // Có thể trigger event hoặc callback để cập nhật UI
+    this.onCartMerged?.(mergedCart);
+
+  } catch (error) {
+    console.error("❌ Lỗi khi merge giỏ hàng:", error);
+  }
+},
 
     async logout() {
       try {

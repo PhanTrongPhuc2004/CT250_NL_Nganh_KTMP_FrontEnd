@@ -5,8 +5,11 @@ import { useUserStore } from "./stores/userStore";
 import { onMounted, ref } from "vue";
 import { getMe } from "./utils";
 
+
 const userStore = useUserStore();
 const appReady = ref(false);
+
+
 
 onMounted(async () => {
 

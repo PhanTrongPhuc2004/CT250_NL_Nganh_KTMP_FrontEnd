@@ -32,6 +32,7 @@ const { activeMenuId, toggleMenu } = useDropdownManager();
 onMounted(async () => {
   try {
     userInfor.value = await getMe();
+    console.log("Thông tin user:", userInfor.value);
   } catch (error) {
     console.error("Lỗi khi lấy thông tin user:", error);
   }
@@ -195,6 +196,8 @@ const displayUserName = computed(() => {
     :form-name="'Đăng nhập'"
     @closed="formStore.closeForm"
     @submitted="userStore.login"
+    @google-success="onGoogleLoginSuccess"
+    @google-error="onGoogleLoginError"
   />
 </template>
 

@@ -16,6 +16,12 @@ import { createPinia } from "pinia";
 // ✅ FontAwesome
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import GAuth from "vue3-google-oauth2"
+const gAuthOptions = {
+  clientId: `${import.meta.env.VITE_GOOGLE_CLIENT_ID}`,
+  scope: 'email profile',
+  prompt: 'consent',
+}
 
 // Solid icons
 import {
@@ -90,6 +96,8 @@ library.add(
 
 // Tạo app
 const app = createApp(App);
+app.use(GAuth, gAuthOptions)
+
 app.component("FontAwesomeIcon", FontAwesomeIcon);
 app.use(BootstrapVue3);
 app.use(createPinia());

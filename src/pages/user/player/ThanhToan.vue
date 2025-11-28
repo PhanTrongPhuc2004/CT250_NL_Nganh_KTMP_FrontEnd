@@ -81,31 +81,42 @@ export default {
     },
   },
   mounted() {
-    const userStore = useUserStore();
-    this.tenDangNhap = userStore.user?.tenDangNhap || "guest";
+  const userStore = useUserStore();
+  this.tenDangNhap = userStore.user?.tenDangNhap || "guest";
 
-    const userCartKey = `cart_${this.tenDangNhap}`;
-    let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+  const userCartKey = `cart_${this.tenDangNhap}`;
+  let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
 
-    if (!cart.length) {
-      const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
-      if (guestCart.length) cart = guestCart;
+  // Nếu user đã đăng nhập nhưng chưa có cart, thử lấy từ guest cart
+  if (!cart.length && this.tenDangNhap !== "guest") {
+    const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
+    if (guestCart.length) {
+      cart = guestCart;
+      // Tự động chuyển guest cart thành user cart
+      localStorage.setItem(userCartKey, JSON.stringify(cart));
+      localStorage.removeItem("cart_guest");
     }
+  }
 
-    // Chuẩn hóa giỏ hàng: dùng soLuong thống nhất
-    this.cart = cart.map((item) => ({
-      maSanPham: item.maSanPham,
-      tenQuaLuuNiem: item.tenQuaLuuNiem,
-      gia: Number(item.gia) || 0,
-      soLuong: Number(item.soLuong ?? item.quantity ?? 1),
-      anhMinhHoa: item.anhMinhHoa || "",
-    }));
+  // Fallback: nếu vẫn không có cart, thử guest cart
+  if (!cart.length) {
+    cart = JSON.parse(localStorage.getItem("cart_guest")) || [];
+  }
 
-    if (!this.cart.length) {
-      alert("Giỏ hàng trống! Quay lại giỏ hàng.");
-      this.$router.push("/cart");
-    }
-  },
+  // Chuẩn hóa giỏ hàng
+  this.cart = cart.map((item) => ({
+    maSanPham: item.maSanPham,
+    tenQuaLuuNiem: item.tenQuaLuuNiem,
+    gia: Number(item.gia) || 0,
+    soLuong: Number(item.soLuong ?? item.quantity ?? 1),
+    anhMinhHoa: item.anhMinhHoa || "",
+  }));
+
+  if (!this.cart.length) {
+    alert("Giỏ hàng trống! Quay lại giỏ hàng.");
+    this.$router.push("/cart");
+  }
+},
   methods: {
     async confirmOrder() {
       if (!this.cart.length) return;

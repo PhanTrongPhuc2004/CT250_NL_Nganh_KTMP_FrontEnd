@@ -9,7 +9,7 @@
         </div>
         <div class="d-flex flex-wrap  pt-3 mt-3 border-top">
             <div v-for="(player, index) in players" class="col-md-4">
-            <PlayerCard :item="player" :menu-items="menuFields"/>
+            <PlayerCard :item="player"/>
         </div>
         </div>
     </div>

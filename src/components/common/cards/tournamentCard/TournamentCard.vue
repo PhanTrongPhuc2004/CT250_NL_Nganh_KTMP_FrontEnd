@@ -85,14 +85,14 @@ onMounted(() => {
 
 <template>
   <div class="tournament-card h-100">
-    <div class="border rounded-4 shadow-sm bg-white h-100 d-flex flex-column">
+    <div class="border shadow-sm bg-white h-100 d-flex flex-column">
       <!-- Header with tournament name -->
       <div class="position-relative">
         <!-- Image with lazy loading -->
         <img
           :src="getImageSource"
           :alt="item.tenGiaiDau"
-          class="w-100 rounded-top-4 lazy-image"
+          class="w-100  lazy-image"
           :class="{ 'image-loaded': imageLoaded, 'image-error': imageError }"
           style="height: 140px; object-fit: cover"
           loading="lazy"
@@ -101,7 +101,7 @@ onMounted(() => {
         />
         
         <!-- Loading overlay (optional) -->
-        <div v-if="!imageLoaded && item.anhMinhHoa" class="position-absolute top-0 start-0 w-100 h-100 bg-light d-flex align-items-center justify-content-center rounded-top-4">
+        <div v-if="!imageLoaded && item.anhMinhHoa" class="position-absolute top-0 start-0 w-100 h-100 bg-light d-flex align-items-center justify-content-center">
           <div class="spinner-border spinner-border-sm text-primary" role="status">
             <span class="visually-hidden">Đang tải...</span>
           </div>

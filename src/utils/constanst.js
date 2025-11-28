@@ -246,7 +246,7 @@ export const thongSoFields = [
   },
   {
     name: "banDoThanNhiet",
-    type: "textarea",
+    type: "file",
     label: "Bản đồ thân nhiệt (Heatmap URL hoặc mô tả)"
   }
 ];

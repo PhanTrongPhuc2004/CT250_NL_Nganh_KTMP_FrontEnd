@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <!-- Header -->
-    <div class="text-white p-3 rounded-4 d-flex justify-content-between align-items-center mb-4 header-hover" 
+    <div class="text-white p-3 d-flex justify-content-between align-items-center mb-4 header-hover" 
          style="background-color: var(--primary-color); cursor: pointer;" 
          @click="() => router.push('/admin/clubs')">
       <div>
@@ -28,7 +28,7 @@
     <!-- 4 Ô Thống kê chính -->
     <div class="row g-3 d-flex w-100 justify-content-around">
       <!-- Ô Thống kê trận đấu -->
-      <div class="col-md-4 rounded-4 p-3 text-white shadow card-hover position-relative d-flex flex-column" 
+      <div class="col-md-4 p-3 text-white shadow card-hover position-relative d-flex flex-column" 
            style="background-color: #5A266F; min-height: 400px;">
         <div class="flex-grow-1">
           <div class="d-flex justify-content-between align-items-start mb-2">
@@ -75,7 +75,7 @@
       </div>
 
       <!-- Ô Doanh thu vé -->
-      <div class="col-md-4 rounded-4 p-3 shadow text-white card-hover position-relative d-flex flex-column" 
+      <div class="col-md-4 p-3 shadow text-white card-hover position-relative d-flex flex-column" 
            style="background-color: #9A7DD2; min-height: 400px;">
         <div class="flex-grow-1">
           <div class="d-flex justify-content-between align-items-start mb-2">
@@ -107,7 +107,7 @@
       </div>
 
       <!-- Ô Thống kê quà lưu niệm -->
-      <div class="col-md-3 rounded-4 p-3 shadow text-white card-hover position-relative d-flex flex-column" 
+      <div class="col-md-3  p-3 shadow text-white card-hover position-relative d-flex flex-column" 
            style="background-color: #D65B5B; min-height: 400px;">
         <div class="flex-grow-1">
           <div class="d-flex justify-content-between align-items-start mb-2">
@@ -409,9 +409,6 @@ const refreshData = () => {
   });
 };
 
-const filterData = () => {
-  refreshData();
-};
 
 const onCancel = () => {
 };

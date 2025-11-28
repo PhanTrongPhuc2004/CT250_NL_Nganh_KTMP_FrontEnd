@@ -240,5 +240,5 @@ export const adminRoutes = [
           admin: true,
           hidden: true
         },
-      }
+    }
 ];

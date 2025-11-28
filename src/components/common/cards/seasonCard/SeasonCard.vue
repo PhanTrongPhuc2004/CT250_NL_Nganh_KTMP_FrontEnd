@@ -100,7 +100,7 @@ const getImageSource = computed(() => {
 
 <template>
   <div :class="class" class="season-card h-100">
-    <div class="border rounded-4 shadow-sm bg-white h-100 d-flex flex-column">
+    <div class="shadow-sm bg-white h-100 d-flex flex-column">
       <!-- Header with season image -->
       <div class="position-relative">
         <img
@@ -110,7 +110,7 @@ const getImageSource = computed(() => {
           @error="handleImageError"
 
           alt="Background mùa giải"
-          class="w-100 rounded-top-4"
+          class="w-100"
           style="height: 140px; object-fit: cover"
         />
         
@@ -141,7 +141,7 @@ const getImageSource = computed(() => {
       <!-- Menu actions -->
       <div
         v-if="shouldShowMenu"
-        class="d-flex justify-content-end align-items-center p-3 position-relative border-top"
+        class="d-flex justify-content-end align-items-center p-3 position-relative "
       >
         <button
           class="btn btn-sm btn-outline-secondary d-flex align-items-center p-2"
@@ -177,7 +177,6 @@ const getImageSource = computed(() => {
 }
 
 .season-stats {
-  border-top: 1px solid #e9ecef;
   padding-top: 0.75rem;
   margin-top: 0.75rem;
 }

@@ -28,7 +28,7 @@
 
     <!-- Nút toggle (mobile) -->
     <button
-      class="btn btn-outline-secondary d-md-none mb-3 flex-shrink-0 rounded-2"
+      class="btn btn-outline-secondary d-md-none mb-3 flex-shrink-0"
       type="button"
       @click="toggleSidebar"
     >
@@ -43,7 +43,7 @@
           <!-- Dropdown Menu -->
           <div v-if="item.meta?.isDropdown" class="dropdown-container">
             <div
-              class="nav-link d-flex align-items-center justify-content-between gap-3 text-dark px-3 py-2 fs-6 dropdown-toggle rounded-2"
+              class="nav-link d-flex align-items-center justify-content-between gap-3 text-dark px-3 py-2 fs-6 dropdown-toggle "
               :class="{ 
                 'active': isDropdownActive(item),
                 'dropdown-open': openDropdown === item.name 
@@ -76,7 +76,7 @@
                 v-for="child in item.children"
                 :key="child.path"
                 :to="child.path"
-                class="nav-link d-flex align-items-center gap-3 text-dark px-3 py-2 fs-6 child-item rounded-2"
+                class="nav-link d-flex align-items-center gap-3 text-dark px-3 py-2 fs-6 child-item"
                 active-class="active"
                 :class="{ active: isItemActive(child) }"
                 @click="handleItemClick(child)"
@@ -96,7 +96,7 @@
           <RouterLink
             v-else
             :to="item.path"
-            class="nav-link d-flex align-items-center gap-3 text-dark px-3 py-2 fs-6 rounded-2"
+            class="nav-link d-flex align-items-center gap-3 text-dark px-3 py-2 fs-6"
             active-class="active"
             :class="{ active: isItemActive(item) }"
             @click="handleItemClick(item)" 
@@ -252,7 +252,6 @@ const handleItemClick = (item) => {
   font-weight: 500;
   transition: all 0.2s ease;
   font-size: 0.875rem;
-  border-radius: 0.5rem !important;
 }
 
 .nav-link:hover {
@@ -282,7 +281,6 @@ const handleItemClick = (item) => {
 .dropdown-toggle {
   transition: all 0.2s ease;
   font-size: 0.875rem;
-  border-radius: 0.5rem !important;
 }
 
 .dropdown-toggle.dropdown-open {
@@ -309,7 +307,6 @@ const handleItemClick = (item) => {
   font-size: 0.8rem;
   transition: all 0.2s ease;
   min-height: 36px;
-  border-radius: 0.375rem !important;
   margin-bottom: 0.125rem;
 }
 

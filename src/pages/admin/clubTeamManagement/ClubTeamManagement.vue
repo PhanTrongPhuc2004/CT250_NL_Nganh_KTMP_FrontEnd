@@ -101,7 +101,7 @@
 
 <script setup>
 import axios from "axios";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, h } from "vue";
 import { useRouter } from "vue-router";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import Form from "@/components/common/form/Form.vue";
@@ -125,17 +125,23 @@ const teamMenuItems = [
   {
     label: "Chỉnh sửa",
     icon: "fa-pen-to-square", // SỬA: string thay vì array
-    action: "edit", // SỬA: string action thay vì function
+    action: (item) => {
+      handleEditTeam(item);
+    }, // SỬA: string action thay vì function
   },
   {
     label: "Xem chi tiết",
     icon: "fa-eye", // SỬA: string thay vì array
-    action: "view", // SỬA: string action thay vì function
+    action: (item) => {
+      handleViewTeam(item);
+    }, // SỬA: string action thay vì function
   },
   {
     label: "Xóa",
     icon: "fa-trash", // SỬA: string thay vì array
-    action: "delete", // SỬA: string action thay vì function
+    action: () => {
+      handleDeleteTeam(item);
+    }, // SỬA: string action thay vì function
   },
 ];
 
@@ -163,7 +169,6 @@ const teamFields = [
     type: "select",
     label: "Giới tính",
     children:[
-      { value: "", name: "Không" },
       { value: "nam", name: "Nam" },
       { value: "nu", name: "Nữ" },
     ]
@@ -176,7 +181,7 @@ const teamFields = [
     required: true,
   },
   {
-    name: "logoUrl",
+    name: "anhMinhHoa",
     type: "file",
     label: "URL Logo",
     placeholder: "https://example.com/logo.png",

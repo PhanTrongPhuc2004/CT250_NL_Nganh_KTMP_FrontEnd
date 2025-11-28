@@ -9,7 +9,7 @@
           <div class="d-flex gap-2 flex-wrap">
             <button
               class="btn btn-outline-primary d-flex align-items-center"
-              @click="$router.push('/admin/qualuuniem/donhang')"
+              @click="$router.push('/admin/donhang')"
             >
              <i class="bi bi-journal-bookmark-fill"> </i> Đơn hàng
             </button>

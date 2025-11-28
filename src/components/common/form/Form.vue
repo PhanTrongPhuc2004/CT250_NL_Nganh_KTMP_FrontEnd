@@ -6,8 +6,11 @@ import styles from "./form.module.scss";
 import { uploadToCloudinary } from "@/config/cloudinary.conf";
 import { useFormStore } from "@/stores/formStore";
 import instance from "@/utils/axios";
+import GoogleLogin from "../GoogleLogin/GoogleLogin.vue";
+import { useUserStore } from "@/stores/userStore";
+const userStore = useUserStore();
 //debug
-const debug = false;
+const debug = true;
 const formStore = useFormStore();
 const emit = defineEmits(["submitted", "updated", "deleted", "closed", "error"]);
 const cx = classNames.bind(styles);
@@ -27,6 +30,9 @@ const formData = reactive({});
 const isSubmitting = ref(false);
 const isUploading = ref(false);
 const imageUrl = ref(""); // Lưu URL ảnh sau khi upload
+
+
+
 
 // ================= INIT FORM DATA =================
 const initFormData = () => {
@@ -324,6 +330,43 @@ const getChildren = (field) => {
           }}
         </button>
       </form>
+      <div v-if="formName === 'Đăng nhập'" class="mt-4">
+    <div class="divider text-center mb-3">
+      <span class="bg-white px-3 text-muted">hoặc đăng nhập với</span>
     </div>
+    
+    <GoogleLogin 
+      @success="onGoogleLoginSuccess"
+      @error="onGoogleLoginError"
+    />
   </div>
+    </div>
+    
+  </div>
+  
 </template>
+<style scoped>
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #dee2e6;
+  z-index: -1;
+}
+
+.divider span {
+  background: white;
+  padding: 0 1rem;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+</style>

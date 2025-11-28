@@ -1,14 +1,14 @@
 <!-- src/components/common/cards/clubTeamCard/ClubTeamCard.vue -->
 <template>
-  <div class="card h-100 club-team-card position-relative">
+  <div class=" h-100 club-team-card position-relative p-3">
     <div class="card-body">
       <!-- Team Header with Logo and Menu -->
       <div class="d-flex justify-content-between align-items-start mb-3">
         <!-- Team Logo and Name -->
         <div class="d-flex align-items-center">
-          <div v-if="showLogo && item.logoUrl" class="team-logo me-3">
+          <div v-if="showLogo && item.anhMinhHoa" class="team-logo me-3">
             <img
-              :src="item.logoUrl"
+              :src="item?.anhMinhHoa || item.logoUrl"
               :alt="item.tenDoiBong"
               class="team-logo-img"
               @error="handleImageError"
@@ -19,45 +19,51 @@
 
         <!-- Menu Button -->
         <div class="position-relative">
-          <button
-            v-if="shouldShowMenu"
-            class="btn btn-sm btn-outline-secondary menu-button"
-            @click.stop="toggleMenu(item._id)"
-            aria-label="Tùy chọn"
-          >
-            <FontAwesomeIcon :icon="['fas', 'ellipsis-vertical']" />
-          </button>
+          
 
           <!-- Dropdown Menu -->
           <div
             v-if="isMenuOpen(item._id)"
-            class="dropdown-menu show custom-dropdown"
           >
-            <button
+            <!-- <button
               v-for="menuItem in menuItems"
               :key="menuItem.action"
               class="dropdown-item d-flex align-items-center"
               :class="menuItem.class"
               @click="handleMenuItemClick(menuItem.action, item)"
             >
-              <FontAwesomeIcon
-                :icon="`fa-solid ${menuItem.icon}`"
-                class="me-2"
-              />
+              
               {{ menuItem.label }}
-            </button>
+            </button> -->
+            <Menu
+              class="custom-dropdown"
+              :menu-items="currentMenuItems"
+              :on-select="(action) => handleMenuItemClick(action, item)"
+              :on-close="() => toggleMenu(null)"
+            />
           </div>
         </div>
       </div>
 
       <!-- Team Details -->
       <div v-if="showDetails" class="team-details">
-        <div v-if="item.sanNha" class="detail-item">
-          <FontAwesomeIcon
-            icon="fa-solid fa-location-dot"
-            class="me-2 text-muted"
-          />
-          <small class="text-muted">{{ item.sanNha }}</small>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          
+          <div v-if="item.sanNha" class="detail-item">
+            <FontAwesomeIcon
+              icon="fa-solid fa-location-dot"
+              class="me-2 text-muted"
+            />
+            <small class="text-muted">{{ item.sanNha }}</small>
+          </div>
+          <button
+            v-if="shouldShowMenu"
+            class="btn btn-sm btn-outline-secondary menu-button"
+            @click.stop="toggleMenu(item._id)"
+            aria-label="Tùy chọn"
+          >
+            <FontAwesomeIcon :icon="['fas', 'ellipsis-v']" />
+          </button>
         </div>
 
         <div v-if="item.soThanhVien !== undefined" class="detail-item">
@@ -73,7 +79,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-
+import Menu from "../../menu/Menu.vue";
 const props = defineProps({
   item: {
     type: Object,
@@ -94,6 +100,19 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["menu-action"]);
+
+const currentMenuItems = computed(() => {
+  if (!props.menuItems || props.menuItems.length === 0) {
+    return [];
+  }
+
+  return props.menuItems.map((menuItem) => ({
+    label: menuItem.label,
+    action: () => {
+      menuItem.action(props.item);
+    },
+  }));
+});
 
 // Menu state
 const activeMenuId = ref(null);
@@ -132,6 +151,7 @@ const handleClickOutside = (event) => {
 };
 
 onMounted(() => {
+  console.log("items", props.item);
   document.addEventListener("click", handleClickOutside);
 });
 </script>
@@ -140,7 +160,6 @@ onMounted(() => {
 .club-team-card {
   border: 1px solid #e9ecef;
   transition: all 0.3s ease;
-  border-radius: 8px;
 }
 
 .club-team-card:hover {
@@ -152,7 +171,6 @@ onMounted(() => {
 .team-logo {
   width: 50px;
   height: 50px;
-  border-radius: 8px;
   overflow: hidden;
   background: #f8f9fa;
   display: flex;
@@ -177,7 +195,6 @@ onMounted(() => {
   background: transparent;
   padding: 4px 8px;
   border-radius: 4px;
-  transition: background-color 0.2s;
 }
 
 .menu-button:hover {

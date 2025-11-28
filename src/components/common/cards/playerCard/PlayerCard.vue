@@ -105,7 +105,7 @@ const handleClickCard = () => {
     >
       <button
         class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
-        style="width: 32px; height: 32px; border-radius: 50%"
+        style="width: 32px; height: 32px;"
         @click="toggleMenu"
         aria-label="Tùy chọn"
       >
