@@ -14,12 +14,12 @@
             <th>Tổng</th>
           </tr>
         </thead>
+
         <tbody>
-          <tr v-for="item in cart" :key="item.maSanPham">
+          <tr v-for="item in cart" :key="item._id">
             <td>
               <img
                 :src="item.anhMinhHoa?.startsWith('http') ? item.anhMinhHoa : `/${item.anhMinhHoa}`"
-                alt="Ảnh sản phẩm"
                 class="checkout-item-img"
               />
             </td>
@@ -34,7 +34,7 @@
 
     <p v-else>Không có sản phẩm nào để thanh toán.</p>
 
-    <!-- 🧾 Form thanh toán -->
+    <!-- Form thanh toán -->
     <form v-if="cart.length" @submit.prevent="confirmOrder" class="checkout-form">
       <label>Họ và tên người nhận:</label>
       <input type="text" v-model="order.name" required />
@@ -45,9 +45,61 @@
       <label>Địa chỉ giao hàng:</label>
       <textarea v-model="order.address" required></textarea>
 
-      <h3>Tổng thanh toán: {{ totalAmount.toLocaleString() }} VND</h3>
+      <!-- 💰 Tổng tiền + Voucher -->
+      <div class="voucher-box mt-3 p-3 border rounded bg-light">
+        <p><strong>Tổng ban đầu:</strong> {{ totalAmount.toLocaleString() }} VND</p>
 
-      <button type="submit" class="btn btn-success w-100" :disabled="loading">
+        <p v-if="discount > 0" class="text-success fw-bold">
+          Giảm giá: -{{ discount.toLocaleString() }} VND
+        </p>
+
+        <p class="fs-4 fw-bold text-danger">
+          Tổng thanh toán: {{ finalAmount.toLocaleString() }} VND
+        </p>
+      </div>
+
+      <!-- 🔧 Phương thức thanh toán -->
+      <label>Phương thức thanh toán:</label>
+      <div class="payment-methods">
+        <label class="pm-item">
+          <input type="radio" value="cash" v-model="order.paymentMethod" />
+          Thanh toán trực tiếp
+        </label>
+
+        <!-- <label class="pm-item">
+          <input type="radio" value="momo" v-model="order.paymentMethod" />
+          Thanh toán MoMo
+        </label> -->
+
+        <!-- ✔ QR MoMo (giữ nguyên của bạn) -->
+        <div v-if="order.paymentMethod === 'momo'" class="mt-2">
+          <div class="card p-3 text-center shadow-sm" style="max-width: 300px;">
+            <img src="/data/qrmm.jpg" class="img-fluid rounded" />
+            <p class="mt-2 fw-semibold">Quét QR MoMo để thanh toán</p>
+          </div>
+        </div>
+
+        <label class="pm-item">
+          <input type="radio" value="bank" v-model="order.paymentMethod" />
+          Chuyển khoản ngân hàng
+        </label>
+
+        <!-- 🟢 QR VietQR động -->
+        <div v-if="order.paymentMethod === 'bank'" class="mt-2">
+          <div class="card p-3 text-center shadow-sm" style="max-width: 300px;">
+            <img
+              :src="vietQrUrl"
+              class="img-fluid rounded"
+              alt="QR VietQR"
+            />
+            <p class="mt-2 fw-semibold">
+              Quét mã VietQR để chuyển khoản
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100 mt-3" :disabled="loading">
         <i v-if="!loading" class="bi bi-check-circle me-1"></i>
         <span v-if="!loading">Xác nhận thanh toán</span>
         <span v-else>
@@ -66,101 +118,134 @@ export default {
   name: "CheckoutPage",
   data() {
     return {
-      order: { name: "", phone: "", address: "" },
       cart: [],
       tenDangNhap: "guest",
       loading: false,
+      order: {
+        name: "",
+        phone: "",
+        address: "",
+        paymentMethod: "cash",
+      },
+
+      // Voucher giữ nguyên như bạn
+      vouchers: [
+        { code: "VOUCHER30K", label: "Giảm 30.000₫", min: 250000, type: "fixed", amount: 30000 },
+        { code: "VOUCHER50K", label: "Giảm 50.000₫", min: 500000, type: "fixed", amount: 50000 },
+        { code: "VOUCHER15P", label: "Giảm 15%", min: 1000000, type: "percent", amount: 15 },
+      ],
     };
   },
+
   computed: {
     totalAmount() {
-      return this.cart.reduce(
-        (sum, item) => sum + Number(item.gia) * Number(item.soLuong),
-        0
-      );
+      return this.cart.reduce((sum, item) => sum + item.gia * item.soLuong, 0);
     },
+
+    bestVoucher() {
+      const total = this.totalAmount;
+      const valid = this.vouchers.filter(v => total >= v.min);
+      if (!valid.length) return null;
+
+      return valid.reduce((best, v) => {
+        const discountV = v.type === "fixed" ? v.amount : Math.floor(total * v.amount / 100);
+        const discountBest = best.type === "fixed" ? best.amount : Math.floor(total * best.amount / 100);
+        return discountV > discountBest ? v : best;
+      });
+    },
+
+    discount() {
+      if (!this.bestVoucher) return 0;
+      return this.bestVoucher.type === "fixed"
+        ? this.bestVoucher.amount
+        : Math.floor(this.totalAmount * this.bestVoucher.amount / 100);
+    },
+
+    finalAmount() {
+      return Math.max(this.totalAmount - this.discount, 0);
+    },
+
+    /* Tạo URL VietQR động */
+      vietQrUrl() {
+        if (!this.finalAmount || this.finalAmount <= 0) return "";
+
+        const bankCode = "vcb";            // Vietcombank
+        const accountNumber = "1030670478";
+        const accountName = "NGUYEN THIEN PHUC"; // (không bắt buộc nhưng nên có)
+
+        // 🎯 Tạo nội dung linh hoạt theo đơn hàng
+        const orderName = this.order?.name || "Don hang";
+        const orderCode = this.order?.code || Date.now(); // tạo mã đơn tự sinh nếu không có
+        const transferInfo = `Thanh toan DH${orderCode}`;
+
+        const encodedInfo = encodeURIComponent(transferInfo);
+
+        return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${this.finalAmount}&addInfo=${encodedInfo}&accountName=${encodeURIComponent(accountName)}`;
+      },
   },
+
   mounted() {
-  const userStore = useUserStore();
-  this.tenDangNhap = userStore.user?.tenDangNhap || "guest";
+    const store = useUserStore();
+    this.tenDangNhap = store.user?.tenDangNhap || "guest";
 
-  const userCartKey = `cart_${this.tenDangNhap}`;
-  let cart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+    let cart = JSON.parse(localStorage.getItem(`cart_${this.tenDangNhap}`)) || [];
+    if (!cart.length) cart = JSON.parse(localStorage.getItem("cart_guest")) || [];
 
-  // Nếu user đã đăng nhập nhưng chưa có cart, thử lấy từ guest cart
-  if (!cart.length && this.tenDangNhap !== "guest") {
-    const guestCart = JSON.parse(localStorage.getItem("cart_guest")) || [];
-    if (guestCart.length) {
-      cart = guestCart;
-      // Tự động chuyển guest cart thành user cart
-      localStorage.setItem(userCartKey, JSON.stringify(cart));
-      localStorage.removeItem("cart_guest");
+    this.cart = cart.map(item => ({
+      _id: item._id,
+      tenQuaLuuNiem: item.tenQuaLuuNiem,
+      gia: Number(item.gia),
+      soLuong: Number(item.soLuong ?? item.quantity ?? 1),
+      anhMinhHoa: item.anhMinhHoa,
+    }));
+
+    if (!this.cart.length) {
+      alert("Giỏ hàng trống!");
+      this.$router.push("/cart");
     }
-  }
+  },
 
-  // Fallback: nếu vẫn không có cart, thử guest cart
-  if (!cart.length) {
-    cart = JSON.parse(localStorage.getItem("cart_guest")) || [];
-  }
-
-  // Chuẩn hóa giỏ hàng
-  this.cart = cart.map((item) => ({
-    maSanPham: item.maSanPham,
-    tenQuaLuuNiem: item.tenQuaLuuNiem,
-    gia: Number(item.gia) || 0,
-    soLuong: Number(item.soLuong ?? item.quantity ?? 1),
-    anhMinhHoa: item.anhMinhHoa || "",
-  }));
-
-  if (!this.cart.length) {
-    alert("Giỏ hàng trống! Quay lại giỏ hàng.");
-    this.$router.push("/cart");
-  }
-},
   methods: {
     async confirmOrder() {
-      if (!this.cart.length) return;
-
       this.loading = true;
 
-      // 🔧 Chuẩn hóa lại mảng cart đúng key 'quantity'
       const normalizedCart = this.cart.map(item => ({
+        _id: item._id,
         tenQuaLuuNiem: item.tenQuaLuuNiem,
         gia: item.gia,
-        quantity: Number(item.soLuong), // ✅ đổi sang quantity
-        anhMinhHoa: item.anhMinhHoa
+        quantity: item.soLuong,
+        anhMinhHoa: item.anhMinhHoa,
       }));
 
-      const newOrder = {
+      const payload = {
         tenDangNhap: this.tenDangNhap,
         ...this.order,
-        cart: normalizedCart, // ✅ dùng cart đã chuẩn hóa
-        total: this.totalAmount,
+        cart: normalizedCart,
+        total: this.finalAmount,
+        discount: this.discount,
+        appliedVoucher: this.bestVoucher?.code || null,
         date: new Date(),
       };
 
       try {
-        await axios.post(
-          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang`,
-          newOrder
-        );
+        await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/donhang`, payload);
 
         localStorage.removeItem(`cart_${this.tenDangNhap}`);
         localStorage.removeItem("cart_guest");
 
-        alert("🎉 Đơn hàng của bạn đã được thanh toán và lưu thành công!");
+        alert("🎉 Đặt hàng thành công!");
         this.$router.push("/orders");
       } catch (err) {
-        console.error("❌ Lỗi khi gửi đơn hàng:", err);
-        alert("Có lỗi xảy ra khi gửi đơn hàng. Vui lòng thử lại!");
+        console.error(err);
+        alert("Lỗi thanh toán!");
       } finally {
         this.loading = false;
       }
-    }
-    ,
+    },
   },
 };
 </script>
+
 
 
 <style scoped>
@@ -182,14 +267,15 @@ export default {
 
 /* Bảng hiển thị sản phẩm */
 .cart-table {
-  width: 100%;
+  width: 80%;
   border-collapse: collapse;
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 30px;
+  margin: 0 auto 30px auto; /* Căn giữa bảng */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
+
 
 .cart-table th {
   background: #4e73df;
@@ -259,4 +345,31 @@ export default {
   font-weight: 700;
   margin-top: 10px;
 }
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: -5px;
+}
+
+.pm-item {
+  background: #f6f7fb;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d6d8e0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pm-item:hover {
+  background: #eef1f7;
+  border-color: #4e73df;
+}
+.card img {
+  border-radius: 12px;
+}
+
 </style>
