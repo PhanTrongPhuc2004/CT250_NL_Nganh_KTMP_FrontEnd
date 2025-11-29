@@ -1,10 +1,11 @@
 <template>
   <div class="cart-page">
-    <h1> Giỏ hàng của bạn</h1>
+    <h1>Giỏ hàng của bạn</h1>
 
     <div v-if="cart.length">
-      <table class="cart-table">
-        <thead>
+      <!-- TABLE -->
+      <table class="cart-table table table-bordered align-middle">
+        <thead class="table-light">
           <tr>
             <th>Hình ảnh</th>
             <th>Sản phẩm</th>
@@ -14,32 +15,66 @@
             <th></th>
           </tr>
         </thead>
+
         <tbody>
           <tr v-for="(item, index) in cart" :key="item._id">
-              <td>
-                <img 
-                  :src="item.anhMinhHoa.startsWith('http') ? item.anhMinhHoa : `/${item.anhMinhHoa}`" 
-                  alt="Ảnh sản phẩm" 
-                  class="cart-item-img"
-                />
-              </td>
+            <td>
+              <img
+                :src="item.anhMinhHoa.startsWith('http') ? item.anhMinhHoa : `/${item.anhMinhHoa}`"
+                alt=""
+                class="cart-item-img"
+              />
+            </td>
+
             <td>{{ item.tenQuaLuuNiem }}</td>
             <td>{{ item.gia.toLocaleString() }} VND</td>
             <td>{{ item.quantity }}</td>
             <td>{{ (item.gia * item.quantity).toLocaleString() }} VND</td>
+
             <td>
               <button class="btn btn-danger btn-sm" @click="removeItem(index)">
                 <i class="bi bi-trash"></i>
               </button>
-
             </td>
           </tr>
         </tbody>
       </table>
 
-      <h3 class="total">Tổng cộng: {{ totalAmount.toLocaleString() }} VND</h3>
+      <!-- TỔNG TIỀN -->
+      <h3 class="total">
+        Tổng cộng: {{ totalAmount.toLocaleString() }} VND
+      </h3>
 
-      <div class="action-buttons">
+      <!-- AUTO VOUCHER -->
+      <div class="voucher-auto mt-3 p-3 border rounded bg-light">
+        <h5>
+          <i class="bi bi-ticket-perforated text-danger"></i>
+          Voucher:
+        </h5>
+
+        <p v-if="bestVoucher" class="text-success fw-bold">
+          ✔ Áp dụng: {{ bestVoucher.label }}  
+          <br />
+          <span class="small text-dark">{{ bestVoucher.info }}</span>
+        </p>
+
+        <p v-else class="text-muted">
+          Không có voucher phù hợp với đơn hàng.
+        </p>
+      </div>
+
+      <!-- GIẢM GIÁ -->
+      <div v-if="discountAmount > 0" class="text-success fw-bold mt-2">
+        Giảm giá: -{{ discountAmount.toLocaleString() }} VND
+      </div>
+
+      <!-- THÀNH TIỀN -->
+      <h3 class="mt-2 text-primary fw-bold">
+        Thành tiền: {{ finalAmount.toLocaleString() }} VND
+      </h3>
+
+      <!-- BUTTONS -->
+      <div class="action-buttons mt-4">
         <button class="btn btn-outline-danger me-2" @click="clearCart">
           <i class="bi bi-trash me-1"></i> Xóa giỏ hàng
         </button>
@@ -51,45 +86,124 @@
     </div>
 
     <p v-else>Giỏ hàng của bạn đang trống.</p>
+
     <button class="btn btn-outline-primary" @click="$router.push('/shop')">
       <i class="bi bi-arrow-left-circle me-1"></i> Tiếp tục mua hàng
     </button>
-
   </div>
 </template>
 
 <script>
 export default {
   name: "CartPage",
+
   data() {
     const user = JSON.parse(localStorage.getItem("user"));
     const username = user?.tenDangNhap || "guest";
+
     return {
       username,
       cart: JSON.parse(localStorage.getItem(`cart_${username}`)) || [],
+
+      vouchers: [
+        {
+          code: "VOUCHER30K",
+          label: "Giảm 30.000₫",
+          min: 250000,
+          type: "fixed",
+          amount: 30000,
+          info: "Áp dụng cho đơn từ 250.000₫",
+        },
+        {
+          code: "VOUCHER50K",
+          label: "Giảm 50.000₫",
+          min: 500000,
+          type: "fixed",
+          amount: 50000,
+          info: "Áp dụng cho đơn từ 500.000₫",
+        },
+        {
+          code: "VOUCHER15P",
+          label: "Giảm 15%",
+          min: 1000000,
+          type: "percent",
+          amount: 15,
+          info: "Áp dụng cho đơn từ 1.000.000₫",
+        },
+      ],
     };
   },
+
   computed: {
     totalAmount() {
-      return this.cart.reduce((sum, item) => sum + item.gia * item.quantity, 0);
+      return this.cart.reduce(
+        (sum, item) => sum + item.gia * item.quantity,
+        0
+      );
+    },
+
+    // 👉 Tự tìm voucher tốt nhất
+    bestVoucher() {
+      const total = this.totalAmount;
+
+      // Lọc voucher đủ điều kiện
+      const valid = this.vouchers.filter((v) => total >= v.min);
+
+      if (!valid.length) return null;
+
+      // Tính số tiền giảm của từng voucher
+      const calcDiscount = (v) =>
+        v.type === "fixed"
+          ? v.amount
+          : Math.floor((total * v.amount) / 100);
+
+      // Trả về voucher giảm nhiều nhất
+      return valid.reduce((best, v) =>
+        calcDiscount(v) > calcDiscount(best) ? v : best
+      );
+    },
+
+    discountAmount() {
+      if (!this.bestVoucher) return 0;
+
+      const v = this.bestVoucher;
+
+      if (v.type === "fixed") return v.amount;
+
+      return Math.floor((this.totalAmount * v.amount) / 100);
+    },
+
+    finalAmount() {
+      return Math.max(this.totalAmount - this.discountAmount, 0);
     },
   },
+
   methods: {
     saveCart() {
-      localStorage.setItem(`cart_${this.username}`, JSON.stringify(this.cart));
+      localStorage.setItem(
+        `cart_${this.username}`,
+        JSON.stringify(this.cart)
+      );
     },
+
     removeItem(index) {
       this.cart.splice(index, 1);
       this.saveCart();
     },
+
     clearCart() {
       if (confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) {
         this.cart = [];
         localStorage.removeItem(`cart_${this.username}`);
       }
     },
+
     goToCheckout() {
-      if (!this.cart.length) return alert("Giỏ hàng trống!");
+      if (!this.cart.length) {
+        alert("Giỏ hàng trống!");
+        return;
+      }
+
       this.$router.push("/checkout");
     },
   },
@@ -98,6 +212,8 @@ export default {
 
 <style scoped>
 .cart-page {
+  width: 80%;
+   margin: 0 auto 30px auto; /* Căn giữa bảng */
   padding: 50px 30px;
   background: linear-gradient(135deg, #f0f2f5, #e8ecf1);
   color: #333;

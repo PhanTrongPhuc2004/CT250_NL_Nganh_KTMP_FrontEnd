@@ -15,13 +15,56 @@
       />
       <div class="detail-info">
         <h1>{{ product.tenQuaLuuNiem }}</h1>
-        <p class="price">{{ product.gia.toLocaleString() }} VND</p>
-        <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
+        
+  <!-- 💰 GIÁ / GIÁ GIẢM -->
+    <div class="price-box">
+      <span
+        v-if="product.giaGiam"
+        class="price-discount"
+      >
+        {{ product.gia.toLocaleString() }} VND
+      </span>
+      <span v-if="product.giaGiam" 
+      class="price-original text-decoration-line-through"
+      >
+        {{ product.giaGiam.toLocaleString() }} VND
+      </span>
 
-        <div class="quantity">
-          <label>Số lượng:</label>
-          <input type="number" v-model="quantity" min="1" />
-        </div>
+      <span v-else class="price">
+        {{ product.gia.toLocaleString() }} VND
+      </span>
+    </div>
+
+    <!-- ⭐ ĐÁNH GIÁ -->
+    <div class="rating-box">
+      <div class="stars">
+        <i
+          v-for="star in 5"
+          :key="star"
+          class="bi"
+          :class="
+            star <= Math.round(product.soSaoTrungBinh || 0)
+              ? 'bi-star-fill text-warning'
+              : 'bi-star text-secondary'
+          "
+        ></i>
+      </div>
+      <span class="rating-text">
+        {{ product.soSaoTrungBinh }} / 5 ({{ product.luotDanhGia }} đánh giá)
+      </span>
+    </div>
+
+    <!-- 🔥 LƯỢT BÁN -->
+    <p class="sold-count">🔥 Đã bán: {{ product.luotBan }}</p>
+
+    <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
+
+    <!-- SỐ LƯỢNG -->
+    <div class="quantity">
+      <label>Số lượng:</label>
+      <input type="number" v-model="quantity" min="1" />
+    </div>
+        
 
         <button
           @click="muaNgay"
@@ -44,15 +87,21 @@
     </div>
 
     <div v-else class="loading">Đang tải thông tin sản phẩm...</div>
+      <!-- 👇 Phần bình luận -->
+      <div class="binhluan-wrapper">
+        <BinhLuan v-if="product" :productId="product._id" />
+      </div>
   </div>
 
 </template>
 
 <script>
 import axios from "axios";
+import BinhLuan from "@/pages/user/player/BinhLuan.vue"
 
 export default {
   name: "ProductDetail",
+  components: { BinhLuan },
   data() {
     return {
       product: null,
@@ -117,106 +166,138 @@ export default {
 </script>
 
 <style scoped>
-/* Nút Giỏ hàng góc phải trên */
-.cart-btn {
-  position: fixed;
-  top: 10px;
-  margin-bottom: 10px;
-  right: 30px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+/* 🎯 VÙNG BÌNH LUẬN — tách biệt, rõ ràng, nền trắng */
+.binhluan-wrapper {
+  width: 90%;
+  max-width: 1000px;
+  margin: 40px auto 20px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
+
+/* Tiêu đề */
+.binhluan-wrapper h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 18px;
+}
+
+
+
+/* ===================== */
+/*      CHI TIẾT SP      */
+/* ===================== */
+
 .product-detail {
   min-height: 100vh;
   background: linear-gradient(135deg, #dfe9f3, #ffffff);
+  padding: 50px 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 50px;
-  color: white;
 }
+
+/* Card sản phẩm */
 .detail-card {
   display: flex;
-  gap: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  gap: 35px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(18px);
   border-radius: 20px;
-  padding: 50px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   width: 90%;
-  max-width: 1000px;
+  max-width: 1100px;
+  margin-bottom: 40px;
 }
+
 .detail-image {
   width: 45%;
-  height: 400px;
+  height: 420px;
   object-fit: cover;
   border-radius: 15px;
 }
+
 .detail-info {
   flex: 1;
 }
+
+/* Tiêu đề sản phẩm */
 h1 {
-  font-size: 2.3rem;
+  font-size: 2.4rem;
   font-weight: 800;
   background: brown;
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 20px;
-  transition: transform 0.3s ease;
+  letter-spacing: 1.5px;
+  margin-bottom: 18px;
+}
+
+
+
+/* ===================== */
+/*         GIÁ SP        */
+/* ===================== */
+
+.price-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
 }
 
 .price {
   font-size: 2rem;
   font-weight: bold;
   color: #e60000;
-  text-shadow: 0 2px 6px rgba(230, 0, 0, 0.4);
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-  font-family: "Poppins", sans-serif;
 }
 
-.desc {
-  margin-bottom: 20px;
+.price-discount {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e60000;
+}
+
+.price-original {
   font-size: 1.2rem;
-  color: black;
+  color: #888;
 }
-.quantity {
-  margin-bottom: 25px;
-}
-.quantity input {
-  width: 70px;
-  padding: 6px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: none;
-  text-align: center;
-}
-.buy-btn {
-  background: linear-gradient(90deg, #ff6a00, #ee0979);
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.buy-btn:hover {
-  transform: scale(1.05);
-  background: linear-gradient(90deg, #ee0979, #ff6a00);
-}
-.quantity {
+
+
+
+/* ===================== */
+/*        ĐÁNH GIÁ       */
+/* ===================== */
+
+.rating-box {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 10px;
-  font-family: sans-serif;
+  margin-bottom: 8px;
+}
+
+.rating-text {
+  font-size: 1rem;
+  color: #444;
+}
+
+.sold-count {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+
+
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 15px 0 25px 0;
 }
 
 .quantity label {
@@ -225,30 +306,62 @@ h1 {
 }
 
 .quantity input[type="number"] {
-  width: 60px;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  width: 70px;
+  padding: 6px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
   text-align: center;
+  font-size: 1rem;
 }
-/* Nút giỏ hàng góc phải trên */
 
 
-/* Badge số lượng */
+
+.cart-btn {
+  position: fixed;
+  top: 12px;
+  right: 28px;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Badge */
 .cart-badge {
   position: absolute;
-  top: -10px;   /* di chuyển lên trên nút */
-  left: -12px; /* di chuyển sang phải nút */
-  background-color: red; /* màu đỏ */
-  color: white;          /* chữ màu trắng */
+  top: -8px;
+  left: -10px;
+  background: red;
+  color: white;
   font-weight: bold;
-  font-size: 0.85rem;    /* kích thước chữ nhỏ hơn */
-  padding: 3px 8px;      /* khoảng cách bên trong badge */
-  border-radius: 50%;    /* làm tròn badge */
+  font-size: 0.8rem;
+  padding: 3px 7px;
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;           /* luôn hiển thị trên icon */
 }
+
+
+
+.desc {
+  margin-bottom: 18px;
+  font-size: 1.15rem;
+  color: #222;
+}
+
+
+@media (max-width: 850px) {
+  .detail-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .detail-image {
+    width: 100%;
+    height: 300px;
+  }
+}
+
 
 </style>

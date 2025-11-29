@@ -6,7 +6,12 @@
           <h1 class="shop-title">
             <i class="bi bi-gift me-2"></i> Cửa hàng Quà Lưu Niệm
           </h1>
+          
         <div>
+          <!-- NEW: Nút Voucher -->
+          <button class="btn btn-warning me-2" @click="toggleVoucher">
+            <i class="bi bi-ticket-detailed me-1"></i> Voucher
+          </button>
           <button class="btn btn-outline-primary me-2" @click="$router.push('/orders')">
             <i class="bi bi-box-seam-fill me-2"></i> Đơn hàng
           </button>
@@ -14,8 +19,41 @@
           <button class="btn btn-primary position-relative" @click="$router.push('/cart')">
             <i class="bi bi-cart-fill me-1"></i> Giỏ hàng
           </button>
+          
         </div>
       </div>
+        <!-- NEW: Form voucher đổ xuống -->
+        <div v-if="showVoucher" class="voucher-box card shadow-sm p-3 mb-4 animate__animated animate__fadeInDown">
+          <h5 class="text-primary mb-3">
+            <i class="bi bi-ticket-perforated-fill me-1"></i> Chọn Voucher
+          </h5>
+
+          <div class="voucher-item" v-for="v in vouchers" :key="v.code">
+            <div class="d-flex justify-content-between align-items-center p-3 voucher-row">
+              <div>
+                <strong>{{ v.label }}</strong>
+                <p class="text-muted small mb-0">
+                  Đơn tối thiểu: {{ v.min.toLocaleString() }} VND
+                </p>
+                <!-- Hiệu lực voucher -->
+              <div class="voucher-valid">
+                {{ v.validText }}
+              </div>
+              </div>
+
+           
+              <!-- NÚT NHẬN / SỬ DỤNG -->
+              <button
+                class="btn"
+                :class="selectedVoucher?.code === v.code ? 'btn-use' : 'btn-redeem'"
+                @click="selectedVoucher?.code === v.code ? useVoucher(v) : selectVoucher(v)"
+              >
+                {{ selectedVoucher?.code === v.code ? "Sử dụng" : "Nhận" }}
+              </button>
+
+            </div>
+          </div>
+        </div>
 
       <!-- Bộ lọc -->
       <div class="filter-bar card shadow-sm p-3 mb-4">
@@ -44,9 +82,11 @@
           </div>
 
           <div class="col-md-2 text-end">
-            <button class="btn btn-outline-danger w-100" @click="resetFilters">
-              <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại
-            </button>
+            <select v-model="sortBy" class="form-select">
+              <option value="">Sắp xếp</option>
+              <option value="star">Số sao cao nhất</option>
+              <option value="sold">Lượt bán cao nhất</option>
+            </select>
           </div>
         </div>
       </div>
@@ -73,15 +113,55 @@
             alt="Ảnh quà"
             class="product-image"
           />
+
           <h3 class="product-name">{{ item.tenQuaLuuNiem }}</h3>
-          <!-- <p class="product-category">
-            <i class="bi bi-tags-fill me-1 text-secondary"></i>
-            {{ item.danhMuc || "Chưa phân loại" }}
-          </p> -->
+
+          <!-- 💰 Giá / Giá giảm -->
           <p class="product-price">
-            <i class="bi bi-cash-coin me-1"></i> {{ item.gia.toLocaleString() }} VND
+            <span
+              v-if="item.giaGiam && item.giaGiam > 0"
+              class="text-danger fw-bold"
+            >
+              {{ item.gia.toLocaleString() }} VND
+            </span>
+            <span v-if="item.giaGiam && item.giaGiam > 0" 
+              class="text-muted text-decoration-line-through ms-2"
+              >
+              {{ item.giaGiam.toLocaleString() }} VND
+            </span>
+
+
+
+            <span v-else class="fw-bold text-danger">
+              {{ item.gia.toLocaleString() }} VND
+            </span>
           </p>
+
+          <!-- ⭐ Rating -->
+          <div class="product-rating">
+            <i
+              v-for="star in 5"
+              :key="star"
+              class="bi"
+              :class="
+                star <= Math.round(item.soSaoTrungBinh || 0)
+                  ? 'bi-star-fill text-warning'
+                  : 'bi-star text-secondary'
+              "
+            ></i>
+
+            <span class="rating-count ms-1">
+              ({{ item.luotDanhGia || 0 }} đánh giá)
+            </span>
+          </div>
+
+          <!-- 🔥 Lượt bán -->
+          <p class="sold-count text-secondary small">
+            🔥 Đã bán: {{ item.luotBan || 0 }}
+          </p>
+
         </div>
+
       </div>
     </div>
   </div>
@@ -102,14 +182,25 @@ export default {
       priceRange: "",
       loading: true,
       error: null,
+      showVoucher: false,
+      selectedVoucher: null,
+      vouchers: [
+        { code: "VOUCHER30K", label: "Giảm 30.000 VND", min: 250000, validText: "Hết hạn sau 1 giờ"},
+        { code: "VOUCHER50K", label: "Giảm 50.000 VND", min: 500000, validText: "Hết hạn sau 6 giờ" },
+        { code: "VOUCHER100K", label: "Giảm 15%", min: 1000000 , validText: "Áp dụng từ 12/01/2025 - 12/15/2025"},
+      ],
+      sortBy: "",
+
     };
   },
   computed: {
     filteredProducts() {
-      return this.products.filter((item) => {
+      // 1️⃣ Lọc
+      let list = this.products.filter((item) => {
         const matchName = item.tenQuaLuuNiem
           .toLowerCase()
           .includes(this.searchText.toLowerCase());
+
         const matchPrice =
           this.priceRange === "low"
             ? item.gia < 100000
@@ -118,24 +209,48 @@ export default {
             : this.priceRange === "high"
             ? item.gia > 300000
             : true;
+
         return matchName && matchPrice;
       });
+
+      //Sắp xếp
+      if (this.sortBy === "star") {
+        list.sort((a, b) => (b.soSaoTrungBinh || 0) - (a.soSaoTrungBinh || 0));
+      } else if (this.sortBy === "sold") {
+        list.sort((a, b) => (b.luotBan || 0) - (a.luotBan || 0));
+      }
+
+      // Trả về danh sách đã lọc + sắp xếp
+      return list;
     },
+
   },
   methods: {
-    async fetchProducts() {
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
-        );
-        this.products = res.data;
-      } catch (err) {
-        this.error = "Không thể tải danh sách quà lưu niệm.";
-        console.error(err);
-      } finally {
-        this.loading = false;
+      toggleVoucher() {
+    this.showVoucher = !this.showVoucher;
+  },  
+  selectVoucher(v) {
+        this.selectedVoucher = v;
+        alert(`🎉 Bạn đã nhận voucher: ${v.label}`);
+      },
+      useVoucher(v) {
+          alert(`✅ Bạn đang sử dụng voucher: ${v.label}`);
+          // Nếu cần áp dụng vào giỏ hàng thì chuyển router hoặc set biến tại đây
+        },
+      async fetchProducts() {
+        try {
+          const res = await axios.get(
+            `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
+          );
+          this.products = res.data;
+        } catch (err) {
+          this.error = "Không thể tải danh sách quà lưu niệm.";
+          console.error(err);
+        } finally {
+          this.loading = false;
+        }
       }
-    },
+,
     getImageUrl(path) {
       if (!path) return "https://via.placeholder.com/200x180?text=No+Image";
       if (path.startsWith("http") || path.startsWith("data:image")) return path;
@@ -156,6 +271,13 @@ export default {
 </script>
 
 <style scoped>
+.sold-count {
+  font-size: 0.85rem;
+}
+.text-decoration-line-through {
+  opacity: 0.6;
+}
+
 .shop-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #dfe9f3, #ffffff);
@@ -247,4 +369,74 @@ h1 {
   color: #a01616;
   font-weight: bold;
 }
+/* Nền form */
+.voucher-box {
+  background: #ffe6f2; /* hồng cánh sen */
+  border-radius: 14px;
+  border: 1px solid #ffb3d9;
+}
+
+/* Hàng từng voucher */
+.voucher-row {
+  background: #fff0f6;
+  border-radius: 12px;
+  border: 1px solid #ffcce6;
+  transition: 0.2s;
+}
+
+.voucher-row:hover {
+  background: #ffe0ef;
+}
+
+/* Nút Nhận */
+.btn-redeem {
+  background: #d62828;       /* Đỏ đậm */
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 6px 14px;
+  transition: 0.2s;
+  border: none;
+}
+
+.btn-redeem:hover {
+  background: #b71c1c;        /* Đỏ tối */
+  transform: scale(1.05);
+}
+
+.btn-redeem {
+  background: #d62828;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: none;
+  transition: 0.2s;
+}
+
+.btn-redeem:hover {
+  background: #b71c1c;
+  transform: scale(1.05);
+}
+
+.btn-use {
+  background: white; /* xanh */
+  color: red;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: none;
+}
+
+.btn-use:hover {
+  background: wheat;
+  transform: scale(1.05);
+}
+.voucher-valid {
+  font-size: 13px;
+  color: #cc3366; /* hồng cánh sen đậm */
+  margin-top: 3px;
+}
+
+
 </style>
