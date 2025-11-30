@@ -19,7 +19,7 @@
         <!-- Thông tin đơn hàng -->
         <div class="invoice-header text-center mb-3">
           <h3 class="text-primary fw-bold">THÔNG TIN ĐƠN HÀNG</h3>
-          <p class="text-muted">Mã đơn hàng: <b>#{{ order._id.slice(-6).toUpperCase() }}</b></p>
+          <p class="text-muted">Mã đơn hàng: <b>DH{{ order._id.slice(-10).toUpperCase() }}</b></p>
         </div>
 
         <div class="invoice-info mb-3">

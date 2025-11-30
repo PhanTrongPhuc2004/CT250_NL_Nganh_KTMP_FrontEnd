@@ -45,11 +45,12 @@
               <!-- NÚT NHẬN / SỬ DỤNG -->
               <button
                 class="btn"
-                :class="selectedVoucher?.code === v.code ? 'btn-use' : 'btn-redeem'"
-                @click="selectedVoucher?.code === v.code ? useVoucher(v) : selectVoucher(v)"
+                :class="selectedVouchers.includes(v.code) ? 'btn-use' : 'btn-redeem'"
+                @click="toggleVoucherSelect(v)"
               >
-                {{ selectedVoucher?.code === v.code ? "Sử dụng" : "Nhận" }}
+                {{ selectedVouchers.includes(v.code) ? "Sử dụng" : "Nhận" }}
               </button>
+
 
             </div>
           </div>
@@ -116,7 +117,7 @@
 
           <h3 class="product-name">{{ item.tenQuaLuuNiem }}</h3>
 
-          <!-- 💰 Giá / Giá giảm -->
+          <!-- Giá / Giá giảm -->
           <p class="product-price">
             <span
               v-if="item.giaGiam && item.giaGiam > 0"
@@ -137,7 +138,7 @@
             </span>
           </p>
 
-          <!-- ⭐ Rating -->
+          <!-- Rating -->
           <div class="product-rating">
             <i
               v-for="star in 5"
@@ -155,7 +156,7 @@
             </span>
           </div>
 
-          <!-- 🔥 Lượt bán -->
+          <!-- Lượt bán -->
           <p class="sold-count text-secondary small">
             🔥 Đã bán: {{ item.luotBan || 0 }}
           </p>
@@ -183,7 +184,7 @@ export default {
       loading: true,
       error: null,
       showVoucher: false,
-      selectedVoucher: null,
+      selectedVouchers: [],
       vouchers: [
         { code: "VOUCHER30K", label: "Giảm 30.000 VND", min: 250000, validText: "Hết hạn sau 1 giờ"},
         { code: "VOUCHER50K", label: "Giảm 50.000 VND", min: 500000, validText: "Hết hạn sau 6 giờ" },
@@ -227,16 +228,23 @@ export default {
   },
   methods: {
       toggleVoucher() {
-    this.showVoucher = !this.showVoucher;
-  },  
-  selectVoucher(v) {
-        this.selectedVoucher = v;
-        alert(`🎉 Bạn đã nhận voucher: ${v.label}`);
+        this.showVoucher = !this.showVoucher;
       },
+
+      toggleVoucherSelect(v) {
+        const index = this.selectedVouchers.indexOf(v.code);
+
+        if (index === -1) {
+          this.selectedVouchers.push(v.code);
+          alert(`🎉 Bạn đã nhận voucher: ${v.label}`);
+        } else {
+          this.useVoucher(v);
+        }
+      },
+
       useVoucher(v) {
-          alert(`✅ Bạn đang sử dụng voucher: ${v.label}`);
-          // Nếu cần áp dụng vào giỏ hàng thì chuyển router hoặc set biến tại đây
-        },
+        alert(`✅ Bạn đang sử dụng voucher: ${v.label}`);
+      },
       async fetchProducts() {
         try {
           const res = await axios.get(
