@@ -1,70 +1,65 @@
 <template>
   <div class="product-detail">
-
     <div class="detail-card" v-if="product">
-          <!-- Nút Giỏ hàng góc phải trên -->
       <!-- Nút Giỏ hàng góc phải trên -->
       <button class="btn btn-primary cart-btn" @click="$router.push('/cart')">
         <i class="bi bi-cart-fill me-1"></i> Giỏ hàng
         <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
       </button>
+
       <img
         :src="getImageUrl(product.anhMinhHoa)"
         alt="Ảnh sản phẩm"
         class="detail-image"
       />
+
       <div class="detail-info">
         <h1>{{ product.tenQuaLuuNiem }}</h1>
-        
-  <!-- 💰 GIÁ / GIÁ GIẢM -->
-    <div class="price-box">
-      <span
-        v-if="product.giaGiam"
-        class="price-discount"
-      >
-        {{ product.gia.toLocaleString() }} VND
-      </span>
-      <span v-if="product.giaGiam" 
-      class="price-original text-decoration-line-through"
-      >
-        {{ product.giaGiam.toLocaleString() }} VND
-      </span>
 
-      <span v-else class="price">
-        {{ product.gia.toLocaleString() }} VND
-      </span>
-    </div>
+        <!-- 💰 GIÁ / GIÁ GIẢM -->
+        <div class="price-box">
+          <!-- Lưu ý: giữ nguyên logic bạn muốn; mình để là nếu có giaGiam thì hiển thị giá gốc strike và giá giảm -->
+          <span v-if="product.giaGiam" class="price-discount">
+            {{ product.giaGiam.toLocaleString() }} VND
+          </span>
+          <span v-if="product.giaGiam" class="price-original text-decoration-line-through">
+            {{ product.gia.toLocaleString() }} VND
+          </span>
 
-    <!-- ⭐ ĐÁNH GIÁ -->
-    <div class="rating-box">
-      <div class="stars">
-        <i
-          v-for="star in 5"
-          :key="star"
-          class="bi"
-          :class="
-            star <= Math.round(product.soSaoTrungBinh || 0)
-              ? 'bi-star-fill text-warning'
-              : 'bi-star text-secondary'
-          "
-        ></i>
-      </div>
-      <span class="rating-text">
-        {{ product.soSaoTrungBinh }} / 5 ({{ product.luotDanhGia }} đánh giá)
-      </span>
-    </div>
+          <span v-else class="price">
+            {{ product.gia.toLocaleString() }} VND
+          </span>
+        </div>
 
-    <!-- 🔥 LƯỢT BÁN -->
-    <p class="sold-count">🔥 Đã bán: {{ product.luotBan }}</p>
+        <!-- ⭐ ĐÁNH GIÁ -->
+        <div class="rating-box">
+          <div class="stars">
+            <i
+              v-for="star in 5"
+              :key="star"
+              class="bi me-1"
+              :class="star <= Math.round(averageRatingNumber) ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"
+            ></i>
+          </div>
 
-    <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
+          <span class="rating-text">
+            <strong>{{ averageRating }}</strong> / 5 ({{ totalReviews }} đánh giá)
+          </span>
+        </div>
 
-    <!-- SỐ LƯỢNG -->
-    <div class="quantity">
-      <label>Số lượng:</label>
-      <input type="number" v-model="quantity" min="1" />
-    </div>
-        
+        <!-- 🔥 LƯỢT BÁN -->
+        <p class="sold-count text-secondary small">
+          <i class="bi bi-fire me-1 text-danger"></i> Đã bán: {{ product.luotBan || 0 }}
+        </p>
+
+
+        <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
+
+        <!-- SỐ LƯỢNG -->
+        <div class="quantity">
+          <label>Số lượng:</label>
+          <input type="number" v-model.number="quantity" min="1" />
+        </div>
 
         <button
           @click="muaNgay"
@@ -74,30 +69,28 @@
           Thêm vào giỏ hàng
         </button>
 
-          <button 
-            class="btn btn-outline-primary" 
-            style="margin-top: 10px;" 
-            @click="$router.push('/shop')"
-          >
-            <i class="bi bi-arrow-left-circle me-1"></i> Tiếp tục mua hàng
-          </button>
-
-
+        <button
+          class="btn btn-outline-primary"
+          style="margin-top: 10px;"
+          @click="$router.push('/shop')"
+        >
+          <i class="bi bi-arrow-left-circle me-1"></i> Tiếp tục mua hàng
+        </button>
       </div>
     </div>
 
     <div v-else class="loading">Đang tải thông tin sản phẩm...</div>
-      <!-- 👇 Phần bình luận -->
-      <div class="binhluan-wrapper">
-        <BinhLuan v-if="product" :productId="product._id" />
-      </div>
-  </div>
 
+    <!-- 👇 Phần bình luận -->
+    <div class="binhluan-wrapper" v-if="product">
+      <BinhLuan :productId="product._id" />
+    </div>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
-import BinhLuan from "@/pages/user/player/BinhLuan.vue"
+import BinhLuan from "@/pages/user/player/BinhLuan.vue";
 
 export default {
   name: "ProductDetail",
@@ -106,14 +99,31 @@ export default {
     return {
       product: null,
       quantity: 1,
-      cart: [], // Lưu giỏ hàng hiện tại
+      cart: [],
+      comments: [], // lưu bình luận lấy từ API
+      soldQuantity: 0,
     };
   },
   computed: {
-    // Tính tổng số lượng sản phẩm trong giỏ để hiển thị badge
     cartCount() {
-      return this.cart.reduce((sum, item) => sum + item.quantity, 0);
-    }
+      return this.cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    },
+
+    // Giá trị trung bình dạng số (ví dụ: 4.25)
+    averageRatingNumber() {
+      if (!this.comments || this.comments.length === 0) return 0;
+      const total = this.comments.reduce((sum, c) => sum + (Number(c.rating) || 0), 0);
+      return total / this.comments.length;
+    },
+
+    // Giá trị hiển thị (1 chữ số thập phân)
+    averageRating() {
+      return this.averageRatingNumber ? this.averageRatingNumber.toFixed(1) : "0.0";
+    },
+
+    totalReviews() {
+      return this.comments ? this.comments.length : 0;
+    },
   },
   async mounted() {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -125,10 +135,12 @@ export default {
     // Load thông tin sản phẩm
     const id = this.$route.params.id;
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`);
       this.product = res.data;
+
+      // Sau khi product được set, lấy bình luận tương ứng
+      await this.fetchComments();
+      await this.fetchSoldQuantity(); // <-- gọi ở đây, dùng this.product._id bên trong
     } catch (err) {
       console.error("❌ Lỗi tải sản phẩm:", err);
     }
@@ -136,10 +148,39 @@ export default {
   methods: {
     // Hàm xử lý ảnh linh hoạt
     getImageUrl(path) {
-      if (!path) return "https://via.placeholder.com/200x180?text=No+Image"; 
+      if (!path) return "https://via.placeholder.com/200x180?text=No+Image";
       if (path.startsWith("http") || path.startsWith("data:image")) return path;
-      return `/${path}`; 
+      return `/${path}`;
     },
+
+    async fetchComments() {
+      if (!this.product || !this.product._id) return;
+      try {
+        // Lưu ý: thay url nếu API của bạn khác host/port
+        const res = await axios.get(`http://localhost:5000/binhluan/${this.product._id}`);
+        this.comments = res.data || [];
+      } catch (err) {
+        console.error("❌ Lỗi tải bình luận:", err);
+        this.comments = [];
+      }
+    },
+    async fetchSoldQuantity() {
+      try {
+        const res = await axios.get("http://localhost:5000/donhang/thongke/sanpham"); 
+        const list = res.data; // [{product, quantity, revenue}]
+
+        const found = list.find(item => item.product === this.product.tenQuaLuuNiem);
+
+        this.soldQuantity = found ? found.quantity : 0;
+        this.product.luotBan = found ? found.quantity : 0; // <- gắn trực tiếp vào UI đang dùng
+
+      } catch(err) {
+        console.error("❌ Lỗi lấy số lượng bán:", err);
+        this.soldQuantity = 0;
+        this.product.luotBan = 0;
+      }
+    },
+
 
     muaNgay() {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -149,13 +190,14 @@ export default {
 
       const existing = cart.find(item => item._id === this.product._id);
       if (existing) existing.quantity += this.quantity;
-      else cart.push({
-        _id: this.product._id,
-        tenQuaLuuNiem: this.product.tenQuaLuuNiem,
-        gia: this.product.gia,
-        anhMinhHoa: this.product.anhMinhHoa,
-        quantity: this.quantity,
-      });
+      else
+        cart.push({
+          _id: this.product._id,
+          tenQuaLuuNiem: this.product.tenQuaLuuNiem,
+          gia: this.product.gia,
+          anhMinhHoa: this.product.anhMinhHoa,
+          quantity: this.quantity,
+        });
 
       localStorage.setItem(cartKey, JSON.stringify(cart));
       this.cart = cart; // cập nhật badge
@@ -165,12 +207,13 @@ export default {
 };
 </script>
 
+
 <style scoped>
 /* 🎯 VÙNG BÌNH LUẬN — tách biệt, rõ ràng, nền trắng */
 .binhluan-wrapper {
   width: 90%;
-  max-width: 1000px;
-  margin: 40px auto 20px auto;
+  max-width: 1100px;
+  margin: 5px auto 20px auto;
   padding: 25px;
   background: #ffffff;
   border-radius: 14px;
@@ -184,12 +227,6 @@ export default {
   color: #333;
   margin-bottom: 18px;
 }
-
-
-
-/* ===================== */
-/*      CHI TIẾT SP      */
-/* ===================== */
 
 .product-detail {
   min-height: 100vh;
