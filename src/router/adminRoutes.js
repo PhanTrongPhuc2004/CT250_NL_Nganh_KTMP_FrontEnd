@@ -21,7 +21,8 @@ const TicketRevenueStats = () =>
   import("@/pages/admin/ticketRevenue/TicketRevenueStats.vue");
 const TicketManagement = () =>
   import("@/pages/admin/ticketManagement/TicketManagement.vue");
-
+const PurchasedTicketManagement = () =>
+  import("@/pages/admin/ticketManagement/PurchasedTicketManagement.vue");
 export const adminRoutes = [
   {
     path: "/admin/dashboard",
@@ -163,13 +164,37 @@ export const adminRoutes = [
   {
     path: "/admin/tickets",
     name: "Quản lý vé",
-    component: TicketManagement,
     meta: {
       requiresAuth: true,
       roles: ["admin"],
       admin: true,
+      isDropdown: true, // Biến thành dropdown
     },
     icon: ["fas", "ticket-alt"],
+    children: [
+      {
+        path: "/admin/tickets/config",
+        name: "Cấu hình vé trận đấu",
+        component: TicketManagement,
+        meta: {
+          requiresAuth: true,
+          roles: ["admin"],
+          admin: true,
+          parent: "Quản lý vé"
+        },
+      },
+      {
+        path: "/admin/tickets/purchased",
+        name: "Quản lý vé đã mua",
+        component: PurchasedTicketManagement,
+        meta: {
+          requiresAuth: true,
+          roles: ["admin"],
+          admin: true,
+          parent: "Quản lý vé"
+        },
+      }
+    ]
   },
   {
     path: "/admin/hopdong",

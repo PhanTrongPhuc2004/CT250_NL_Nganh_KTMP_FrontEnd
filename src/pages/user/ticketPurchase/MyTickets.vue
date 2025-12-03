@@ -7,7 +7,6 @@
         <div class="card border-danger shadow-sm mb-4">
             <div class="card-body">
                 <div class="row g-3 align-items-center">
-
                     <!-- Lọc trạng thái trận đấu -->
                     <div class="col-12 col-md-4">
                         <label class="form-label fw-semibold text-danger small mb-1">
@@ -30,7 +29,6 @@
                             <option value="">Tất cả vé</option>
                             <option value="da_thanh_toan">Đã thanh toán</option>
                             <option value="cho_thanh_toan">Chờ thanh toán</option>
-                            <!-- <option value="da_su_dung">Đã sử dụng</option> -->
                             <option value="da_huy">Đã hủy</option>
                         </select>
                     </div>
@@ -45,12 +43,10 @@
                             <option value="ngayBatDau-desc">Ngày xa nhất</option>
                             <option value="giaVe-asc">Giá tăng dần</option>
                             <option value="giaVe-desc">Giá giảm dần</option>
-                            <!-- <option value="trangThai">Trạng thái vé</option> -->
                         </select>
                     </div>
                 </div>
 
-                <!-- Nút reset -->
                 <div class="mt-3 text-end">
                     <button @click="resetFilters" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
@@ -59,13 +55,12 @@
             </div>
         </div>
 
-        <!-- Loading -->
+        <!-- Loading / Empty / List -->
         <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></div>
             <p class="mt-3 text-muted">Đang tải vé của bạn...</p>
         </div>
 
-        <!-- Empty state -->
         <div v-else-if="filteredAndSortedTickets.length === 0" class="text-center py-5">
             <div class="empty-state">
                 <i class="bi bi-ticket-detailed fs-1 text-danger opacity-50"></i>
@@ -76,38 +71,33 @@
             </div>
         </div>
 
-        <!-- Danh sách vé -->
         <div v-else class="row g-4">
             <div class="col-md-6 col-lg-4" v-for="ticket in filteredAndSortedTickets" :key="ticket._id">
-                <TicketCard :ticket="ticket" />
+                <TicketItemCard :ticket="ticket" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
 import axios from "@/utils/axios";
-import TicketCard from "./components/MyTickets.vue";
+import TicketItemCard from "./components/TicketItemCard.vue"; // ĐÃ SỬA TÊN ĐÚNG
 
+const route = useRoute();
 const tickets = ref([]);
 const loading = ref(true);
 
-// Bộ lọc
-const filterMatchStatus = ref(""); // sap_dien_ra | dang_dien_ra | da_ket_thuc
-const filterTicketStatus = ref(""); // da_thanh_toan | cho_thanh_toan | ...
-
-// Sắp xếp
-const sortBy = ref("ngayBatDau-asc"); // định dạng: field-direction
+// Bộ lọc + sắp xếp
+const filterMatchStatus = ref("");
+const filterTicketStatus = ref("");
+const sortBy = ref("ngayBatDau-asc");
 
 const fetchMyTickets = async () => {
     try {
         const res = await axios.get("/ve/user");
-        tickets.value = res.data.map(t => ({
-            ...t,
-            doiNhaLogo: t.doiNhaLogo || '',
-            doiKhachLogo: t.doiKhachLogo || ''
-        }));
+        tickets.value = res.data;
     } catch (err) {
         alert("Lỗi tải vé: " + (err.response?.data?.message || err.message));
     } finally {
@@ -115,52 +105,56 @@ const fetchMyTickets = async () => {
     }
 };
 
+// Tự động áp dụng bộ lọc từ query khi vào từ thanh toán
+onMounted(() => {
+    fetchMyTickets();
+
+    if (route.query.match) filterMatchStatus.value = route.query.match;
+    if (route.query.status) filterTicketStatus.value = route.query.status;
+    if (route.query.sort) sortBy.value = route.query.sort;
+
+    // Nếu có query → tự động áp dụng ngay (mặc định là chờ thanh toán + sắp diễn ra)
+    if (route.query.match || route.query.status || route.query.sort) {
+        // Có thể scroll xuống danh sách nếu cần
+        setTimeout(() => window.scrollTo({ top: 400, behavior: "smooth" }), 500);
+    }
+});
+
+// Theo dõi thay đổi query (nếu người dùng back/forward)
+watch(() => route.query, (newQuery) => {
+    if (newQuery.match) filterMatchStatus.value = newQuery.match;
+    if (newQuery.status) filterTicketStatus.value = newQuery.status;
+    if (newQuery.sort) sortBy.value = newQuery.sort;
+});
+
 // Xác định trạng thái trận đấu
 const getMatchStatus = (ngayBatDau) => {
     const now = new Date();
     const matchTime = new Date(ngayBatDau);
     const diff = matchTime - now;
-
-    if (diff > 3600000) return "sap_dien_ra";        // > 1h
-    if (diff > -7200000) return "dang_dien_ra";      // đang trong trận ±2h
+    if (diff > 3600000) return "sap_dien_ra";
+    if (diff > -7200000) return "dang_dien_ra";
     return "da_ket_thuc";
 };
 
-// Lọc + Sắp xếp
+// Lọc + sắp xếp
 const filteredAndSortedTickets = computed(() => {
     let result = [...tickets.value];
 
-    // 1. Lọc trạng thái trận đấu
     if (filterMatchStatus.value) {
         result = result.filter(t => getMatchStatus(t.ngayBatDau) === filterMatchStatus.value);
     }
-
-    // 2. Lọc trạng thái vé
     if (filterTicketStatus.value) {
         result = result.filter(t => t.trangThai === filterTicketStatus.value);
     }
 
-    // 3. Sắp xếp
     const [field, direction] = sortBy.value.split('-');
     const order = direction === 'desc' ? -1 : 1;
 
     result.sort((a, b) => {
         let valA, valB;
-
-        if (field === 'giaVe') {
-            valA = a.giaVe; valB = b.giaVe;
-        } else if (field === 'ngayBatDau') {
-            valA = new Date(a.ngayBatDau); valB = new Date(b.ngayBatDau);
-        } else if (field === 'trangThai') {
-            const statusOrder = {
-                cho_thanh_toan: 0,
-                da_thanh_toan: 1,
-                da_su_dung: 2,
-                da_huy: 3
-            };
-            valA = statusOrder[a.trangThai] ?? 99;
-            valB = statusOrder[b.trangThai] ?? 99;
-        }
+        if (field === 'giaVe') { valA = a.giaVe; valB = b.giaVe; }
+        else if (field === 'ngayBatDau') { valA = new Date(a.ngayBatDau); valB = new Date(b.ngayBatDau); }
 
         if (valA > valB) return order;
         if (valA < valB) return -order;
@@ -175,8 +169,6 @@ const resetFilters = () => {
     filterTicketStatus.value = "";
     sortBy.value = "ngayBatDau-asc";
 };
-
-onMounted(fetchMyTickets);
 </script>
 
 <style scoped>
@@ -189,8 +181,7 @@ onMounted(fetchMyTickets);
     border: none;
 }
 
-.form-select:focus,
-.form-select:hover {
+.form-select:focus {
     border-color: #E02128;
     box-shadow: 0 0 0 0.2rem rgba(224, 33, 40, 0.25);
 }

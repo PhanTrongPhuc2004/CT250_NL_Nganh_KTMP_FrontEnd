@@ -4,13 +4,19 @@ import classNames from "classnames/bind";
 import styles from "./home.module.scss";
 const cx = classNames.bind(styles);
 
+/* ĐÃ SỬA ĐÚNG CÁCH IMPORT FONTAWESOME CHO @fortawesome/vue-fontawesome@3 */
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+/* Thêm tất cả icon solid vào library */
+library.add(fas);
+
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation } from "swiper/modules";
 
 import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
@@ -24,13 +30,17 @@ import { fetchClubInfo } from "@/utils";
 
 const router = useRouter();
 
-/* === HÀM ĐẶT VÉ === */
+/* === HÀM ĐẶT VÉ CHUNG === */
 const bookMatch = (match) => {
-  if (!match?.maTranDau) return alert("Không có thông tin trận đấu!");
+  if (!match) return;
+
+  const maTranDau = match.maTranDau || match._id;
+  if (!maTranDau) return;
+
   router.push({
     path: "/ve",
     query: {
-      maTranDau: match.maTranDau,
+      maTranDau,
       maMuaGiai: match.maMuaGiai || "",
       maGiaiDau: match.maGiaiDau || "",
     },
@@ -45,9 +55,11 @@ const upComingMatch = ref([]);
 const matchPlayed = ref([]);
 const playerList = ref([]);
 
-/* Trận đấu tiếp theo (ưu tiên trận chưa bắt đầu) */
+/* Trận đấu tiếp theo */
 const nextMatch = computed(() =>
-  matchList.value.find(m => m.trangThai === "chua_bat_dau") || matchList.value[0] || null
+  matchList.value.find((m) => m.trangThai === "chua_bat_dau") ||
+  matchList.value[0] ||
+  null
 );
 
 /* === FETCH DATA === */
@@ -55,21 +67,30 @@ const fetchAll = async () => {
   try {
     const [club, matches, players] = await Promise.all([
       fetchClubInfo(),
-      axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/trandau`, { withCredentials: true }),
-      axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/`, { withCredentials: true }),
+      axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/trandau`, {
+        withCredentials: true,
+      }),
+      axios.get(`${import.meta.env.VITE_API_BE_BASE_URL}/cauthu/`, {
+        withCredentials: true,
+      }),
     ]);
 
     clubInfo.value = club[0] || {};
     marqueeText.value = `${clubInfo.value.moTa || ""} • `.repeat(4);
 
     const data = matches?.data || [];
-    matchList.value = data;
-    upComingMatch.value = data.filter(m => m.trangThai === "chua_bat_dau");
-    matchPlayed.value = data.filter(m => m.trangThai === "ket_thuc");
+    matchList.value = Array.isArray(data) ? data : [];
 
-    playerList.value = players.data || [];
+    upComingMatch.value = matchList.value.filter((m) => m.trangThai === "chua_bat_dau");
+    matchPlayed.value = matchList.value.filter((m) => m.trangThai === "ket_thuc");
+
+    playerList.value = Array.isArray(players?.data) ? players.data : [];
   } catch (err) {
     console.error("Lỗi load trang chủ:", err);
+    matchList.value = [];
+    upComingMatch.value = [];
+    matchPlayed.value = [];
+    playerList.value = [];
   }
 };
 
@@ -77,60 +98,66 @@ onMounted(fetchAll);
 </script>
 
 <template>
-  <!-- 1. ẢNH NỀN + SLOGAN + THẺ TRẬN ĐẤU TIẾP THEO (ĐÃ NHỎ LẠI 15%) -->
+  <!-- 1. Ảnh nền + Slogan + Trận tiếp theo -->
   <section class="position-relative">
-    <!-- Ảnh nền -->
     <img src="@/assets/images/old-traford.jpg" alt="Sân vận động" class="w-100"
       style="height: 100vh; object-fit: cover;" />
 
-    <!-- Lớp tối gradient -->
     <div class="position-absolute top-0 start-0 w-100 h-100"
-      style="background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85));">
-    </div>
+      style="background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85));"></div>
 
-    <!-- SLOGAN – NHỎ LẠI 15% + MỜ THÊM 15% -->
+    <!-- Slogan -->
     <div class="position-absolute top-50 start-0 translate-middle-y text-white px-5" :class="cx('slogan')">
       <h1 class="display-4 fw-bold text-shadow" style="opacity: 0.85;">
         {{ clubInfo?.slogan || "CTU FC – NIỀM TỰ HÀO" }}
       </h1>
-      <p class="lead fs-4 mt-3" style="opacity: 0.75;">
-        {{ clubInfo?.ten }}
-      </p>
+      <p class="lead fs-4 mt-3" style="opacity: 0.75;">{{ clubInfo?.ten }}</p>
     </div>
 
-    <!-- THẺ TRẬN ĐẤU TIẾP THEO – NHỎ LẠI 15% (scale 0.85) -->
+    <!-- Thẻ trận đấu tiếp theo -->
     <div class="position-absolute bottom-0 end-0 mb-5 me-5 next-match-card-wrapper">
       <div class="next-match-card">
         <div class="card-body text-center py-5 px-4">
-          <h5 class="fw-bold text-danger mb-3 text-uppercase tracking-wider">Trận đấu tiếp theo</h5>
+          <h5 class="fw-bold text-danger mb-3 text-uppercase tracking-wider">
+            Trận đấu tiếp theo
+          </h5>
           <h4 class="fw-bold mb-3">
             {{ nextMatch
               ? `${nextMatch.doiNha?.tenDoiBong || nextMatch.doiNha} vs ${nextMatch.doiKhach?.tenDoiBong ||
               nextMatch.doiKhach}`
-              : "Đang cập nhật..." }}
+              : "Đang cập nhật..."
+            }}
           </h4>
 
           <p class="mb-2 small">
-            <FontAwesomeIcon icon="fas fa-calendar" class="me-2 text-danger" />
+            <FontAwesomeIcon icon="fa-solid fa-calendar" class="me-2 text-danger" />
             {{ nextMatch
-              ? new Date(nextMatch.ngayBatDau).toLocaleDateString('vi-VN', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+              ? new Date(nextMatch.ngayBatDau).toLocaleDateString("vi-VN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })
-              : "..." }}
+              : "..."
+            }}
           </p>
           <p class="mb-4 small">
-            <FontAwesomeIcon icon="fas fa-clock" class="me-2 text-danger" />
+            <FontAwesomeIcon icon="fa-solid fa-clock" class="me-2 text-danger" />
             {{ nextMatch
-              ? new Date(nextMatch.ngayBatDau).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-              : "..." }}
+              ? new Date(nextMatch.ngayBatDau).toLocaleTimeString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              : "..."
+            }}
             <span class="mx-3">•</span>
-            <FontAwesomeIcon icon="fas fa-location-dot" class="me-2 text-danger" />
+            <FontAwesomeIcon icon="fa-solid fa-location-dot" class="me-2 text-danger" />
             {{ nextMatch?.diaDiem || "Sân CTU" }}
           </p>
 
           <button @click="bookMatch(nextMatch)" :disabled="!nextMatch"
             class="btn btn-danger btn-lg px-5 py-3 fw-bold shadow-sm">
-            <FontAwesomeIcon icon="fas fa-ticket" class="me-2" />
+            <FontAwesomeIcon icon="fa-solid fa-ticket" class="me-2" />
             ĐẶT VÉ NGAY
           </button>
         </div>
@@ -150,20 +177,23 @@ onMounted(fetchAll);
     <ThongBaoMoi />
   </section>
 
-  <!-- 4. Các trận đấu sắp diễn ra -->
+  <!-- 4. Trận đấu sắp diễn ra -->
   <section class="py-5"
     style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('@/assets/images/match-list-backgound.png') center/cover no-repeat;">
     <div class="container">
       <h2 class="text-white text-center mb-5 display-5 fw-bold">
         CÁC TRẬN ĐẤU SẮP DIỄN RA
       </h2>
+
       <swiper :modules="[Autoplay, Navigation]" :slides-per-view="1.1" :space-between="20" :navigation="true"
         :loop="upComingMatch.length > 3" :breakpoints="{ 768: { slidesPerView: 2 }, 992: { slidesPerView: 3 } }"
         class="mb-4">
         <swiper-slide v-for="match in upComingMatch" :key="match._id">
-          <MatchCard :item="match" @book-ticket="bookMatch($event)" />
+          <!-- GHI ĐÈ HÀNH VI ALERT TRONG MATCHCARD -->
+          <MatchCard :item="match" @book-ticket="bookMatch(match)" />
         </swiper-slide>
       </swiper>
+
       <div v-if="upComingMatch.length === 0" class="text-center text-white py-5 fs-4">
         Chưa có lịch thi đấu sắp tới
       </div>
@@ -185,7 +215,7 @@ onMounted(fetchAll);
     </div>
   </section>
 
-  <!-- 6. Giới thiệu CLB -->
+  <!-- 6. Giới thiệu CLB + Đội hình + Quà lưu niệm (giữ nguyên như cũ) -->
   <section class="py-5">
     <div class="container">
       <div class="row align-items-center g-5">
@@ -202,7 +232,6 @@ onMounted(fetchAll);
     </div>
   </section>
 
-  <!-- 7. Đội hình tiêu biểu -->
   <section class="py-5 bg-dark text-white">
     <div class="container">
       <h2 class="text-center mb-5 display-5 fw-bold">ĐỘI HÌNH TIÊU BIỂU</h2>
@@ -215,7 +244,6 @@ onMounted(fetchAll);
     </div>
   </section>
 
-  <!-- 8. Quà lưu niệm -->
   <section class="py-5 text-white" style="background: linear-gradient(135deg, #8B0000, #DC143C);">
     <div class="container">
       <div class="row align-items-center">
@@ -224,7 +252,7 @@ onMounted(fetchAll);
           <p class="lead">Sở hữu ngay áo đấu, kỷ vật, sách ảnh độc quyền!</p>
           <a href="/shop" class="btn btn-light btn-lg px-5 mt-3">
             MUA NGAY
-            <FontAwesomeIcon icon="fas fa-arrow-right" class="ms-2" />
+            <FontAwesomeIcon icon="fa-solid fa-arrow-right" class="ms-2" />
           </a>
         </div>
         <div class="col-lg-6 text-center">
@@ -236,10 +264,8 @@ onMounted(fetchAll);
 </template>
 
 <style scoped>
-/* Slogan mờ + nhỏ hơn */
 .slogan h1 {
   font-size: 3.5rem !important;
-  /* nhỏ lại ~15% so với display-2 */
 }
 
 @media (max-width: 992px) {
@@ -254,7 +280,6 @@ onMounted(fetchAll);
   }
 }
 
-/* Thẻ trận đấu tiếp theo – nhỏ lại 15% */
 .next-match-card-wrapper {
   transform: scale(0.85);
   transform-origin: bottom right;
@@ -263,7 +288,6 @@ onMounted(fetchAll);
 
 .next-match-card-wrapper:hover {
   transform: scale(0.90);
-  /* hover lên tí cho đẹp */
 }
 
 .next-match-card {
@@ -275,17 +299,11 @@ onMounted(fetchAll);
   overflow: hidden;
 }
 
-/* Responsive mobile: căn giữa và scale hợp lý */
 @media (max-width: 992px) {
   .next-match-card-wrapper {
     left: 50% !important;
-    right: auto !important;
     transform: translateX(-50%) scale(0.82);
     bottom: 20px !important;
-  }
-
-  .next-match-card {
-    min-width: 340px;
   }
 }
 
@@ -305,7 +323,6 @@ onMounted(fetchAll);
   }
 }
 
-/* Các style cũ giữ nguyên */
 .marquee-wrapper {
   background: linear-gradient(90deg, #8B2C31, #E02128);
   padding: 0.6rem 0;
@@ -318,6 +335,6 @@ onMounted(fetchAll);
 }
 
 .text-shadow {
-  text-shadow: 3px 3px 12 chainedpx rgba(0, 0, 0, 0.9);
+  text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.9);
 }
 </style>

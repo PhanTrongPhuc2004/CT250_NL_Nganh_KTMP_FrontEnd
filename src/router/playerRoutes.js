@@ -11,7 +11,7 @@ import orders from "@/pages/user/player/Donhang.vue";
 import Notifivation from "@/pages/user/notification/Notification.vue";
 
 const TraingManagement = () =>
-  import("@/pages/user/trainingManagement/TrainingManagement.vue");
+  import("@/pages/user/training/Training.vue");
 const Match = () =>
   import("@/pages/user/match/Match.vue");
 
