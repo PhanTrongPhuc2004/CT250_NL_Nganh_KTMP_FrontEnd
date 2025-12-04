@@ -14,7 +14,6 @@
             <th>Tổng</th>
           </tr>
         </thead>
-
         <tbody>
           <tr v-for="item in cart" :key="item._id">
             <td>
@@ -66,19 +65,6 @@
           Thanh toán trực tiếp
         </label>
 
-        <!-- <label class="pm-item">
-          <input type="radio" value="momo" v-model="order.paymentMethod" />
-          Thanh toán MoMo
-        </label> -->
-
-        <!-- ✔ QR MoMo (giữ nguyên của bạn) -->
-        <div v-if="order.paymentMethod === 'momo'" class="mt-2">
-          <div class="card p-3 text-center shadow-sm" style="max-width: 300px;">
-            <img src="/data/qrmm.jpg" class="img-fluid rounded" />
-            <p class="mt-2 fw-semibold">Quét QR MoMo để thanh toán</p>
-          </div>
-        </div>
-
         <label class="pm-item">
           <input type="radio" value="bank" v-model="order.paymentMethod" />
           Chuyển khoản ngân hàng
@@ -99,7 +85,13 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-success w-100 mt-3" :disabled="loading">
+      <!-- ✅ Nút thanh toán chỉ hiển thị khi điền đủ thông tin -->
+      <button
+        v-if="isFormValid"
+        type="submit"
+        class="btn btn-success w-100 mt-3"
+        :disabled="loading"
+      >
         <i v-if="!loading" class="bi bi-check-circle me-1"></i>
         <span v-if="!loading">Xác nhận thanh toán</span>
         <span v-else>
@@ -127,8 +119,6 @@ export default {
         address: "",
         paymentMethod: "cash",
       },
-
-      // Voucher giữ nguyên như bạn
       vouchers: [
         { code: "VOUCHER30K", label: "Giảm 30.000₫", min: 250000, type: "fixed", amount: 30000 },
         { code: "VOUCHER50K", label: "Giảm 50.000₫", min: 500000, type: "fixed", amount: 50000 },
@@ -165,23 +155,27 @@ export default {
       return Math.max(this.totalAmount - this.discount, 0);
     },
 
-    /* Tạo URL VietQR động */
-      vietQrUrl() {
-        if (!this.finalAmount || this.finalAmount <= 0) return "";
+    vietQrUrl() {
+      if (!this.finalAmount || this.finalAmount <= 0 || !this.order.phone || !this.order.name) return "";
 
-        const bankCode = "vcb";            // Vietcombank
-        const accountNumber = "1030670478";
-        const accountName = "NGUYEN THIEN PHUC"; // (không bắt buộc nhưng nên có)
+      const bankCode = "vcb";             // Vietcombank
+      const accountNumber = "1030670478"; // giữ nguyên tài khoản
+      const accountName = "NGUYEN THIEN PHUC"; // giữ nguyên tên chủ TK
 
-        // 🎯 Tạo nội dung linh hoạt theo đơn hàng
-        const orderName = this.order?.name || "Don hang";
-        const orderCode = this.order?.code || Date.now(); // tạo mã đơn tự sinh nếu không có
-        const transferInfo = `Thanh toan DH${orderCode}`;
+      // Nội dung chuyển khoản gồm tên + số điện thoại người nhận
+      const transferInfo = `${this.order.name} - ${this.order.phone}`;
 
-        const encodedInfo = encodeURIComponent(transferInfo);
+      const encodedInfo = encodeURIComponent(transferInfo);
 
-        return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${this.finalAmount}&addInfo=${encodedInfo}&accountName=${encodeURIComponent(accountName)}`;
-      },
+      return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${this.finalAmount}&addInfo=${encodedInfo}&accountName=${encodeURIComponent(accountName)}`;
+    },
+
+
+
+    // Kiểm tra form đã điền đầy đủ
+    isFormValid() {
+      return this.order.name && this.order.phone && this.order.address;
+    },
   },
 
   mounted() {
@@ -245,6 +239,7 @@ export default {
   },
 };
 </script>
+
 
 
 

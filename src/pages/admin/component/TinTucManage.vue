@@ -128,6 +128,10 @@
 
       <!-- Danh sách tin tức -->
       <div class="news-list mt-4">
+        <!-- Tin tức bóng đá tự động -->
+        <hr class="my-4">
+        <News />
+        
         <div v-if="filteredNews.length === 0" class="text-center text-muted py-5">
           Không tìm thấy tin tức nào phù hợp.
         </div>
@@ -185,8 +189,10 @@
 
 <script>
 import axios from "axios";
+import News from "@/pages/admin/component/News.vue"
 export default {
   name: "AdminTintucPage",
+  components: { News }, 
   data() {
     return {
       items: [],

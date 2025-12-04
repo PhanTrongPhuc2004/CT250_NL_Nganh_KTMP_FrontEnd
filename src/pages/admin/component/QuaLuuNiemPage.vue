@@ -232,11 +232,12 @@ export default {
       showForm: false,
       searchQuery: "",
       sortOption: "nameAsc",
+      loading: true,
     };
   },
 
   created() {
-    this.fetchItems();
+    this.refreshData();
   },
 
   computed: {
@@ -260,17 +261,14 @@ export default {
             a.tenQuaLuuNiem.localeCompare(b.tenQuaLuuNiem, "vi")
           );
           break;
-
         case "nameDesc":
           result = [...result].sort((a, b) =>
             b.tenQuaLuuNiem.localeCompare(a.tenQuaLuuNiem, "vi")
           );
           break;
-
         case "priceAsc":
           result = [...result].sort((a, b) => a.gia - b.gia);
           break;
-
         case "priceDesc":
           result = [...result].sort((a, b) => b.gia - a.gia);
           break;
@@ -281,17 +279,64 @@ export default {
   },
 
   methods: {
+    // ===== LẤY DANH SÁCH QUÀ + ĐÁNH GIÁ =====
     async fetchItems() {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem`
         );
-        this.items = res.data;
+        this.items = Array.isArray(res.data) ? res.data : [];
+
+        // Lấy đánh giá cho từng sản phẩm
+        await Promise.all(
+          this.items.map(async (item) => {
+            try {
+              const r = await axios.get(
+                `${import.meta.env.VITE_API_BE_BASE_URL}/binhluan/${item._id}`
+              );
+              const comments = Array.isArray(r.data) ? r.data : [];
+              item.luotDanhGia = comments.length;
+              const totalStars = comments.reduce((sum, c) => sum + (Number(c.rating) || 0), 0);
+              item.soSaoTrungBinh = comments.length
+                ? +(totalStars / comments.length).toFixed(1)
+                : 0;
+            } catch (e) {
+              item.luotDanhGia = 0;
+              item.soSaoTrungBinh = 0;
+            }
+          })
+        );
       } catch (err) {
-        console.error("Lỗi khi lấy danh sách:", err);
+        console.error("Lỗi khi lấy danh sách quà lưu niệm:", err);
       }
     },
 
+    // ===== LẤY LƯỢT BÁN =====
+    async fetchSoldCount() {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BE_BASE_URL}/donhang/thongke/sanpham`
+        );
+        const stats = Array.isArray(res.data) ? res.data : [];
+
+        this.items = this.items.map((item) => {
+          const found = stats.find((s) => s.product === item.tenQuaLuuNiem);
+          return { ...item, luotBan: found ? found.quantity : 0 };
+        });
+      } catch (err) {
+        console.error("Lỗi khi lấy số lượng bán:", err);
+      }
+    },
+
+    // ===== HÀM LÀM MỚI DỮ LIỆU =====
+    async refreshData() {
+      this.loading = true;
+      await this.fetchItems();
+      await this.fetchSoldCount();
+      this.loading = false;
+    },
+
+    // ===== CRUD QUÀ =====
     async handleSubmit() {
       try {
         if (this.isEditing) {
@@ -307,9 +352,8 @@ export default {
           );
           alert("🔥 Thêm mới thành công!");
         }
-
         this.resetForm();
-        this.fetchItems();
+        this.refreshData();
       } catch (err) {
         alert("❌ Lỗi khi lưu quà lưu niệm!");
         console.error(err);
@@ -326,14 +370,7 @@ export default {
       this.showForm = true;
       this.isEditing = true;
       this.editId = item._id;
-
-      this.form = {
-        tenQuaLuuNiem: item.tenQuaLuuNiem,
-        gia: item.gia,
-        giaGiam: item.giaGiam,
-        moTa: item.moTa,
-        anhMinhHoa: item.anhMinhHoa,
-      };
+      this.form = { ...item };
     },
 
     cancelEdit() {
@@ -343,13 +380,10 @@ export default {
 
     async deleteItem(id) {
       if (!confirm("Bạn có chắc muốn xóa quà lưu niệm này?")) return;
-
       try {
-        await axios.delete(
-          `${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`
-        );
+        await axios.delete(`${import.meta.env.VITE_API_BE_BASE_URL}/qualuuniem/${id}`);
         alert("🗑️ Đã xóa thành công!");
-        this.fetchItems();
+        this.refreshData();
       } catch (err) {
         alert("❌ Lỗi khi xóa!");
         console.error(err);
@@ -369,13 +403,8 @@ export default {
     },
 
     getImage(url) {
-      if (!url || url.trim() === "") {
-        return "https://via.placeholder.com/200x150?text=No+Image";
-      }
-      if (url.startsWith("http") || url.startsWith("data:image")) {
-        return url;
-      }
-      return `/${url}`;
+      if (!url || url.trim() === "") return "https://via.placeholder.com/200x150?text=No+Image";
+      return url.startsWith("http") || url.startsWith("data:image") ? url : `/${url}`;
     },
 
     formatPrice(price) {
@@ -384,6 +413,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .text-primary {
