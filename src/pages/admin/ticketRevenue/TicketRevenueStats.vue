@@ -184,40 +184,98 @@ const destroyCharts = () => {
     lineChart = barChart = pieChart = null;
 };
 
-// Render charts - luôn tạo mới
+// Render charts - SỬA LỖI FORMAT NGÀY ĐỂ MATCH CHÍNH XÁC GIỮA BACKEND VÀ FRONTEND
 const renderCharts = async (data) => {
-    await nextTick(); // Đảm bảo canvas đã sẵn sàng
+    await nextTick();
 
     const { timeSeries = [], byLoaiVe = [] } = data;
-    const labels = timeSeries.map(d => d.date || ' ');
-    const values = timeSeries.map(d => d.value || 0);
 
-    destroyCharts(); // ← Quan trọng: luôn destroy trước
+    // Tạo chuỗi ngày liên tục từ 01/11/2025 đến hôm nay
+    const startDate = new Date("2025-11-01");
+    const endDate = new Date();
+
+    // Tạo Map với key chính xác format "dd/MM/yyyy" (giống backend)
+    const dateMap = new Map();
+    timeSeries.forEach(item => {
+        dateMap.set(item.date, item.value);
+    });
+
+    const fullSeries = [];
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        // Format ngày đúng như backend: dd/MM/yyyy
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const key = `${day}/${month}/${year}`;
+
+        fullSeries.push({
+            date: key,
+            value: dateMap.get(key) || 0
+        });
+    }
+
+    const labels = fullSeries.map(d => d.date);
+    const values = fullSeries.map(d => d.value);
+
+    destroyCharts();
 
     // Line Chart
-    if (lineChartRef.value) {
+    if (lineChartRef.value && labels.length > 0) {
         lineChart = new Chart(lineChartRef.value, {
             type: "line",
-            data: { labels, datasets: [{ label: "Doanh thu", data: values, borderColor: "#E02128", backgroundColor: "rgba(224,33,40,0.1)", tension: 0.4, fill: true }] },
-            options: { responsive: true, plugins: { legend: { display: false } } }
+            data: {
+                labels,
+                datasets: [{
+                    label: "Doanh thu",
+                    data: values,
+                    borderColor: "#E02128",
+                    backgroundColor: "rgba(224,33,40,0.1)",
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
         });
     }
 
     // Bar Chart
-    if (barChartRef.value) {
+    if (barChartRef.value && byLoaiVe.length > 0) {
         barChart = new Chart(barChartRef.value, {
             type: "bar",
-            data: { labels: byLoaiVe.map(d => formatLoaiVe(d.loaiVe)), datasets: [{ data: byLoaiVe.map(d => d.doanhThu || 0), backgroundColor: "#8B2C31" }] },
-            options: { responsive: true }
+            data: {
+                labels: byLoaiVe.map(d => formatLoaiVe(d.loaiVe)),
+                datasets: [{
+                    data: byLoaiVe.map(d => d.doanhThu || 0),
+                    backgroundColor: "#8B2C31"
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
         });
     }
 
     // Pie Chart
-    if (pieChartRef.value) {
+    if (pieChartRef.value && byLoaiVe.length > 0) {
         pieChart = new Chart(pieChartRef.value, {
             type: "doughnut",
-            data: { labels: byLoaiVe.map(d => formatLoaiVe(d.loaiVe)), datasets: [{ data: byLoaiVe.map(d => d.soVe || 0), backgroundColor: ["#E02128", "#8B2C31", "#F8D7DA", "#6C757D"] }] },
-            options: { responsive: true, plugins: { legend: { position: 'right' } } }
+            data: {
+                labels: byLoaiVe.map(d => formatLoaiVe(d.loaiVe)),
+                datasets: [{
+                    data: byLoaiVe.map(d => d.soVe || 0),
+                    backgroundColor: ["#E02128", "#8B2C31", "#F8D7DA", "#6C757D"]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'right' } }
+            }
         });
     }
 };
@@ -227,7 +285,7 @@ const resetAllData = () => {
     totalRevenue.value = 0;
     topMatches.value = [];
     error.value = false;
-    destroyCharts(); // ← Destroy khi reset
+    destroyCharts();
 };
 
 const fetchStats = async () => {
@@ -247,15 +305,17 @@ const fetchStats = async () => {
 
         totalRevenue.value = data.timeSeries?.reduce((sum, d) => sum + d.value, 0) || 0;
 
-        if (totalRevenue.value > 0 || data.byLoaiVe?.length > 0) {
+        // Luôn hiển thị biểu đồ khi đã chọn mùa giải
+        if (filters.value.muaGiai) {
             hasData.value = true;
-            await renderCharts(data); // ← Dùng hàm mới
+            await renderCharts(data);
 
-            if (filters.value.muaGiai && !filters.value.match) {
+            if (!filters.value.match) {
                 fetchTopMatchesInMuaGiai();
             }
         }
     } catch (err) {
+        console.error(err);
         error.value = true;
     } finally {
         isLoading.value = false;

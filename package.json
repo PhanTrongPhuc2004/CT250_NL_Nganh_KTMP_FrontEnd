@@ -27,6 +27,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "classnames": "^2.5.1",
     "firebase": "^12.5.0",
+    "html2canvas": "^1.4.1",
     "pinia": "^3.0.3",
     "qrcode": "^1.5.4",
     "qrcode.vue": "^3.6.0",

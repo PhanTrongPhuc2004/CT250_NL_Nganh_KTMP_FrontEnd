@@ -68,7 +68,7 @@
           :class="order.status === 'Đã xác nhận' ? 'confirmed-card' : 'waiting-card'"
         >
           <h3>
-            🧾 Đơn hàng #{{ order._id.slice(-6).toUpperCase() }}
+            🧾 Đơn hàng: DH{{ order._id.slice(-10).toUpperCase() }}
           </h3>
           <p><b>Tài khoản đặt hàng:</b> {{ order.tenDangNhap }}</p>
           <p><b>Người nhận:</b> {{ order.name }}</p>

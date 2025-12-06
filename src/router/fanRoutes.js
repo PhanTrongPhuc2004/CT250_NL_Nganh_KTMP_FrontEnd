@@ -44,7 +44,7 @@ export const fanRoutes = [
   },
   {
     path: "/ve",
-    name: "Mua Vé",
+    name: "Mua vé",
     component: TicketPurchase,
     meta: {
       requiresAuth: true,
@@ -53,7 +53,7 @@ export const fanRoutes = [
   },
   {
     path: "/ve-cua-toi",
-    name: "Vé Của Tôi",
+    name: "Vé của tôi",
     component: MyTickets,
     meta: {
       requiresAuth: true,

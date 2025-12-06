@@ -43,7 +43,7 @@
 // const TicketManagement = () =>
 //   import("@/pages/admin/ticketManagement/TicketManagement.vue");
 // const TraingManagement = () =>
-//   import("@/pages/user/trainingManagement/TrainingManagement.vue");
+//   import("@/pages/user/training/Training.vue");
 // const MyTickets = () => import("@/pages/user/ticketPurchase/MyTickets.vue");
 
 // const commonRouter = [

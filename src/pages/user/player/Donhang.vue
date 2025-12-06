@@ -19,7 +19,7 @@
         <!-- Thông tin đơn hàng -->
         <div class="invoice-header text-center mb-3">
           <h3 class="text-primary fw-bold">THÔNG TIN ĐƠN HÀNG</h3>
-          <p class="text-muted">Mã đơn hàng: <b>#{{ order._id.slice(-6).toUpperCase() }}</b></p>
+          <p class="text-muted">Mã đơn hàng: <b>DH{{ order._id.slice(-10).toUpperCase() }}</b></p>
         </div>
 
         <div class="invoice-info mb-3">
@@ -237,6 +237,7 @@
 <script>
 import axios from "axios";
 import { useUserStore } from "@/stores/userStore";
+import { uploadToCloudinary } from "@/config/cloudinary.conf";
 
 export default {
   name: "OrdersPage",
@@ -288,23 +289,18 @@ export default {
         this.loading = false;
       }
     },
-    handleFileUpload(event, orderId, productKey) {
-  const files = event.target.files;
+      handleFileUpload(event, orderId, productKey) {
+        const files = event.target.files;
 
-  if (!this.reviewForms[orderId][productKey].files) {
-    this.reviewForms[orderId][productKey].files = [];
-  }
+        if (!this.reviewForms[orderId][productKey].files) {
+          this.reviewForms[orderId][productKey].files = [];
+        }
 
-  for (let f of files) {
-    this.reviewForms[orderId][productKey].files.push(f);
-  }
-
-  // preview ảnh
-  for (let file of files) {
-    const url = URL.createObjectURL(file);
-    this.reviewForms[orderId][productKey].images.push(url);
-  }
-},
+        for (let f of files) {
+          this.reviewForms[orderId][productKey].files.push(f); // 🔥 lưu file gốc để upload
+          this.reviewForms[orderId][productKey].images.push(URL.createObjectURL(f)); // preview
+        }
+      },
 
 
     async deleteOrder(id) {
@@ -417,25 +413,43 @@ export default {
       this.reviewForms[orderId][productKey].images.splice(index, 1);
     },
 
-    async submitReview(orderId, productKey) {
-      const form = this.reviewForms[orderId][productKey];
-      const data = {
-        productId: form.productId,
-        userName: form.userName,
-        rating: form.rating,
-        content: form.content,
-        images: form.images,
-      };
-      try {
-        const res = await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/binhluan`, data);
-        form.message = res.data.message || "Gửi bình luận thành công!";
-        form.rating = null;
-        form.content = "";
-        form.images = [];
-      } catch (err) {
-        form.message = err.response?.data?.message || "Lỗi gửi bình luận";
+async submitReview(orderId, productKey) {
+  const form = this.reviewForms[orderId][productKey];
+
+  try {
+
+    let uploadedImages = [];
+
+    // 🔥 Nếu có file ảnh → upload lần lượt lên cloudinary
+    if (form.files && form.files.length > 0) {
+      for (let file of form.files) {
+        const url = await uploadToCloudinary(file);
+        uploadedImages.push(url);           // lưu URL thật
       }
-    },
+    }
+
+    // dữ liệu gửi backend
+    const reviewData = {
+      productId: form.productId,
+      userName: form.userName,
+      rating: form.rating,
+      content: form.content,
+      images: uploadedImages,   // <--- không còn RAM link
+    };
+
+    const res = await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/binhluan`, reviewData);
+
+    form.message = " Gửi bình luận thành công!";
+    form.rating = null;
+    form.content = "";
+    form.images = [];
+    form.files = [];
+
+  } catch (err) {
+    console.error("❌ Lỗi gửi bình luận:", err);
+    form.message = "Lỗi gửi bình luận!";
+  }
+},
   },
 };
 </script>
