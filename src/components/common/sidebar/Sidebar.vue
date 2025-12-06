@@ -3,7 +3,6 @@
     class="d-flex flex-column bg-white p-3 position-fixed top-0 start-0 shadow-sm mt-5 border-end border-secondary-subtle"
     style="width: 250px; transition: transform 0.3s ease; height: calc(100vh - 80px);"
     :style="{
-      transform: isSidebarVisible ? 'translateX(0)' : 'translateX(-100%)',
     }"
   >
     <!-- Logo + Tên CLB -->
@@ -26,15 +25,6 @@
       </div>
     </div>
 
-    <!-- Nút toggle (mobile) -->
-    <button
-      class="btn btn-outline-secondary d-md-none mb-3 flex-shrink-0"
-      type="button"
-      @click="toggleSidebar"
-    >
-      <i class="bi" :class="isOpen ? 'bi-x-lg' : 'bi-list'"></i>
-      <span class="ms-2 fw-semibold">Menu</span>
-    </button>
 
     <!-- Danh sách menu với scroll -->
     <div class="nav-container flex-grow-1" style="overflow-y: auto; overflow-x: hidden;">
@@ -187,6 +177,7 @@ const updateWidth = () => {
 
 onMounted(async () => {
   window.addEventListener("resize", updateWidth);
+  console.log("sidebar mouted")
   clubInfor.value = await fetchClubInfo();
   
   activeItemPath.value = route.path;

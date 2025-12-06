@@ -562,7 +562,6 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .d-flex.justify-content-between {
-    flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
   }

@@ -53,7 +53,6 @@ const getPlayerByMatchId = async () => {
                 _id: player.maNguoiDung
             }
         })
-        console.log("danh sach cau thu", players.value)
         return response.data
     } catch (error) {
         console.log(error);

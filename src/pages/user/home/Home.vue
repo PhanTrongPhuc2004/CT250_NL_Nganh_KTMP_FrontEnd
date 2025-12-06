@@ -207,7 +207,7 @@ onMounted(fetchAll);
     <div class="container">
       <h2 class="text-center mb-5 display-5 fw-bold">ĐỘI HÌNH TIÊU BIỂU</h2>
       <swiper :modules="[Autoplay, Navigation]" :slides-per-view="2" :space-between="30" :navigation="true" :loop="true"
-        :breakpoints="{ 768: { slidesPerView: 3 }, 992: { slidesPerView: 4 } }">
+        :breakpoints="{ 768: { slidesPerView: 1 }, 992: { slidesPerView: 3 } }">
         <swiper-slide v-for="player in playerList" :key="player._id">
           <PlayerCard :item="player" height="400px" />
         </swiper-slide>

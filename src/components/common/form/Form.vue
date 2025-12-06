@@ -92,15 +92,12 @@ const handleImageUpload = async (file) => {
   
   try {
     isUploading.value = true;
-    console.log("🔼 Đang upload ảnh lên Cloudinary...");
     
     const uploadedUrl = await uploadToCloudinary(file);
-    console.log("✅ Upload ảnh thành công:", uploadedUrl);
     
     imageUrl.value = uploadedUrl;
     return uploadedUrl;
   } catch (error) {
-    console.error("❌ Lỗi upload ảnh:", error);
     alert("Lỗi upload ảnh! Vui lòng thử lại.");
     throw error;
   } finally {
@@ -127,7 +124,6 @@ const handleFileChange = async (event) => {
   try {
     // Upload ảnh ngay khi chọn file
     await handleImageUpload(file);
-    console.log("📸 Ảnh đã được upload và lưu tạm:", imageUrl.value);
   } catch (error) {
     // Reset file input nếu upload thất bại
     event.target.value = '';
@@ -157,7 +153,6 @@ const handleSubmit = async () => {
       delete payload.anhMinhHoa;
     }
 
-    console.log("📤 Payload gửi đi (không gồm upload ảnh):", payload);
 
     // Xử lý đăng nhập
     if (props.formName === "Đăng nhập") {
@@ -178,7 +173,6 @@ const handleSubmit = async () => {
       data: payload,
     });
 
-    console.log("✅ Response nhận được:", response.data);
     
     // Trigger refresh và events
     if (props.method === "POST" || ["PUT", "PATCH"].includes(props.method)) {

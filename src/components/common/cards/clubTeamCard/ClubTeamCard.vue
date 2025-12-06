@@ -151,7 +151,6 @@ const handleClickOutside = (event) => {
 };
 
 onMounted(() => {
-  console.log("items", props.item);
   document.addEventListener("click", handleClickOutside);
 });
 </script>

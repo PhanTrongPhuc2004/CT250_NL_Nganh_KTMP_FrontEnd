@@ -6,3 +6,25 @@
     position: absolute;
     left: var(--sidebar-width);
 }
+
+.sidebar{
+    display: block;
+}
+
+.toggle-sidebar{
+    display: none;
+}
+
+
+@media screen and (max-width: 768px){
+    .main{
+        position: absolute;
+        left: 0;
+    }
+
+    
+
+    .toggle-sidebar{
+        display: block;
+    }
+}

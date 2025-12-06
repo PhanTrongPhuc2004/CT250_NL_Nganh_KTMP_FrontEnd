@@ -12,6 +12,7 @@ import { useFormStore } from "@/stores/formStore";
 import { getMe } from "@/utils";
 import { fanRoutes, adminRoutes, coachRoutes, playerRoutes } from "@/router";
 import Notification from "@/pages/user/notification/Notification.vue";
+
 const API_BASE_URL = import.meta.env.VITE_API_BE_BASE_URL;
 const registerApiUrl = `${API_BASE_URL}/nguoidung`;
 const loginApiUrl = `${API_BASE_URL}/nguoidung/login`;
@@ -21,24 +22,20 @@ const formStore = useFormStore();
 const router = useRouter();
 const cx = classNames.bind(styles);
 
-// State
 const userInfor = ref({});
 const notificationState = ref(false);
+const mobileMenuOpen = ref(false);
 
-// Dropdown
 const { activeMenuId, toggleMenu } = useDropdownManager();
 
-// Lấy user info khi component mounted
 onMounted(async () => {
   try {
     userInfor.value = await getMe();
-    console.log("Thông tin user:", userInfor.value);
   } catch (error) {
     console.error("Lỗi khi lấy thông tin user:", error);
   }
 });
 
-// Routes và form fields
 const registerFields = [
   { name: "hoVaTen", type: "text", label: "Họ và tên" },
   { name: "email", type: "email", label: "Email" },
@@ -51,18 +48,15 @@ const loginFields = [
   { name: "matKhau", type: "password", label: "Mật khẩu" },
 ];
 
-// Routes mapping - KEY PHẢI KHỚP với vai trò từ backend
 const routesMap = {
   nguoihammo: fanRoutes,
   admin: adminRoutes,
-  huanluyenvien: coachRoutes, // Key phải là "coach" không phải "huanluyenvien"
-  cauthu: playerRoutes, // Key phải là "player" không phải "cauthu"
+  huanluyenvien: coachRoutes,
+  cauthu: playerRoutes,
 };
 
-// Computed: Lấy routes hiện tại theo vai trò
 const currentRoutes = computed(() => {
   if (!userStore.user) {
-    // Routes cho người chưa đăng nhập
     return [
       { path: "/", name: "Trang chủ" },
       { path: "/cauthu", name: "Cầu Thủ" },
@@ -72,104 +66,125 @@ const currentRoutes = computed(() => {
 
   const userRole = userStore.user.vaiTro;
   const routes = routesMap[userRole] || [];
-
-  // Filter chỉ lấy routes không ẩn và có name
   return routes.filter((route) => !route.meta?.hidden && route.name);
 });
 
-// Computed: Menu items cho dropdown
 const userMenuItems = computed(() => {
-  const items = [
+  return [
     { label: "Trang cá nhân", link: "/profile" },
     { label: "Đăng xuất", action: () => userStore.logout() },
   ];
-
-  return items;
 });
 
-// Computed: Hiển thị tên với icon vai trò
 const displayUserName = computed(() => {
   if (!userStore.user) return "";
-
   return `${userStore.user.hoVaTen}`;
 });
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
+};
 </script>
 
 <template>
-  <!-- Header cho người CHƯA đăng nhập -->
-  <div :class="cx('header-wrapper')" v-if="!userStore.user">
-    <nav :class="cx('nav-wrapper')">
-      <div :class="cx('nav-list')">
-        <router-link
-          v-for="item in currentRoutes"
-          :key="item.path"
-          :to="item.path"
-          :class="cx('nav-item')"
-        >
-          {{ item.name }}
-        </router-link>
-      </div>
-      <div :class="cx('nav-action')">
+  <div :class="cx('header-wrapper position-relative d-flex align-items-center justify-content-between')" style="height: var(--header-height); background-color: var(--header-color);">
+    <nav class="navbar navbar-expand-lg " :class="cx('nav-wrapper')" style="line-height: var(--header-height);">
+      <div class="container-fluid d-flex align-items-center justify-content-between" >
+        <!-- Mobile Menu Toggle Button -->
         <button
-          class="btn text-white fw-bold"
+          class="navbar-toggler text-white d-lg-none border "
           type="button"
-          @click="formStore.openForm('Đăng nhập', {})"
+          @click="toggleMobileMenu"
+          style="background-color: transparent;border-radius: 0;"
+          aria-label="Toggle navigation"
         >
-          Đăng nhập
+          <FontAwesomeIcon :icon="['fas', 'bars']" size="lg" />
         </button>
-        <p style="margin: 0">|</p>
-        <button
-          class="btn text-white fw-bold"
-          type="button"
-          @click="formStore.openForm('Đăng ký', {})"
-        >
-          Đăng ký
-        </button>
-      </div>
-    </nav>
-  </div>
-  <!--thong bao-->
-  
-  <!-- Header cho người ĐÃ đăng nhập -->
-  <div :class="cx('header-wrapper')" v-else>
-    <nav :class="cx('nav-wrapper')">
-      <div :class="cx('nav-list')">
-        <router-link
-          v-for="item in currentRoutes"
-          :key="item.path"
-          :to="item.path"
-          :class="cx('nav-item')"
-        >
-          {{ item.name }}
-        </router-link>
 
-        <!-- Route đặc biệt cho admin -->
-        <router-link
-          v-if="userStore.user?.vaiTro === 'admin'"
-          to="/admin"
-          :class="cx('nav-item', 'admin-item')"
+        <!-- Navigation Items -->
+        <div
+          class="collapse navbar-collapse w-80"
+          :class="{ show: mobileMenuOpen }"
+          style="z-index: 10000; height: calc(100vh - var(--header-height));"
         >
-        </router-link>
-      </div>
+          <!-- Nav Links -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item " v-for="item in currentRoutes" :key="item.path">
+              <router-link
+                :to="item.path"
+                :class="cx('nav-item')"
+                class="nav-link text-white"
+                @click="closeMobileMenu"
+              >
+                {{ item.name }}
+              </router-link>
+            </li>
+            <li class="nav-item" v-if="userStore.user?.vaiTro === 'admin'">
+              <router-link
+                to="/admin"
+                :class="cx('nav-item', 'admin-item')"
+                class="nav-link"
+                @click="closeMobileMenu"
+              >
+                Admin
+              </router-link>
+            </li>
+          </ul>
 
-      <div :class="cx('nav-action')" data-dropdown-id>
-        <div class="dropdown-trigger" >
-          <span>{{ displayUserName }}</span>
-          <FontAwesomeIcon :icon="['fas', 'angle-down']" @click.stop="toggleMenu('user-menu')"/>
-          <FontAwesomeIcon :icon="['far', 'bell']" class="ms-2" @click="() => notificationState = !notificationState"/>
+          <!-- Auth Actions -->
+          <div :class="cx('nav-action')" v-if="!userStore.user">
+            <button
+              class="btn text-white fw-bold"
+              type="button"
+              @click="formStore.openForm('Đăng nhập', {}); closeMobileMenu();"
+            >
+              Đăng nhập
+            </button>
+            <p class="mb-0 mx-2 text-white d-none d-lg-block">|</p>
+            <button
+              class="btn text-white fw-bold"
+              type="button"
+              @click="formStore.openForm('Đăng ký', {}); closeMobileMenu();"
+            >
+              Đăng ký
+            </button>
+          </div>
+          <!-- User Menu (for logged in users) -->
         </div>
-
-        <Menu
-          v-show="activeMenuId === 'user-menu'"
-          :menu-items="userMenuItems"
-          top="60px"
-        />
+        <div :class="cx('nav-action justify-content-end')" >
+          <div class="dropdown-trigger d-flex align-items-center gap-2 position-relative">
+            <span class="text-white">{{ displayUserName }}</span>
+            <FontAwesomeIcon
+              :icon="['fas', 'fa-angle-down']"
+              class="text-white"
+              @click.stop="toggleMenu('user-menu')"
+              style="cursor: pointer"
+            />
+            <FontAwesomeIcon
+              :icon="['far', 'bell']"
+              class="text-white ms-2"
+              @click="notificationState = !notificationState"
+              style="cursor: pointer"
+            />
+            <Menu
+              v-if="activeMenuId == 'user-menu'"
+              :menu-items="userMenuItems"
+              top="60px"
+            />
+          </div>
+        </div>
       </div>
     </nav>
-   <div 
-      v-if="notificationState" 
+
+    <!-- Notification Panel -->
+    <div
+      v-if="notificationState"
       class="position-fixed end-0 vh-75 overflow-y-auto bg-white shadow"
-      style="width: 80%; max-width: 400px; height: 100vh; top: var(--header-height); z-index: 1050;"
+      style="width: 80%; max-width: 400px; height: 100vh; top: var(--header-height); z-index: 1050"
     >
       <Notification />
     </div>
@@ -196,12 +211,19 @@ const displayUserName = computed(() => {
     :form-name="'Đăng nhập'"
     @closed="formStore.closeForm"
     @submitted="userStore.login"
-    @google-success="onGoogleLoginSuccess"
-    @google-error="onGoogleLoginError"
   />
 </template>
 
 <style scoped>
+.navbar-toggler {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
 .profile-link {
   display: flex;
   align-items: center;
@@ -223,15 +245,29 @@ const displayUserName = computed(() => {
   color: #fff;
 }
 
-/* Style đặc biệt cho admin item */
 .admin-item {
   background: linear-gradient(45deg, #ff6b6b, #ffa726);
   font-weight: bold;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    position: absolute;
+    background-color: var(--header-color);
+    top: var(--header-height);
+    width: 80%;
+    left: 0;
+    padding: 1rem;
+  }
+
+  .nav-item {
+    margin: 0.5rem 0;
+  }
+
   .profile-link span {
-    display: none;
+    display: inline;
   }
 }
 </style>

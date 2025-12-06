@@ -52,7 +52,6 @@ const currentStatus = computed(() => {
 });
 
 const isMatchFinished = computed(() => {
-  console.log("trang thai", props.item.trangThai);
   return ["ket_thuc", "hoan_thanh", "huy_bo"].includes(props.item.trangThai);
 });
 

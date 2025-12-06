@@ -6,8 +6,6 @@ const UPLOAD_PRESET = "Player_images";
 
 export const uploadToCloudinary = async (file) => {
   try {
-    console.log('🔍 DEBUG UPLOAD STARTED');
-    console.log('📁 File:', file?.name, file?.size, file?.type);
 
     if (!file || !(file instanceof File)) {
       throw new Error("File không hợp lệ");
@@ -35,9 +33,7 @@ export const uploadToCloudinary = async (file) => {
         },
         // Thêm để debug chi tiết
         transformRequest: [(data) => {
-          console.log('📤 FormData content:');
           for (let pair of data.entries()) {
-            console.log(pair[0] + ': ', pair[1]);
           }
           return data;
         }]

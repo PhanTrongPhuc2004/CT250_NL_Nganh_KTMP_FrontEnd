@@ -60,7 +60,7 @@
       <h4 class="pt-0 m-0 text-secondary py-3">Danh sách cầu thủ</h4>
       <div class="d-flex flex-wrap  w-100">
   
-        <div v-for="(player, index) in playersInClubTeam" :key="index" class="col-md-4">
+        <div v-for="(player, index) in playersInClubTeam" :key="index" class="col-md-4 col-12">
           <PlayerCard :item="player" />
         </div>
   
@@ -285,7 +285,6 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .d-flex.justify-content-between {
-    flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
   }

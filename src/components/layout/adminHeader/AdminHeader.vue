@@ -54,7 +54,7 @@ onBeforeUnmount(() =>
 
 <template>
   <div :class="cx('header-wrapper')" v-if="!userStore.user"></div>
-  <div :class="cx('header-wrapper')" v-else class="col-md-12">
+  <div :class="cx('header-wrapper')" v-else class="col-md-12" style="background-color: var(--header-color);">
     <nav :class="cx('nav-wrapper')" class="col-md-12">
       <div :class="cx('nav-action')">
         <div

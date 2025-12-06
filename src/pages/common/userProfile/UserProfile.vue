@@ -79,12 +79,10 @@ const refetchUserData = async () => {
       
       // CẬP NHẬT userData với dữ liệu mới - QUAN TRỌNG
       userData.value = { ...response.data };
-      console.log("✅ Đã refetch user data:", userData.value);
     }
     
     // Refetch danh sách trận đấu
     matchOfPlayer.value = await getMatchOfUser();
-    console.log("✅ Đã refetch danh sách trận đấu");
     
   } catch (error) {
     console.error("Lỗi khi refetch user data:", error);
@@ -98,7 +96,6 @@ const showFormEditProfile = () => {
 
 // 🎯 Hàm xử lý sau khi submit thành công - GIỐNG NHƯ handleMatchSubmitted
 const handleFormSubmitted = async (responseData) => {
-  console.log("✅ Form submitted thành công, đang cập nhật UI...", responseData);
   
   // 1. Đóng form
   formEditProfileState.value = false;

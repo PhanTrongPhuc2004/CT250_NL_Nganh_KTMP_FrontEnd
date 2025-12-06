@@ -47,7 +47,8 @@ import {
   faSort,
   faSearch,
   faChartLine,
-  faPenToSquare
+  faPenToSquare,
+  faBars, 
 } from "@fortawesome/free-solid-svg-icons";
 
 // Regular icons
@@ -91,7 +92,7 @@ library.add(
   faFacebook,
   faTwitter,
   faSort,
-  faSearch, faBell,faChartLine,faPenToSquare
+  faSearch, faBell,faChartLine,faPenToSquare, faBars, faClose
 );
 
 // Tạo app

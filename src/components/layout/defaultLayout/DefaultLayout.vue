@@ -5,6 +5,7 @@ import AdminBody from "@/pages/admin/adminBody/AdminBody.vue";
 import AdminHeader from "../adminHeader/AdminHeader.vue";
 import { watch } from "vue";
 import { toRaw } from "vue";
+import ChatBot from "@/components/client/ChatBot.vue";
 const props = defineProps({
   user: {
     type: Object,
@@ -56,10 +57,10 @@ watch(
     </main>
     <Footer />
   </div>
+  <ChatBot />
 </template>
 
 <style scoped>
 .content {
-  margin-top: var(--header-height);
 }
 </style>

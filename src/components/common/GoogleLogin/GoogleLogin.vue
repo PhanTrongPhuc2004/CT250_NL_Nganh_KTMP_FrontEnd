@@ -72,7 +72,6 @@ const initGoogleSignIn = () => {
     script.defer = true
     
     script.onload = () => {
-      console.log('✅ Google Identity Services loaded successfully')
       
       if (window.google && window.google.accounts) {
         // Khởi tạo Google Identity Services
@@ -105,7 +104,6 @@ const initGoogleSignIn = () => {
         // Hiển thị One Tap (tùy chọn)
         window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            console.log('One Tap không hiển thị:', notification.getNotDisplayedReason())
           }
         })
 
@@ -149,7 +147,6 @@ const handleCredentialResponse = async (response) => {
 
     const userData = backendResponse.data
     
-    console.log('✅ Google login successful:', userData)
     emit('success', userData)
     window.location.reload()
   } catch (err) {

@@ -39,7 +39,6 @@ const emit = defineEmits(["menu-action"]);
 const userInfor = ref(null);
 onMounted(async () => {
   userInfor.value = await getMe();
-  console.log("item ben player card", props.item);
 });
 
 // Menu state

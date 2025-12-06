@@ -72,7 +72,6 @@ export const getMe = async () => {
         withCredentials: true,
       }
     );
-    console.log("✅ getMe() thành công:", response.data);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tải thông tin người dùng:", error);
