@@ -100,7 +100,7 @@
 
       <div v-else class="product-grid">
         <div
-          v-for="(item) in filteredProducts"
+          v-for="(item) in pagedProducts"
           :key="item._id"
           class="product-card"
           @click="goToDetail(item._id)"
@@ -153,6 +153,23 @@
 
         </div>
       </div>
+            <!-- PHÂN TRANG -->
+      <div class="pagination-container mt-4 d-flex justify-content-center">
+        <button class="btn btn-outline-primary me-2"
+                :disabled="currentPage===1"
+                @click="currentPage--">←</button>
+
+        <button v-for="n in totalPages" :key="n"
+                @click="currentPage = n"
+                class="btn me-1"
+                :class="currentPage===n ? 'btn-primary' : 'btn-outline-primary'">
+          {{ n }}
+        </button>
+
+        <button class="btn btn-outline-primary ms-2"
+                :disabled="currentPage===totalPages"
+                @click="currentPage++">→</button>
+      </div>
     </div>
   </div>
 </template>
@@ -175,6 +192,8 @@ export default {
       productStats: [],
       showVoucher: false,
       selectedVouchers: [],
+      currentPage: 1,
+      perPage: 8,
       vouchers: [
         { code: "VOUCHER30K", label: "Giảm 30.000 VND", min: 250000, validText: "Hết hạn sau 1 giờ"},
         { code: "VOUCHER50K", label: "Giảm 50.000 VND", min: 500000, validText: "Hết hạn sau 6 giờ" },
@@ -212,6 +231,14 @@ export default {
 
       return list;
     },
+      pagedProducts() {
+    let start = (this.currentPage - 1) * this.perPage;
+    return this.filteredProducts.slice(start, start + this.perPage);
+  },
+
+  totalPages() {
+    return Math.ceil(this.filteredProducts.length / this.perPage);
+  }
   },
   methods: {
     toggleVoucher() {
