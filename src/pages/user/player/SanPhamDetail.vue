@@ -47,7 +47,7 @@
           </span>
         </div>
 
-        <!-- 🔥 LƯỢT BÁN -->
+        <!--  LƯỢT BÁN -->
         <p class="sold-count text-secondary small">
           <i class="bi bi-fire me-1 text-danger"></i> Đã bán: {{ product.luotBan || 0 }}
         </p>
@@ -56,10 +56,24 @@
         <p class="desc">{{ product.moTa || "Không có mô tả" }}</p>
 
         <!-- SỐ LƯỢNG -->
-        <div class="quantity">
+        <div class="quantity-box">
           <label>Số lượng:</label>
-          <input type="number" v-model.number="quantity" min="1" />
+
+          <div class="qty-control">
+            <button @click="quantity > 1 && quantity--">-</button>
+
+            <input
+              type="number"
+              v-model.number="quantity"
+              min="1"
+              max="10"
+              @input="checkQuantity"
+            />
+
+            <button @click="quantity < 10 && quantity++">+</button>
+          </div>
         </div>
+
 
         <button
           @click="muaNgay"
@@ -181,7 +195,10 @@ export default {
       }
     },
 
-
+      checkQuantity() {
+        if (this.quantity < 1) this.quantity = 1;
+        if (this.quantity > 10) this.quantity = 10;
+      },
     muaNgay() {
       const user = JSON.parse(localStorage.getItem("user"));
       const username = user?.tenDangNhap || "guest";
@@ -400,5 +417,76 @@ h1 {
   }
 }
 
+.quantity-box {
+  margin: 10px 0;
+  font-weight: 600;
+}
 
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-control input {
+  width: 50px;
+  text-align: center;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.qty-control button {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  background: #007bff;
+  color: #fff;
+}
+.qty-control button:hover {
+  opacity: .8;
+}
+
+
+@media (max-width: 480px) {
+  .product-detail { padding:25px 0; }
+
+  .detail-card {
+    width:94%;
+    padding:20px 18px;
+    gap:20px;
+    border-radius:16px;
+  }
+
+  .detail-image {
+    height:260px;
+    border-radius:12px;
+  }
+
+  h1 {
+    font-size:1.58rem;
+    letter-spacing:.5px;
+  }
+
+  .price, .price-discount { font-size:1.45rem; }
+  .price-original { font-size:.95rem; }
+
+  .quantity { gap:10px; margin:15px 0 22px; }
+  .quantity input {
+    width:60px;
+    font-size:1rem;
+    padding:6px;
+  }
+
+  .desc { font-size:1rem; line-height:1.45; }
+
+  .binhluan-wrapper {
+    width:95%;
+    padding:18px 15px;
+  }
+  .binhluan-wrapper h2 { font-size:1.35rem; }
+}
 </style>

@@ -39,12 +39,21 @@
       <input type="text" v-model="order.name" required />
 
       <label>Số điện thoại:</label>
-      <input type="tel" v-model="order.phone" required />
+      <input
+        type="tel"
+        v-model="order.phone"
+        required
+        pattern="^(0[3|5|7|8|9])[0-9]{8}$"
+        @input="validatePhone"
+      />
+      <p v-if="phoneError" style="color:red; font-size:14px; margin-top:4px;">
+        ⚠ Số điện thoại không hợp lệ (phải 10 số, bắt đầu bằng 03/05/07/08/09)
+      </p>
 
       <label>Địa chỉ giao hàng:</label>
       <textarea v-model="order.address" required></textarea>
 
-      <!-- 💰 Tổng tiền + Voucher -->
+      <!--  Tổng tiền + Voucher -->
       <div class="voucher-box mt-3 p-3 border rounded bg-light">
         <p><strong>Tổng ban đầu:</strong> {{ totalAmount.toLocaleString() }} VND</p>
 
@@ -57,7 +66,7 @@
         </p>
       </div>
 
-      <!-- 🔧 Phương thức thanh toán -->
+      <!--  Phương thức thanh toán -->
       <label>Phương thức thanh toán:</label>
       <div class="payment-methods">
         <label class="pm-item">
@@ -70,7 +79,7 @@
           Chuyển khoản ngân hàng
         </label>
 
-        <!-- 🟢 QR VietQR động -->
+        <!--  QR VietQR động -->
         <div v-if="order.paymentMethod === 'bank'" class="mt-2">
           <div class="card p-3 text-center shadow-sm" style="max-width: 300px;">
             <img
@@ -85,7 +94,7 @@
         </div>
       </div>
 
-      <!-- ✅ Nút thanh toán chỉ hiển thị khi điền đủ thông tin -->
+      <!--  Nút thanh toán chỉ hiển thị khi điền đủ thông tin -->
       <button
         v-if="isFormValid"
         type="submit"
@@ -119,6 +128,7 @@ export default {
         address: "",
         paymentMethod: "cash",
       },
+      phoneError: false,
       vouchers: [
         { code: "VOUCHER30K", label: "Giảm 30.000₫", min: 250000, type: "fixed", amount: 30000 },
         { code: "VOUCHER50K", label: "Giảm 50.000₫", min: 500000, type: "fixed", amount: 50000 },
@@ -236,6 +246,10 @@ export default {
         this.loading = false;
       }
     },
+      validatePhone() {
+        const regex = /^(0[3|5|7|8|9])[0-9]{8}$/;
+        this.phoneError = !regex.test(this.order.phone);
+      },
   },
 };
 </script>

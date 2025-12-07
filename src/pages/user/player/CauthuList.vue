@@ -157,4 +157,33 @@ h1{
     height: 200px;
   }
 }
+@media (max-width: 480px) {
+  .player-list-page {
+    padding: 25px 0;
+    border-radius:0;
+  }
+
+  .section-title {
+    font-size:1.45rem;
+    margin-bottom:18px;
+    text-align:center;
+    padding-left:0;
+  }
+  .section-title::after {
+    margin-left:auto;
+    margin-right:auto;
+    width:70px;
+  }
+
+  .player-card {
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.09);
+  }
+  .player-image {
+    height:200px;
+    border-bottom:2px solid #ccc;
+  }
+
+  .card-body { padding:14px; }
+}
 </style>
