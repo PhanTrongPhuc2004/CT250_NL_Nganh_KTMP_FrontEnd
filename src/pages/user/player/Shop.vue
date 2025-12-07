@@ -479,9 +479,25 @@ h1 {
 }
 
 @media (max-width:480px){
-  .product-grid { grid-template-columns:repeat(2,1fr) !important; gap:12px; }
-  .product-image{ height:145px; }
-  .product-card{ padding:12px; }
+  .shop-page{ padding:15px 8px; }
+  .shop-container{ padding:16px; border-radius:14px; }
+
+  .shop-header{
+    flex-direction:column;
+    text-align:center;
+    gap:10px;
+    padding-bottom:8px;
+  }
+  .shop-header button{ width:100%; margin-bottom:6px; }
+
+  .filter-bar{ padding:10px 12px; }
+  .row > * { width:100% !important; } /* filter xuống hàng */
+  .product-grid{ grid-template-columns:repeat(2,1fr) !important; gap:10px; }
+  .product-card{ padding:10px; }
+  .product-image{ height:145px; border-radius:10px; }
+  .product-name{ font-size:.9rem; }
+  .product-price{ font-size:.95rem; }
+  .sold-count{ font-size:.75rem; }
 }
 
 </style>

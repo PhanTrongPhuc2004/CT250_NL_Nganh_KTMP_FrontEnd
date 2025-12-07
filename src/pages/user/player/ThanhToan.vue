@@ -254,9 +254,6 @@ export default {
 };
 </script>
 
-
-
-
 <style scoped>
 .checkout-page {
   background: linear-gradient(135deg, #f0f2f5, #e4ebf1);
@@ -380,5 +377,45 @@ export default {
 .card img {
   border-radius: 12px;
 }
+@media (max-width:768px){
+  .cart-table{width:95%;}
+  .checkout-page{padding:30px 10px 60px;}
+  .checkout-form{padding:26px 20px;}
+}
 
+@media (max-width:560px){
+  .cart-table th,
+  .cart-table td {font-size:.85rem;padding:10px;}
+
+  .checkout-item-img{width:55px;height:55px;}
+
+  .checkout-form{gap:15px;border-radius:14px;}
+}
+
+/* 📱 Mobile nhỏ 480px – UI giống Shopee/Tiki */
+@media(max-width:480px){
+  .checkout-page{padding:28px 10px 60px;}
+
+  h1{font-size:1.8rem !important;margin-bottom:22px;}
+
+  .cart-table{width:100%;border-radius:10px;}
+  .cart-table th{padding:10px;font-size:.82rem;}
+  .cart-table td{padding:9px;font-size:.80rem;}
+
+  .checkout-item-img{width:48px;height:48px;border-radius:8px;}
+
+  .checkout-form{
+    padding:22px 18px;
+    gap:14px;
+    border-radius:14px;
+  }
+
+  .checkout-form input,
+  .checkout-form textarea{
+    padding:10px;
+    font-size:.9rem;
+  }
+  
+  .pm-item{padding:11px;font-size:.9rem;border-radius:10px;}
+}
 </style>
