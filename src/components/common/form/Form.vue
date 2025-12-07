@@ -211,7 +211,7 @@ const getChildren = (field) => {
 <template>
   <div
     class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50"
-    style="z-index: 1050"
+    style="z-index: 50000"
     @click.self="handleClose"
   >
     <div

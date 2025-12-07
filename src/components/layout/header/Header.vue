@@ -107,9 +107,9 @@ const closeMobileMenu = () => {
 
         <!-- Navigation Items -->
         <div
-          class="collapse navbar-collapse w-80"
+          class="collapse navbar-collapse"
           :class="{ show: mobileMenuOpen }"
-          style="z-index: 10000; height: calc(100vh - var(--header-height));"
+          style="z-index: 10000; "
         >
           <!-- Nav Links -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
