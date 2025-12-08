@@ -256,6 +256,7 @@ export default {
       this.user = userStore.user || JSON.parse(localStorage.getItem("user"));
     }
     await this.fetchOrders();
+    await this.checkReviewedAll();
   },
 
   methods: {
@@ -298,8 +299,26 @@ export default {
           this.reviewForms[orderId][productKey].images.push(URL.createObjectURL(f)); // preview
         }
       },
+      async checkReviewedAll() {
+        const username = this.user?.tenDangNhap || this.user?.username;
 
+        for (let order of this.orders) {
+          for (let item of order.cart) {
+            try {
+              const res = await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/binhluan/check`, {
+                productId: item._id,
+                orderId: order._id,           // 🔥 thêm mới
+                userName: username
+              });
 
+              if (res.data.reviewed) {
+                this.submittedReviews.push({ orderId: order._id, productId: item._id });
+              }
+
+            } catch {}
+          }
+        }
+      },
     async deleteOrder(id) {
       if (confirm("Bạn có chắc muốn xóa hoàn toàn đơn hàng này?")) {
         try {
@@ -413,46 +432,43 @@ export default {
       return this.submittedReviews.some(r => r.orderId === orderId && r.productId === productId);
     },
 
-async submitReview(orderId, productKey) {
-  const form = this.reviewForms[orderId][productKey];
-  
-  try {
+    async submitReview(orderId, productKey) {
+      const form = this.reviewForms[orderId][productKey];
 
-    let uploadedImages = [];
+      try {
+        let uploadedImages = [];
 
-    // 🔥 Nếu có file ảnh → upload lần lượt lên cloudinary
-    if (form.files && form.files.length > 0) {
-      for (let file of form.files) {
-        const url = await uploadToCloudinary(file);
-        uploadedImages.push(url);           // lưu URL thật
+        if (form.files?.length) {
+          for (let file of form.files) {
+            const url = await uploadToCloudinary(file);
+            uploadedImages.push(url);
+          }
+        }
+
+        const res = await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/binhluan`, {
+          productId: form.productId,
+            orderId,    
+          userName: form.userName,
+          rating: form.rating,
+          content: form.content,
+          images: uploadedImages
+        });
+
+        form.message = "🎉 Gửi đánh giá thành công!";
+        this.submittedReviews.push({ orderId, productId: productKey });
+
+        form.active = false; //// 🔥 ẩn form sau khi gửi để UX chuẩn
+
+      } catch (err) {
+        if (err.response?.status === 400) {
+          form.message = "⚠ Bạn đã đánh giá sản phẩm này rồi!";
+          this.submittedReviews.push({ orderId, productId: productKey });
+          form.active = false;
+        } else {
+          form.message = "❌ Lỗi gửi bình luận!";
+        }
       }
-    }
-
-    // dữ liệu gửi backend
-    const reviewData = {
-      productId: form.productId,
-      userName: form.userName,
-      rating: form.rating,
-      content: form.content,
-      images: uploadedImages,   // <--- không còn RAM link
-    };
-
-    const res = await axios.post(`${import.meta.env.VITE_API_BE_BASE_URL}/binhluan`, reviewData);
-
-    form.message = " Gửi bình luận thành công!";
-    form.rating = null;
-    form.content = "";
-    form.images = [];
-    form.files = [];
-
-    this.submittedReviews.push({ orderId, productId: productKey });
-
-    this.reviewForms[orderId][productKey].active = false;
-  } catch (err) {
-    console.error("❌ Lỗi gửi bình luận:", err);
-    form.message = "Lỗi gửi bình luận!";
-  }
-},
+    },
   },
 };
 </script>
