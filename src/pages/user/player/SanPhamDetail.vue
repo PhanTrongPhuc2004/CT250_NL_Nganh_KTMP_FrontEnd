@@ -396,7 +396,12 @@ h1 {
   align-items: center;
 }
 
-
+  .quantity-box {
+    margin: 10px 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;  
+  }
 
 .desc {
   margin-bottom: 18px;
@@ -426,6 +431,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-left: 8px;
 }
 
 .qty-control input {
@@ -460,6 +466,13 @@ h1 {
     gap:20px;
     border-radius:16px;
   }
+  .quantity-box {
+    margin: 10px 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;  
+    padding-left: 10px;
+  }
 
   .detail-image {
     height:260px;
@@ -480,7 +493,7 @@ h1 {
     font-size:1rem;
     padding:6px;
   }
-
+  
   .desc { font-size:1rem; line-height:1.45; }
 
   .binhluan-wrapper {

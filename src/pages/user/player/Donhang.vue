@@ -50,18 +50,14 @@
               <p class="mb-1"><b>Thành tiền:</b> <span class="text-danger">{{ (item.gia * item.soLuong).toLocaleString() }} VND</span></p>
 
               <!-- Nút viết đánh giá -->
-            <button
-              v-if="order.status === 'Đã xác nhận'"
-              class="btn btn-danger btn-sm mt-2 d-flex align-items-center gap-2"
-              @click="toggleReviewForm(
-                order._id, 
-                item._id, 
-                user.tenDangNhap || user.username
-              )"
-            >
-              <i class="fa-solid fa-pen-to-square"></i>
-              Viết đánh giá
-            </button>
+                <button
+                  v-if="order.status === 'Đã xác nhận' && !hasReviewed(order._id, item._id)"
+                  class="btn btn-danger btn-sm mt-2 d-flex align-items-center gap-2"
+                  @click="toggleReviewForm(order._id, item._id, user.tenDangNhap || user.username)"
+                >
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  Viết đánh giá
+                </button>
 
               <!-- Form viết bình luận -->
               <div
@@ -249,6 +245,7 @@ export default {
       orders: [],
       loading: true,
       reviewForms: {}, // reactive object chứa tất cả form review
+      submittedReviews: [],
     };
   },
 
@@ -412,10 +409,13 @@ export default {
     removeReviewImage(orderId, productKey, index) {
       this.reviewForms[orderId][productKey].images.splice(index, 1);
     },
+    hasReviewed(orderId, productId) {
+      return this.submittedReviews.some(r => r.orderId === orderId && r.productId === productId);
+    },
 
 async submitReview(orderId, productKey) {
   const form = this.reviewForms[orderId][productKey];
-
+  
   try {
 
     let uploadedImages = [];
@@ -445,6 +445,9 @@ async submitReview(orderId, productKey) {
     form.images = [];
     form.files = [];
 
+    this.submittedReviews.push({ orderId, productId: productKey });
+
+    this.reviewForms[orderId][productKey].active = false;
   } catch (err) {
     console.error("❌ Lỗi gửi bình luận:", err);
     form.message = "Lỗi gửi bình luận!";
