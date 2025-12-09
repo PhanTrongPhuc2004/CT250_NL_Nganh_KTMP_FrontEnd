@@ -100,7 +100,7 @@
 
       <div v-else class="product-grid">
         <div
-          v-for="(item) in filteredProducts"
+          v-for="(item) in pagedProducts"
           :key="item._id"
           class="product-card"
           @click="goToDetail(item._id)"
@@ -153,6 +153,23 @@
 
         </div>
       </div>
+            <!-- PHÂN TRANG -->
+      <div class="pagination-container mt-4 d-flex justify-content-center">
+        <button class="btn btn-outline-primary me-2"
+                :disabled="currentPage===1"
+                @click="currentPage--">←</button>
+
+        <button v-for="n in totalPages" :key="n"
+                @click="currentPage = n"
+                class="btn me-1"
+                :class="currentPage===n ? 'btn-primary' : 'btn-outline-primary'">
+          {{ n }}
+        </button>
+
+        <button class="btn btn-outline-primary ms-2"
+                :disabled="currentPage===totalPages"
+                @click="currentPage++">→</button>
+      </div>
     </div>
   </div>
 </template>
@@ -175,10 +192,12 @@ export default {
       productStats: [],
       showVoucher: false,
       selectedVouchers: [],
+      currentPage: 1,
+      perPage: 8,
       vouchers: [
-        { code: "VOUCHER30K", label: "Giảm 30.000 VND", min: 250000, validText: "Hết hạn sau 1 giờ"},
+        { code: "VOUCHER30K", label: "Giảm 30.000 VND", min: 250000, validText: "Hết hạn sau 6 giờ"},
         { code: "VOUCHER50K", label: "Giảm 50.000 VND", min: 500000, validText: "Hết hạn sau 6 giờ" },
-        { code: "VOUCHER100K", label: "Giảm 15%", min: 1000000 , validText: "Áp dụng từ 12/01/2025 - 12/15/2025"},
+        { code: "VOUCHER100K", label: "Giảm 15%", min: 1000000 , validText: "Áp dụng từ 12/01/2025 - 12/31/2025"},
       ],
       sortBy: "",
     };
@@ -212,6 +231,14 @@ export default {
 
       return list;
     },
+      pagedProducts() {
+    let start = (this.currentPage - 1) * this.perPage;
+    return this.filteredProducts.slice(start, start + this.perPage);
+  },
+
+  totalPages() {
+    return Math.ceil(this.filteredProducts.length / this.perPage);
+  }
   },
   methods: {
     toggleVoucher() {
@@ -310,175 +337,168 @@ mounted() {
 
 
 <style scoped>
-.sold-count {
-  font-size: 0.85rem;
-}
-.text-decoration-line-through {
-  opacity: 0.6;
-}
-p {
-  margin-bottom: 0 !important;
-}
+/* =============== GLOBAL FIX =============== */
+p { margin-bottom: 0 !important; }
+.sold-count { font-size: .85rem; opacity: .9; }
+.text-decoration-line-through { opacity: .5; }
 
+/* =============== WRAPPER PAGE =============== */
 .shop-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #dfe9f3, #ffffff);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px;
+  background: linear-gradient(135deg,#dfe9f3,#fff);
+  padding: 40px 20px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
 }
 
 .shop-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-radius: 20px;
-  padding: 40px;
   width: 95%;
   max-width: 1300px;
-  color: #333;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  border-radius: 18px;
+  padding: 35px;
+  box-shadow: 0 6px 25px rgba(0,0,0,.14);
+  color:#333;
 }
 
+/* =============== HEADER =============== */
 .shop-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+  flex-wrap:wrap;
 }
 
 h1 {
-  font-size: 2.3rem;
-  font-weight: bold;
-  color: #8B2C31;
-  display: flex;
-  align-items: center;
+  font-size:2.2rem;
+  font-weight:700;
+  color:#8B2C31;
 }
 
-/* Bộ lọc */
+/* =============== FILTER BAR =============== */
 .filter-bar {
-  background: #f8f9fa;
-  border-radius: 12px;
-  transition: box-shadow 0.3s ease;
+  background:#f8f9fa;
+  padding:14px 18px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:.3s;
 }
-.filter-bar:hover {
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
-}
+.filter-bar:hover { box-shadow:0 0 12px rgba(0,0,0,.1); }
 
-/* Lưới sản phẩm */
+/* =============== PRODUCT GRID =============== */
 .product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 25px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(230px,1fr));
+  gap:22px;
 }
 
-/* Thẻ sản phẩm */
+/* CARD */
 .product-card {
-  background: #ffffff;
-  border-radius: 15px;
-  padding: 20px;
-  text-align: center;
-  transition: 0.3s ease;
-  cursor: pointer;
-  border: 1px solid #e0e0e0;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #ececec;
+  padding:18px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
 }
 .product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transform:translateY(-6px);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
 }
 
+/* IMAGE */
 .product-image {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 12px;
-  margin-bottom: 15px;
+  width:100%;
+  height:215px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-bottom:14px;
 }
 
+/* TEXT */
 .product-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #08175a;
+  font-size:1.05rem;
+  font-weight:600;
+  color:#0d225a;
 }
+.product-category { font-size:.9rem; color:#666; }
+.product-price { font-size:1.15rem; color:#a01616; font-weight:bold; }
 
-.product-category {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.product-price {
-  font-size: 1.1rem;
-  color: #a01616;
-  font-weight: bold;
-}
-/* Nền form */
+/* =============== VOUCHER =============== */
 .voucher-box {
-  background: #ffe6f2; /* hồng cánh sen */
-  border-radius: 14px;
-  border: 1px solid #ffb3d9;
+  background:#ffe6f2;
+  border:1px solid #ffb3d9;
+  border-radius:14px;
+  padding:16px;
 }
 
-/* Hàng từng voucher */
 .voucher-row {
-  background: #fff0f6;
-  border-radius: 12px;
-  border: 1px solid #ffcce6;
-  transition: 0.2s;
+  background:#fff0f6;
+  border-radius:12px;
+  border:1px solid #ffcce6;
+  padding:12px 16px;
+  transition:.2s;
 }
+.voucher-row:hover { background:#ffe0ef; }
 
-.voucher-row:hover {
-  background: #ffe0ef;
-}
-
-/* Nút Nhận */
-.btn-redeem {
-  background: #d62828;       /* Đỏ đậm */
-  color: white;
-  border-radius: 8px;
-  font-weight: 600;
-  padding: 6px 14px;
-  transition: 0.2s;
-  border: none;
-}
-
-.btn-redeem:hover {
-  background: #b71c1c;        /* Đỏ tối */
-  transform: scale(1.05);
-}
-
-.btn-redeem {
-  background: #d62828;
-  color: white;
-  border-radius: 8px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border: none;
-  transition: 0.2s;
-}
-
-.btn-redeem:hover {
-  background: #b71c1c;
-  transform: scale(1.05);
-}
-
+.btn-redeem,
 .btn-use {
-  background: white; /* xanh */
-  color: red;
-  border-radius: 8px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border: none;
+  padding:6px 14px;
+  border-radius:8px;
+  font-weight:600;
+  transition:.2s;
+  border:none;
 }
 
-.btn-use:hover {
-  background: wheat;
-  transform: scale(1.05);
-}
-.voucher-valid {
-  font-size: 13px;
-  color: #cc3366; /* hồng cánh sen đậm */
-  margin-top: 3px;
+/* BTN COLOR */
+.btn-redeem{ background:#d62828;color:#fff; }
+.btn-redeem:hover{ background:#b71c1c;transform:scale(1.05); }
+.btn-use{ background:#fff;color:red; }
+.btn-use:hover{ background:wheat;transform:scale(1.05); }
+
+.voucher-valid{ font-size:13px;color:#cc3366;margin-top:3px; }
+
+
+/* ====================== RESPONSIVE ====================== */
+
+/* Tablet */
+@media (max-width:992px){
+  .shop-container{ padding:28px; }
+  h1{ font-size:1.9rem; }
 }
 
+/* Mobile – GIỮ 2 SẢN PHẨM/ROW */
+@media (max-width:768px){
+  .product-grid { grid-template-columns:repeat(2,1fr) !important; gap:14px; }
+  .product-card{ padding:14px; }
+  .product-image{ height:165px; }
+  h1{ font-size:1.6rem; text-align:center;width:100%; }
+}
+
+@media (max-width:480px){
+  .shop-page{ padding:15px 8px; }
+  .shop-container{ padding:16px; border-radius:14px; }
+
+  .shop-header{
+    flex-direction:column;
+    text-align:center;
+    gap:10px;
+    padding-bottom:8px;
+  }
+  .shop-header button{ width:100%; margin-bottom:6px; }
+
+  .filter-bar{ padding:10px 12px; }
+  .row > * { width:100% !important; } /* filter xuống hàng */
+  .product-grid{ grid-template-columns:repeat(2,1fr) !important; gap:10px; }
+  .product-card{ padding:10px; }
+  .product-image{ height:145px; border-radius:10px; }
+  .product-name{ font-size:.9rem; }
+  .product-price{ font-size:.95rem; }
+  .sold-count{ font-size:.75rem; }
+}
 
 </style>
+

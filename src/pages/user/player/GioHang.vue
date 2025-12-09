@@ -337,6 +337,96 @@ export default {
   object-fit: cover;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
+/* ===========================
+   PC / Laptop (>= 992px)
+=========================== */
+.cart-page {
+  width: 80%;
+  margin: 0 auto 30px auto;
+  padding: 50px 30px;
+}
+
+/* ===========================
+   Tablet (768px - 991px)
+=========================== */
+@media (max-width: 991px) {
+  .cart-page {
+    width: 90%;
+    padding: 30px 20px;
+  }
+
+  .cart-table th,
+  .cart-table td {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+
+  .cart-item-img {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* ===========================
+   Mobile (<= 767px)
+=========================== */
+@media (max-width: 767px) {
+  .cart-page {
+    width: 100%;
+    padding: 20px 12px;
+  }
+
+  .cart-page h1 {
+    font-size: 1.6rem;
+    text-align: center;
+  }
+
+  /* 🧾 Bảng thu nhỏ — có thể kéo ngang */
+  .cart-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  .cart-table th {
+    padding: 10px 6px;
+    font-size: 0.8rem;
+  }
+
+  .cart-table td {
+    padding: 9px 6px;
+  }
+
+  /* Ảnh sản phẩm nhỏ hơn để vừa khung */
+  .cart-item-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 6px;
+  }
+
+  /* Nút xếp dọc thay vì nằm ngang */
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .checkout-btn,
+  .clear-btn,
+  .back-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .total {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-top: 15px;
+  }
+}
 
 
 </style>
