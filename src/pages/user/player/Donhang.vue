@@ -455,9 +455,10 @@ export default {
         });
 
         form.message = "🎉 Gửi đánh giá thành công!";
+        alert(" Gửi đánh giá thành công!");
         this.submittedReviews.push({ orderId, productId: productKey });
 
-        form.active = false; //// 🔥 ẩn form sau khi gửi để UX chuẩn
+        form.active = false; 
 
       } catch (err) {
         if (err.response?.status === 400) {
