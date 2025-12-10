@@ -1,9 +1,7 @@
 <template>
   <div class="chatbot-wrapper">
     <div v-if="!isOpen" @click="toggleChat" class="chat-icon">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-      </svg>
+      <FontAwesomeIcon :icon="['fas', 'circle']" />
       <div v-if="trainingContext" class="training-badge">📚</div>
     </div>
 
@@ -61,7 +59,6 @@
 import { ref, nextTick, watch, onMounted } from 'vue'
 import instance from '@/utils/axios'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
 const input = ref('')
 const messages = ref([])
 const isLoading = ref(false)
@@ -146,7 +143,7 @@ async function sendMessage() {
 .chat-icon {
   width: 56px;
   height: 56px;
-  background: #3b82f6;
+  background: var(--primary-color);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -158,7 +155,7 @@ async function sendMessage() {
 }
 
 .chat-icon:hover {
-  background: #2563eb;
+  background: #c20000;
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
 }
@@ -175,7 +172,7 @@ async function sendMessage() {
 }
 
 .chat-header {
-  background: #3b82f6;
+  background: var(--primary-color);
   color: white;
   padding: 16px;
   display: flex;
@@ -228,7 +225,7 @@ async function sendMessage() {
 }
 
 .user-message {
-  background: #3b82f6;
+  background: var(--primary-color);
   color: white;
   margin-left: auto;
   border-bottom-right-radius: 4px;

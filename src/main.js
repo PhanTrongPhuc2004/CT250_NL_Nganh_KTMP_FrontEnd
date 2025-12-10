@@ -49,6 +49,7 @@ import {
   faChartLine,
   faPenToSquare,
   faBars, 
+  faCircle
 } from "@fortawesome/free-solid-svg-icons";
 
 // Regular icons
