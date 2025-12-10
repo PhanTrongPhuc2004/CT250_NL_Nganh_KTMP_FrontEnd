@@ -3,7 +3,10 @@
     <div class="container py-4">
         <!-- Tiêu đề -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-semibold text-dark m-0">Quản lý cấu hình vé</h4>
+            <h3 class="fw-bold text-danger m-0">
+                <i class="bi bi-credit-card-2-back-fill text-warning me-2"></i>
+                Quản lý loại vé
+            </h3>
             <button class="btn btn-sm text-white" style="background-color: #8b2c31" @click="handleOpenForm('add')"
                 :disabled="!selectedMatch">
                 <i class="bi bi-plus-lg me-1"></i> Thêm cấu hình vé

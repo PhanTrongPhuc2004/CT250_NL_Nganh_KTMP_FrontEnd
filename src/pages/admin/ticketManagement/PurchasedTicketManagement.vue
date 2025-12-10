@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h3 class="fw-bold text-danger m-0">
         <i class="bi bi-credit-card-2-back-fill text-warning me-2"></i>
-        XÁC NHẬN THANH TOÁN CHUYỂN KHOẢN
+        Quản lý thanh toán vé 
       </h3>
       <button @click="confirmSelected" :disabled="selectedTickets.length === 0"
         class="btn btn-success btn-lg shadow px-5">

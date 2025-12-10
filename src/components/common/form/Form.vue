@@ -10,7 +10,7 @@ import GoogleLogin from "../GoogleLogin/GoogleLogin.vue";
 import { useUserStore } from "@/stores/userStore";
 const userStore = useUserStore();
 //debug
-const debug = true;
+const debug = false;
 const formStore = useFormStore();
 const emit = defineEmits(["submitted", "updated", "deleted", "closed", "error"]);
 const cx = classNames.bind(styles);

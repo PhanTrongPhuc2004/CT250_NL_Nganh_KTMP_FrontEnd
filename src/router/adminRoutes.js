@@ -174,7 +174,7 @@ export const adminRoutes = [
     children: [
       {
         path: "/admin/tickets/config",
-        name: "Cấu hình vé trận đấu",
+        name: "Quản lý loại vé",
         component: TicketManagement,
         meta: {
           requiresAuth: true,
