@@ -59,21 +59,14 @@
 
 <script setup>
 import { ref, nextTick, watch, onMounted } from 'vue'
-import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
+import instance from '@/utils/axios'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const input = ref('')
 const messages = ref([])
 const isLoading = ref(false)
 const messagesContainer = ref(null)
 const isOpen = ref(false)
-const conversationHistory = ref([])
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyCkoBLmTlZ2JLeZevwXwfG_OHY7_uGD-Qs'
-const MODEL_NAME = 'gemini-2.5-flash'
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`
-
-const trainingContext = ref('')
-const isLoadingFile = ref(false)
 
 watch(messages, async () => {
   await nextTick()
@@ -87,137 +80,52 @@ function toggleChat() {
 }
 
 function clearHistory() {
-  conversationHistory.value = []
   messages.value = [{
     sender: 'bot',
-    text: 'Xin chào! Tôi là ChatBot chuyên gia bóng đá. Hãy hỏi tôi bất cứ điều gì về bóng đá! ⚽',
-    timestamp: new Date()
+    text: 'Xin chào! Tôi là ChatBot chuyên gia bóng đá. Hãy hỏi tôi bất cứ điều gì! ⚽'
   }]
 }
 
 onMounted(() => {
   messages.value.push({
     sender: 'bot',
-    text: 'Xin chào! Tôi là ChatBot chuyên gia bóng đá. Hãy hỏi tôi bất cứ điều gì về bóng đá! ⚽',
-    timestamp: new Date()
+    text: 'Xin chào! Tôi là ChatBot chuyên gia bóng đá. Hãy hỏi tôi bất cứ điều gì! ⚽'
   })
-  
-  loadTrainingFile()
 })
-
-async function loadTrainingFile() {
-  isLoadingFile.value = true
-  try {
-    const data = await window.fs.readFile('./training.txt', { encoding: 'utf8' })
-    trainingContext.value = data
-    console.log('✅ Đã tải file training thành công')
-  } catch (error) {
-    console.log('⚠️ Không tìm thấy file training.txt, chatbot sẽ hoạt động ở chế độ thường')
-  } finally {
-    isLoadingFile.value = false
-  }
-}
-
-function buildConversationHistory() {
-  if (conversationHistory.value.length === 0) {
-    return 'Đây là câu hỏi đầu tiên trong cuộc trò chuyện.'
-  }
-  
-  const recentHistory = conversationHistory.value.slice(-10)
-  let historyText = 'Lịch sử cuộc trò chuyện:\n\n'
-  recentHistory.forEach(item => {
-    historyText += `${item.sender === 'user' ? 'Người dùng' : 'Bot'}: ${item.text}\n`
-  })
-  
-  return historyText
-}
 
 async function sendMessage() {
   if (!input.value.trim() || isLoading.value) return
 
-  const userMessage = input.value.trim()
-  const userMessageObj = {
+  const text = input.value.trim()
+  input.value = ''
+
+  const userMsg = {
     sender: 'user',
-    text: userMessage,
+    text,
     timestamp: new Date()
   }
-  
-  messages.value.push(userMessageObj)
-  conversationHistory.value.push(userMessageObj)
-  
-  input.value = ''
+
+  messages.value.push(userMsg)
   isLoading.value = true
 
   try {
-    const historyContext = buildConversationHistory()
-    
-    let systemPrompt = `Bạn là chatbot chuyên gia bóng đá. Trả lời bằng tiếng Việt tự nhiên, ngắn gọn.`
-    
-    if (trainingContext.value) {
-      systemPrompt = `Bạn là chatbot trợ lý cho dự án "Website Quản Lý Câu Lạc Bộ Bóng Đá".
-
-THÔNG TIN DỰ ÁN:
-${trainingContext.value.substring(0, 15000)}
-
-NHIỆM VỤ:
-- Trả lời các câu hỏi về dự án Website Quản Lý CLB Bóng Đá
-- Giải thích các chức năng hệ thống
-- Hỗ trợ về yêu cầu chức năng, thiết kế giao diện
-- Giúp hiểu về kiến trúc hệ thống
-
-Trả lời bằng tiếng Việt tự nhiên, rõ ràng.`
-    }
-
-    const prompt = `${systemPrompt}
-
-${historyContext}
-
-Câu hỏi: "${userMessage}"
-
-Hãy trả lời:`
-
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          role: "user",
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.9,
-          topK: 40,
-          maxOutputTokens: 1500,
-        }
-      })
+    // 🔥 Gửi câu hỏi tới Backend
+    const res = await instance.post('/chatbot/send-message', {
+      message: text
     })
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
+    const botReply = res.data?.reply || 'Tôi không hiểu câu hỏi này.'
 
-    const data = await response.json()
-    let botReply = "Xin lỗi, tôi không thể xử lý câu hỏi này."
-    
-    if (data.candidates && data.candidates[0]) {
-      botReply = data.candidates[0].content?.parts?.[0]?.text || botReply
-      botReply = botReply.trim()
-    }
-
-    const botMessageObj = {
+    messages.value.push({
       sender: 'bot',
       text: botReply,
       timestamp: new Date()
-    }
-    
-    messages.value.push(botMessageObj)
-    conversationHistory.value.push(botMessageObj)
+    })
 
   } catch (err) {
     messages.value.push({
       sender: 'bot',
-      text: 'Xin lỗi, tôi đang gặp sự cố. Vui lòng thử lại.',
+      text: 'Lỗi khi kết nối máy chủ. Vui lòng thử lại.',
       timestamp: new Date()
     })
   } finally {
@@ -225,6 +133,7 @@ Hãy trả lời:`
   }
 }
 </script>
+
 
 <style scoped>
 .chatbot-wrapper {
